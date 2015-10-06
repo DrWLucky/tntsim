@@ -45,26 +45,26 @@ int main(int argc, char** argv)
 	runManager->Initialize();
 
 	// // get the pointer to the UI manager and set verbosities
-	// G4UImanager* UI = G4UImanager::GetUIpointer();
-	// UI->ApplyCommand("/run/verbose 1");
-	// UI->ApplyCommand("/event/verbose 1");
-	// UI->ApplyCommand("/tracking/verbose 1");
+	G4UImanager* UI = G4UImanager::GetUIpointer();
+	UI->ApplyCommand("/run/verbose 1");
+	UI->ApplyCommand("/event/verbose 1");
+	UI->ApplyCommand("/tracking/verbose 1");
 
 
 
-  //read a macro file of commands
-  G4UImanager* UI = G4UImanager::GetUIpointer();
-  G4String command  = "/control/execute ";
-  G4String fileName = "/home/gacgroup/gchristian/packages/simulation/texansim/build/run1.mac";
-	UI->ApplyCommand(command+fileName); 
+  // //read a macro file of commands
+  // G4UImanager* UI = G4UImanager::GetUIpointer();
+  // G4String command  = "/control/execute ";
+  // G4String fileName = "/home/gacgroup/gchristian/packages/simulation/texansim/build/run1.mac";
+	// UI->ApplyCommand(command+fileName); 
 
 
-	// // start a run
-	// int numberOfEvent = 3;
-	// runManager->BeamOn(numberOfEvent);
+	// start a run
+	int numberOfEvent = 3;
+	runManager->BeamOn(numberOfEvent);
 
 
-	// UI->ApplyCommand("/control/manual");
+	UI->ApplyCommand("/control/manual");
 
 	// job termination
 	return 0;

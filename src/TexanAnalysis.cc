@@ -15,15 +15,14 @@ txs::AnalysisManager*& txs::AnalysisManager::Instance()
 	return ana;
 }
 
-G4AnalysisManager* txs::AnalysisManager::G4()
+G4VAnalysisManager* txs::AnalysisManager::G4()
 {
-	return G4AnalysisManager::Instance();
-	// static G4AnalysisManager* ana = 0;
-	// if(!ana) {
-	// 	// Read from .mac file to decide analyzer type //
-	// 	ana = new G4RootAnalysisManager();
-	// }
-	// return ana;
+	static G4VAnalysisManager* ana = 0;
+	if(!ana) {
+		// Read from .mac file to decide analyzer type //
+		ana = new G4RootAnalysisManager();
+	}
+	return ana;
 }
 
 txs::AnalysisManager::AnalysisManager()

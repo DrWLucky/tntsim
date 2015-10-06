@@ -24,16 +24,11 @@ namespace txs = texansim;
 txs::RunAction::RunAction():
 	G4UserRunAction()
 {
-	G4String fname =
-	 	G4UImanager::GetUIpointer()->GetCurrentStringValue("/analysis/setFileName");
+	// G4String fname =
+	//  	G4UImanager::GetUIpointer()->GetCurrentStringValue("/analysis/setFileName");
 
-	// G4int nrun =
-	//  	G4UImanager::GetUIpointer()->GetCurrentStringValue("/run/beamOn");
-
-	// G4cerr << "nrun: " << nrun << "\n";
-	
-	txs::Ana()->G4()->SetFileName("output");
-	// assert (txs::Ana()->G4()->OpenFile("FFF") ); // "FFF") );
+	// txs::Ana()->G4()->SetFileName("output");
+	assert (txs::Ana()->G4()->OpenFile("FFF") ); // "FFF") );
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -66,10 +61,12 @@ void txs::RunAction::BeginOfRunAction(const G4Run*)
 	/// This method is invoked after the calculation of the physics tables.
   
   // Creating ntuple & histograms
-	// txs::Ana()->G4()->CreateNtuple("t1", "Test");
-	// txs::Ana()->BookNtupleColumn<G4double>("val1");
+	txs::Ana()->G4()->CreateNtuple("t1", "Test");
+	txs::Ana()->BookNtupleColumn<G4double>("val1");
+	txs::Ana()->G4()->FinishNtuple();
 
-	// txs::Ana()->BookH1("hval1", "", 100, 0, 10, "MeV");
+
+	txs::Ana()->BookH1("hval1", "", 100, 0, 10, "MeV");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -80,8 +77,8 @@ void txs::RunAction::EndOfRunAction(const G4Run*)
 	/// used for a simple analysis of the processed run.
 
   // Save analysis stuff
-	// txs::Ana()->G4()->Write();
-	// txs::Ana()->G4()->CloseFile();
+	txs::Ana()->G4()->Write();
+	txs::Ana()->G4()->CloseFile();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

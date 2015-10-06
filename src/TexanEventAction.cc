@@ -2,13 +2,13 @@
 /// \brief Implementation of the TexanEventAction class
 ///
 #include "TexanEventAction.hh"
-// #include "TexanAnalysis.hh"
+#include "TexanAnalysis.hh"
 // #include "TexanRun.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 
-
+#include "TRandom3.h"
 
 namespace txs = texansim;
 
@@ -29,15 +29,17 @@ txs::EventAction::~EventAction()
 
 void txs::EventAction::BeginOfEventAction(const G4Event*)
 {    
-  fEdep = 0.;
+  fEdep = gRandom->Uniform(0,10);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void txs::EventAction::EndOfEventAction(const G4Event*)
 {   
-
-//	txs::Ana()->FillNtupleColumn("val1", fEdep);
+	G4cerr << "HERE|b\n";
+	txs::Ana()->FillNtupleColumn("val1", fEdep);
+	
+	txs::Ana()->G4()->AddNtupleRow();
 
   // accumulate statistics in B1Run
   // B1Run* run 

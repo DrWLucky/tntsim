@@ -5,8 +5,7 @@
 #include <map>
 #include <typeinfo>
 
-// #include "G4VAnalysisManager.hh"
-#include "g4root.hh"
+#include "G4VAnalysisManager.hh"
 
 
 namespace texansim {
@@ -22,7 +21,7 @@ public:
 	/// Global instance
 	static AnalysisManager*& Instance();
 	/// Global G4Vanalysis manager instance
-	G4AnalysisManager* G4();
+	G4VAnalysisManager* G4();
 	/// Deletes global G4vanalysismanager
 	virtual ~AnalysisManager();
 
@@ -94,6 +93,7 @@ G4bool texansim::AnalysisManager::FillNtupleColumn(const G4String& name, const T
 {
 	/// \warning All names must be unique
 	G4int id = GetId(name);
+	G4cerr << id << "  <<<<<< ID\n";
 	return do_fill<T> (id, value);
 }
 
@@ -106,17 +106,17 @@ inline G4int texansim::AnalysisManager::BookNtupleColumn(const G4String& name)
 	G4int retval;
 	
 	if (0) { }
-	// else if (typeid(T) == typeid(G4double)) {
-	// 	retval = G4()->CreateNtupleDColumn(name);
-	// }
-	// else if (typeid(T) == typeid(G4float)) {
-	// 	retval = G4()->CreateNtupleFColumn(name);
-	// }
-	// else if (typeid(T) == typeid(G4int)) {
-	// 	retval = G4()->CreateNtupleIColumn(name);
-	// }
+	else if (typeid(T) == typeid(G4double)) {
+		retval = G4()->CreateNtupleDColumn(name);
+	}
+	else if (typeid(T) == typeid(G4float)) {
+		retval = G4()->CreateNtupleFColumn(name);
+	}
+	else if (typeid(T) == typeid(G4int)) {
+		retval = G4()->CreateNtupleIColumn(name);
+	}
 	else {
-		G4cerr << "Warning: Defaulting column type to double for ntuple column \"" << name << "\"\n";
+		G4cerr << "Warning in BookNtupleColumn: Defaulting column type to double for ntuple column \"" << name << "\"\n";
 		retval = G4()->CreateNtupleDColumn(name);
 	}
 
