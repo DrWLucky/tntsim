@@ -22,18 +22,14 @@ int main(int argc, char** argv)
 {
 	// GDML parser
 	G4GDMLParser parser;
-
-	if(argc > 1)
-		parser.Read(argv[1]);
-	else
-		parser.Read("detectors.gdml");
+	parser.Read("/home/gacgroup/gchristian/packages/simulation/texansim/build/detectors.gdml");
 
 	// construct the default run manager
-#ifdef G4MULTITHREADED_
-	std::auto_ptr<G4RunManager> runManager (new G4MTRunManager);
-#else
+// #ifdef G4MULTITHREADED
+// 	std::auto_ptr<G4RunManager> runManager (new G4MTRunManager);
+// #else
 	std::auto_ptr<G4RunManager> runManager (new G4RunManager);
-#endif
+// #endif
 
 	// set mandatory initialization classes
 	 
@@ -68,7 +64,7 @@ int main(int argc, char** argv)
 	// runManager->BeamOn(numberOfEvent);
 
 
-	UI->ApplyCommand("/control/manual");
+	// UI->ApplyCommand("/control/manual");
 
 	// job termination
 	return 0;

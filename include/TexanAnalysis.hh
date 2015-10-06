@@ -1,13 +1,12 @@
-#if 0
-// #ifndef HAVE_TEXAN_ANALYSIS_HH
-// #define HAVE_TEXAN_ANALYSIS_HH 1
+#ifndef HAVE_TEXAN_ANALYSIS_HH
+#define HAVE_TEXAN_ANALYSIS_HH 1
 /// \file TexanAnalysis.hh
 /// \brief Class for handling analysis stuff
 #include <map>
 #include <typeinfo>
 
-#include "G4VAnalysisManager.hh"
-
+// #include "G4VAnalysisManager.hh"
+#include "g4root.hh"
 
 
 namespace texansim {
@@ -23,7 +22,7 @@ public:
 	/// Global instance
 	static AnalysisManager*& Instance();
 	/// Global G4Vanalysis manager instance
-	G4VAnalysisManager*& G4();
+	G4AnalysisManager* G4();
 	/// Deletes global G4vanalysismanager
 	virtual ~AnalysisManager();
 
