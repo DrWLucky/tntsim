@@ -1,0 +1,7 @@
+build/CMake*
+build/Makefile
+build/cmake_install.cmake
+build/core.*
+build/*.root
+build/*.exe
+build/*.gdml
