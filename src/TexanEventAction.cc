@@ -37,9 +37,9 @@ void txs::EventAction::BeginOfEventAction(const G4Event*)
 void txs::EventAction::EndOfEventAction(const G4Event*)
 {   
 	G4cerr << "HERE|b\n";
-	txs::Ana()->FillNtupleColumn("val1", fEdep);
+	FillNtupleColumn("val1", fEdep);
 	
-	txs::Ana()->G4()->AddNtupleRow();
+	gAna->AddNtupleRow();
 
   // accumulate statistics in B1Run
   // B1Run* run 
