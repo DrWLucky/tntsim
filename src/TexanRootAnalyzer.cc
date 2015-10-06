@@ -6,68 +6,37 @@
 #include <TTree.h>
 
 #include "TexanRootAnalyzer.hh"
-
-template <class T>
-void Zap(T*& t)
-{
-	if(t) {
-		delete t;
-		t = NULL;
-	}
-}
+#include "TexanUtils.hh"
 
 
-TexanRootAnalyzer::~TexanRootAnalyzer()
+
+texansim::RootAnalyzer::~RootAnalyzer()
 {
 	Zap(fFile);
 }
 
-TexanRootAnalyzer*& TexanRootAnalyzer::Instance()
+texansim::RootAnalyzer*& texansim::RootAnalyzer::Instance()
 {
-	static TexanRootAnalyzer* singleton = 0;
+	static texansim::RootAnalyzer* singleton = 0;
 	if(!singleton) {
-		singleton = new TexanRootAnalyzer();
+		singleton = new texansim::RootAnalyzer();
 	}
 	return singleton;
 }
 
-bool TexanRootAnalyzer::OpenFile(const char* filename, int overwrite)
+bool texansim::RootAnalyzer::OpenFile(const char* filename, const char* mode)
 {
-	{
-		std::ifstream ifs(filename);
-		if(ifs.good()) {
-			switch(overwrite) {
-			case kNever:
-				return false;
-			case kPrompt:
-				{
-					std::string input;
-					std::cout << "Overwrite existing root file? (y/[n])\n";
-					std::cin  >> input;
-					if( !(input == "y" || input == "Y") )
-						return false;
-					break;
-				}
-			case kAlways:
-				break;
-			default:
-				break;
-			}
-		}
-	}
-
 	Zap(fFile);
-	fFile = new TFile(filename, "RECREATE");
+	fFile = new TFile(filename, mode);
 	return (fFile && !(fFile->IsZombie()));
 }
 
-void TexanRootAnalyzer::CloseFile()
+void texansim::RootAnalyzer::CloseFile()
 {
-	if(fFile)
-		fFile->Close();
+	if(fFile) fFile->Close();
 }
 
-TTree* TexanRootAnalyzer::CreateTree(const char* name, const char* title)
+TTree* texansim::RootAnalyzer::CreateTree(const char* name, const char* title)
 {
 	if(fFile)
 		fFile->cd();
@@ -78,7 +47,7 @@ TTree* TexanRootAnalyzer::CreateTree(const char* name, const char* title)
 	return t;
 }
 
-TTree* TexanRootAnalyzer::GetTree(const char* name)
+TTree* texansim::RootAnalyzer::GetTree(const char* name)
 {
 	return fFile ? dynamic_cast<TTree*>(fFile->FindObject(name)) : NULL;
 }

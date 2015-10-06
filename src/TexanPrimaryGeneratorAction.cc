@@ -8,9 +8,11 @@
 #include "G4ParticleTable.hh"
 #include "G4ParticleDefinition.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-TexanPrimaryGeneratorAction::TexanPrimaryGeneratorAction(      
+namespace txs = texansim;
+
+
+txs::PrimaryGeneratorAction::PrimaryGeneratorAction(      
 	const G4String& particleName, 
 	G4double energy,
 	G4ThreeVector position, 
@@ -33,14 +35,14 @@ TexanPrimaryGeneratorAction::TexanPrimaryGeneratorAction(
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-TexanPrimaryGeneratorAction::~TexanPrimaryGeneratorAction()
+txs::PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
   delete fParticleGun;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void TexanPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+void txs::PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
   // this function is called at the begining of event
 

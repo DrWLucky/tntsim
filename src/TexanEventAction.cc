@@ -9,28 +9,31 @@
 
 
 
+namespace txs = texansim;
+
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-TexanEventAction::TexanEventAction()
+txs::EventAction::EventAction()
 : G4UserEventAction(),
   fEdep(0.)
 {} 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-TexanEventAction::~TexanEventAction()
+txs::EventAction::~EventAction()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void TexanEventAction::BeginOfEventAction(const G4Event*)
+void txs::EventAction::BeginOfEventAction(const G4Event*)
 {    
   fEdep = 0.;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void TexanEventAction::EndOfEventAction(const G4Event*)
+void txs::EventAction::EndOfEventAction(const G4Event*)
 {   
   // accumulate statistics in B1Run
   // B1Run* run 

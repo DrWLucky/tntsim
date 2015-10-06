@@ -4,12 +4,14 @@
 #include "TexanDetectorConstruction.hh"
 
 
-TexanDetectorConstruction::TexanDetectorConstruction(G4VPhysicalVolume *setWorld):
+namespace txs = texansim;
+
+txs::DetectorConstruction::DetectorConstruction(G4VPhysicalVolume *setWorld):
 	fWorld(setWorld)
 { }
 
 
-G4VPhysicalVolume* TexanDetectorConstruction::Construct()
+G4VPhysicalVolume* txs::DetectorConstruction::Construct()
 {
 	return fWorld;
 }

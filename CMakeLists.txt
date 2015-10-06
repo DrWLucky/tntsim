@@ -1,3 +1,4 @@
+# -*- mode: perl; -*-
 # $Id: CMakeLists.txt 86065 2014-11-07 08:51:15Z gcosmo $
 
 #----------------------------------------------------------------------------
@@ -74,5 +75,3 @@ add_custom_target(texansim DEPENDS texansim.exe)
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
 install(TARGETS texansim.exe DESTINATION bin)
-
-

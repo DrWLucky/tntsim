@@ -16,23 +16,25 @@
 #include <TTree.h>
 
 
+namespace txs = texansim;
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-TexanRunAction::TexanRunAction()
+txs::RunAction::RunAction()
 : G4UserRunAction()
 {
-	TexanRootAnalyzer::Instance()->OpenFile("output.root", TexanRootAnalyzer::kAlways);
+	txs::RootAnalyzer::Instance()->OpenFile("output.root", "recreate");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-TexanRunAction::~TexanRunAction()
+txs::RunAction::~RunAction()
 {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4Run* TexanRunAction::GenerateRun()
+G4Run* txs::RunAction::GenerateRun()
 {
 	/// This method is invoked at the beginning of BeamOn. Because the user can inherit
   /// the class G4Run and create his/her own concrete class to store some information about 
@@ -46,24 +48,24 @@ G4Run* TexanRunAction::GenerateRun()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 namespace { double val; }
-void TexanRunAction::BeginOfRunAction(const G4Run*)
+void txs::RunAction::BeginOfRunAction(const G4Run*)
 {
 	/// This method is invoked before entering the event loop. A typical use of this
 	/// method would be to initialize and/or book histograms for a particular run. 
 	/// This method is invoked after the calculation of the physics tables.
 
-	TTree* t1 = TexanRootAnalyzer::Instance()->CreateTree("t1", "t1");
+	TTree* t1 = txs::RootAnalyzer::Instance()->CreateTree("t1", "t1");
 	t1->Branch("val", &val, "val/D");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void TexanRunAction::EndOfRunAction(const G4Run*)
+void txs::RunAction::EndOfRunAction(const G4Run*)
 {
 	/// This method is invoked at the very end of the run processing. It is typically
 	/// used for a simple analysis of the processed run.
 	
-	TexanRootAnalyzer::Instance()->CloseFile();
+	txs::RootAnalyzer::Instance()->CloseFile();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -7,29 +7,30 @@
 #include "TexanEventAction.hh"
 
 
+namespace txs = texansim;
 
-TexanActionInitialization::TexanActionInitialization()
+txs::ActionInitialization::ActionInitialization()
  : G4VUserActionInitialization()
 {}
 
 
 
-TexanActionInitialization::~TexanActionInitialization()
+txs::ActionInitialization::~ActionInitialization()
 {}
 
 
 
-void TexanActionInitialization::BuildForMaster() const
+void txs::ActionInitialization::BuildForMaster() const
 {
-  SetUserAction(new TexanRunAction);
+  SetUserAction(new txs::RunAction);
 }
 
 
-void TexanActionInitialization::Build() const
+void txs::ActionInitialization::Build() const
 {
-  SetUserAction(new TexanPrimaryGeneratorAction);
-  SetUserAction(new TexanRunAction);
+  SetUserAction(new txs::PrimaryGeneratorAction);
+  SetUserAction(new txs::RunAction);
   
-  TexanEventAction* eventAction = new TexanEventAction;
+  txs::EventAction* eventAction = new txs::EventAction;
   SetUserAction(eventAction);
 }  

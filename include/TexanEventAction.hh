@@ -1,5 +1,5 @@
 /// \file TexanEventAction.hh
-/// \brief Definition of the TexanEventAction class
+/// \brief Definition of the EventAction class
 
 #ifndef TexanEventAction_h
 #define TexanEventAction_h 1
@@ -7,13 +7,16 @@
 #include "G4UserEventAction.hh"
 #include "globals.hh"
 
+
+namespace texansim {
+
 /// Event action class
 ///
-class TexanEventAction : public G4UserEventAction
+class EventAction : public G4UserEventAction
 {
 public:
-	TexanEventAction();
-	virtual ~TexanEventAction();
+	EventAction();
+	virtual ~EventAction();
     
 	virtual void BeginOfEventAction(const G4Event* event);
 	virtual void EndOfEventAction(const G4Event* event);
@@ -24,6 +27,7 @@ private:
 	G4double  fEdep;
 };
 
+}
 
 
 #endif

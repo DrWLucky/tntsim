@@ -7,15 +7,21 @@
 
 #include "G4VUserDetectorConstruction.hh"
 
+
+namespace texansim {
+
 /// Detector construction using the geometry read from a GDML (XML) file
-class TexanDetectorConstruction : public G4VUserDetectorConstruction
+class DetectorConstruction : public G4VUserDetectorConstruction
 {
 public: 
-	TexanDetectorConstruction(G4VPhysicalVolume *setWorld = 0);
+	DetectorConstruction(G4VPhysicalVolume *setWorld = 0);
 	virtual G4VPhysicalVolume *Construct();
 
 private:
 	G4VPhysicalVolume *fWorld;
 };
+
+}
+
 
 #endif

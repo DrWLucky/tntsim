@@ -6,19 +6,23 @@
 
 #include "G4VUserActionInitialization.hh"
 
-/// Action initialization class.
 
-class TexanActionInitialization : public G4VUserActionInitialization
+namespace texansim {
+
+/// Action initialization class.
+class ActionInitialization : public G4VUserActionInitialization
 {
 public:
-	TexanActionInitialization();
-	virtual ~TexanActionInitialization();
+	ActionInitialization();
+	virtual ~ActionInitialization();
 
 	/// For main thread (ignored if serial)
 	virtual void BuildForMaster() const;
 	/// For all threads
 	virtual void Build() const;
 };
+
+}
 
 
 #endif

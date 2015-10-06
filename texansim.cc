@@ -8,9 +8,15 @@
 #include "G4GDMLParser.hh"
 
 // User files //
-#include "TexanDetectorConstruction.hh" // Generic gdml detector construction
-#include "QGSP_BIC_HP.hh" // Physics list
+#include "TexanDetectorConstruction.hh"  // Detector construction
+#include "QGSP_BIC_HP.hh"                // Physics list
 #include "TexanActionInitialization.hh"  // Action initialization
+
+
+/// Namespace for all project classes
+namespace texansim {    }
+namespace txs = texansim;
+
 
 int main(int argc, char** argv)
 {
@@ -32,12 +38,12 @@ int main(int argc, char** argv)
 	// set mandatory initialization classes
 	 
 	/// - Detector construction from GDML file (XML)
-	runManager->SetUserInitialization(new TexanDetectorConstruction(parser.GetWorldVolume()));
+	runManager->SetUserInitialization(new txs::DetectorConstruction(parser.GetWorldVolume()));
 	/// - TEMPORARY physics list
 	/// \todo implement permanent (or changable) physics list
 	runManager->SetUserInitialization(new QGSP_BIC_HP);
 	/// - Action initializatioj
-	runManager->SetUserInitialization(new TexanActionInitialization);
+	runManager->SetUserInitialization(new txs::ActionInitialization);
 
 	// initialize G4 kernel
 	runManager->Initialize();
