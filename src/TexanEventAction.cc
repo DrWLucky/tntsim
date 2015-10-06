@@ -36,7 +36,6 @@ void txs::EventAction::BeginOfEventAction(const G4Event*)
 
 void txs::EventAction::EndOfEventAction(const G4Event*)
 {   
-	G4cerr << "HERE|b\n";
 	FillNtupleColumn("val1", fEdep);
 	
 	gAna->AddNtupleRow();
