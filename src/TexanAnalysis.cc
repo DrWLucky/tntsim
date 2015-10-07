@@ -11,7 +11,7 @@ G4int txs::Analysis::BookH1(const G4String &name, const G4String &title, G4int n
 {
 	/// \warning All names must be unique
 	G4int id = gAna->CreateH1(name, title, nbins, xmin, xmax, unitName, fcnName);
-	txprivate::gBookedMap()[name] = id;
+	gBookedMap()[name] = id;
 	return id;
 }
 
@@ -19,11 +19,11 @@ G4int txs::Analysis::BookH2(const G4String &name, const G4String &title, G4int n
 {
 	/// \warning All names must be unique
 	G4int id = gAna->CreateH2(name, title, nxbins, xmin, xmax, nybins, ymin, ymax, unitName, fcnName);
-	txprivate::gBookedMap()[name] = id;
+	gBookedMap()[name] = id;
 	return id;
 }
 
-std::map<G4String, G4int>& txprivate::gBookedMap()
+std::map<G4String, G4int>& txs::Analysis::gBookedMap()
 {
 	std::map<G4String, G4int>* m = 0;
 	if(!m) {

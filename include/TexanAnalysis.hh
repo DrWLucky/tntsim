@@ -10,14 +10,6 @@
 
 
 
-namespace txprivate
-{
-/// Private map 'singleton' instance
-/** \attention Do not use this in your code */
-std::map<G4String, G4int>& gBookedMap();
-}
-
-
 
 namespace texansim {
 
@@ -25,7 +17,17 @@ namespace texansim {
 static G4AnalysisManager* gAna = G4AnalysisManager::Instance();
 
 
-
+/// Analysis class ("static")
+/*! Provides function interface mimicing that of G4VAnalysisManager.
+	  Except this is in a static class, so there's no singleton instance.
+		Also provides additional functionality: lookup of histogram and NTuple
+		IDs from their name strings. To use this, call the Book*() functions to
+		create histograms and NTuples, and Fill*() functions that take 'string name'
+		as an argument to add data.
+		
+		\attention All names given to objects must be unique (though histograms and Ntuple
+		columns can have the same name).
+ */
 class Analysis {
 public:
   /// Book 1d histogram
@@ -35,7 +37,7 @@ public:
 	static G4int BookH2(const G4String &name, const G4String &title, G4int nxbins, G4double xmin, G4double xmax, G4int nybins, G4double ymin, G4double ymax,  const G4String &unitName="none", const G4String &fcnName="none");
 
   /// Look up object ID by name
-	static G4int GetId(const G4String &name) { return txprivate::gBookedMap()[name];	}
+	static G4int GetId(const G4String &name) { return gBookedMap()[name];	}
 
 	/// Add ntuple row
 	static G4bool AddNtupleRow() { return gAna->AddNtupleRow(); }
@@ -59,9 +61,13 @@ public:
 						 << name << "\"\n";
 			G4int retval = gAna->CreateNtupleDColumn(name);
 
-			txprivate::gBookedMap()[name] = retval;
+			gBookedMap()[name] = retval;
 			return retval;
 		}
+
+private:
+/// Private map 'singleton' instance
+	static std::map<G4String, G4int>& gBookedMap();
 };
 
 
@@ -93,7 +99,7 @@ template <>
 inline G4int Analysis::BookNtupleColumn<G4double>(const G4String& name)
 {
 	G4int retval = gAna->CreateNtupleDColumn(name);
-	txprivate::gBookedMap()[name] = retval;
+	gBookedMap()[name] = retval;
 	return retval;
 }
 
@@ -102,7 +108,7 @@ template <>
 inline G4int Analysis::BookNtupleColumn<G4float>(const G4String& name)
 {
 	G4int retval = gAna->CreateNtupleFColumn(name);
-	txprivate::gBookedMap()[name] = retval;
+	gBookedMap()[name] = retval;
 	return retval;
 }
 
@@ -111,7 +117,7 @@ template <>
 inline G4int Analysis::BookNtupleColumn<G4int>(const G4String& name)
 {
 	G4int retval = gAna->CreateNtupleIColumn(name);
-	txprivate::gBookedMap()[name] = retval;
+	gBookedMap()[name] = retval;
 	return retval;
 }
 
