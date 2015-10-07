@@ -25,11 +25,11 @@ int main(int argc, char** argv)
 	parser.Read("/home/gacgroup/gchristian/packages/simulation/texansim/build/detectors.gdml");
 
 	// construct the default run manager
-// #ifdef G4MULTITHREADED
-// 	std::auto_ptr<G4RunManager> runManager (new G4MTRunManager);
-// #else
+#ifdef G4MULTITHREADED
+ 	std::auto_ptr<G4RunManager> runManager (new G4MTRunManager);
+#else
 	std::auto_ptr<G4RunManager> runManager (new G4RunManager);
-// #endif
+#endif
 
 	// set mandatory initialization classes
 	 
