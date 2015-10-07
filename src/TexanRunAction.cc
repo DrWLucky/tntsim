@@ -27,15 +27,15 @@ txs::RunAction::RunAction():
 	// G4String fname =
 	//  	G4UImanager::GetUIpointer()->GetCurrentStringValue("/analysis/setFileName");
 
-	// gAna->SetFileName("output");
-	assert (gAna->OpenFile("FFF") ); // "FFF") );
+	// Analysis::SetFileName("output");
+	assert (Analysis::OpenFile("FFF") ); // "FFF") );
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 txs::RunAction::~RunAction()
 {
-	delete gAna;
+	// delete gAna;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -61,9 +61,9 @@ void txs::RunAction::BeginOfRunAction(const G4Run*)
 	/// This method is invoked after the calculation of the physics tables.
   
   // Creating ntuple & histograms
-	gAna->CreateNtuple("t1", "Test");
+	Analysis::CreateNtuple("t1", "Test");
 	Analysis::BookNtupleColumn<G4double>("val1");
-	gAna->FinishNtuple();
+	Analysis::FinishNtuple();
 
 
 	Analysis::BookH1("hval1", "", 100, 0, 10, "MeV");
@@ -77,8 +77,8 @@ void txs::RunAction::EndOfRunAction(const G4Run*)
 	/// used for a simple analysis of the processed run.
 
   // Save analysis stuff
-	gAna->Write();
-	gAna->CloseFile();
+	Analysis::Write();
+	Analysis::CloseFile();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -10,7 +10,7 @@ namespace txs = texansim;
 G4int txs::Analysis::BookH1(const G4String &name, const G4String &title, G4int nbins, G4double xmin, G4double xmax, const G4String &unitName, const G4String &fcnName)
 {
 	/// \warning All names must be unique
-	G4int id = gAna->CreateH1(name, title, nbins, xmin, xmax, unitName, fcnName);
+	G4int id = gAna()->CreateH1(name, title, nbins, xmin, xmax, unitName, fcnName);
 	gHistMap()[name] = id;
 	return id;
 }
@@ -18,7 +18,7 @@ G4int txs::Analysis::BookH1(const G4String &name, const G4String &title, G4int n
 G4int txs::Analysis::BookH2(const G4String &name, const G4String &title, G4int nxbins, G4double xmin, G4double xmax, G4int nybins, G4double ymin, G4double ymax,  const G4String &unitName, const G4String &fcnName)
 {
 	/// \warning All names must be unique
-	G4int id = gAna->CreateH2(name, title, nxbins, xmin, xmax, nybins, ymin, ymax, unitName, fcnName);
+	G4int id = gAna()->CreateH2(name, title, nxbins, xmin, xmax, nybins, ymin, ymax, unitName, fcnName);
 	gHistMap()[name] = id;
 	return id;
 }
