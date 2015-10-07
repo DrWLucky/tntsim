@@ -36,9 +36,8 @@ void txs::EventAction::BeginOfEventAction(const G4Event*)
 
 void txs::EventAction::EndOfEventAction(const G4Event*)
 {   
-	FillNtupleColumn("val1", fEdep);
-	
-	gAna->AddNtupleRow();
+	Analysis::FillNtupleColumn("val1", fEdep);
+	Analysis::AddNtupleRow();
 
   // accumulate statistics in B1Run
   // B1Run* run 

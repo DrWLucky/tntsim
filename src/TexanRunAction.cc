@@ -62,11 +62,11 @@ void txs::RunAction::BeginOfRunAction(const G4Run*)
   
   // Creating ntuple & histograms
 	gAna->CreateNtuple("t1", "Test");
-	BookNtupleColumn<G4double>("val1");
+	Analysis::BookNtupleColumn<G4double>("val1");
 	gAna->FinishNtuple();
 
 
-	BookH1("hval1", "", 100, 0, 10, "MeV");
+	Analysis::BookH1("hval1", "", 100, 0, 10, "MeV");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
