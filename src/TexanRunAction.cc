@@ -24,18 +24,27 @@ namespace txs = texansim;
 txs::RunAction::RunAction():
 	G4UserRunAction()
 {
-	// G4String fname =
-	//  	G4UImanager::GetUIpointer()->GetCurrentStringValue("/analysis/setFileName");
+	/// Set up all of the analysis stuff
+	
+	/// Default file name (overwrite with macro /analysis/setFileName)
+	Analysis::SetFileName("texansim_output");
 
-	// Analysis::SetFileName("output");
-	assert (Analysis::OpenFile("FFF") ); // "FFF") );
+  /// Create ntuple
+	Analysis::CreateNtuple("t", "TEXAN Geant4 simulation event data");
+	Analysis::BookNtupleColumn<G4double>("var1");
+	Analysis::FinishNtuple();
+
+	/// Create histogram
+	Analysis::BookH1("hst1", "", 100, 0, 10, "MeV");
+	Analysis::BookH2("hst2", "", 100, 0, 10, 100, 0, 10, "MeV");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 txs::RunAction::~RunAction()
 {
-	// delete gAna;
+	/// Clean up analysis stuff
+	delete G4AnalysisManager::Instance();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -59,14 +68,11 @@ void txs::RunAction::BeginOfRunAction(const G4Run*)
 	/// This method is invoked before entering the event loop. A typical use of this
 	/// method would be to initialize and/or book histograms for a particular run. 
 	/// This method is invoked after the calculation of the physics tables.
-  
-  // Creating ntuple & histograms
-	Analysis::CreateNtuple("t1", "Test");
-	Analysis::BookNtupleColumn<G4double>("val1");
-	Analysis::FinishNtuple();
 
-
-	Analysis::BookH1("hval1", "", 100, 0, 10, "MeV");
+	/// Open analysis file
+	/// Default file name is set in the constructor.
+	/// Can be overwritten with the macro /analysis/setFileName
+	Analysis::OpenFile();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -76,7 +82,7 @@ void txs::RunAction::EndOfRunAction(const G4Run*)
 	/// This method is invoked at the very end of the run processing. It is typically
 	/// used for a simple analysis of the processed run.
 
-  // Save analysis stuff
+  /// Write analysis stuff
 	Analysis::Write();
 	Analysis::CloseFile();
 }

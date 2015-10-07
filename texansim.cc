@@ -20,6 +20,9 @@ namespace txs = texansim;
 
 int main(int argc, char** argv)
 {
+	// UI manager
+	G4UImanager* UI = G4UImanager::GetUIpointer();
+
 	// GDML parser
 	G4GDMLParser parser;
 	parser.Read("/home/gacgroup/gchristian/packages/simulation/texansim/build/detectors.gdml");
@@ -31,8 +34,8 @@ int main(int argc, char** argv)
 	std::auto_ptr<G4RunManager> runManager (new G4RunManager);
 #endif
 
-	// set mandatory initialization classes
-	 
+	/// - Set mandatory initialization classes
+	///
 	/// - Detector construction from GDML file (XML)
 	runManager->SetUserInitialization(new txs::DetectorConstruction(parser.GetWorldVolume()));
 	/// - TEMPORARY physics list
@@ -41,30 +44,29 @@ int main(int argc, char** argv)
 	/// - Action initialization
 	runManager->SetUserInitialization(new txs::ActionInitialization);
 
-	// initialize G4 kernel
+	/// - Initialize G4 kernel
 	runManager->Initialize();
 
 	// // get the pointer to the UI manager and set verbosities
-	G4UImanager* UI = G4UImanager::GetUIpointer();
-	UI->ApplyCommand("/run/verbose 1");
-	UI->ApplyCommand("/event/verbose 1");
-	UI->ApplyCommand("/tracking/verbose 1");
+	// UI->ApplyCommand("/run/verbose 1");
+	// UI->ApplyCommand("/event/verbose 1");
+	// UI->ApplyCommand("/tracking/verbose 1");
 
 
 
   // //read a macro file of commands
   // G4UImanager* UI = G4UImanager::GetUIpointer();
-  // G4String command  = "/control/execute ";
-  // G4String fileName = "/home/gacgroup/gchristian/packages/simulation/texansim/build/run1.mac";
-	// UI->ApplyCommand(command+fileName); 
+  G4String command  = "/control/execute ";
+  G4String fileName = "/home/gacgroup/gchristian/packages/simulation/texansim/build/run1.mac";
+	UI->ApplyCommand(command+fileName); 
 
 
-	// start a run
-	int numberOfEvent = 3;
-	runManager->BeamOn(numberOfEvent);
+	// // start a run
+	// int numberOfEvent = 3;
+	// runManager->BeamOn(numberOfEvent);
 
 
-	UI->ApplyCommand("/control/manual");
+	// UI->ApplyCommand("/control/manual");
 
 	// job termination
 	return 0;
