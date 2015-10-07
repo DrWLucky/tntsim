@@ -7,8 +7,8 @@
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
+#include "Randomize.hh"
 
-#include "TRandom3.h"
 
 namespace txs = texansim;
 
@@ -29,13 +29,14 @@ txs::EventAction::~EventAction()
 
 void txs::EventAction::BeginOfEventAction(const G4Event*)
 {    
-  fEdep = gRandom->Uniform(0,10);
+  fEdep = G4MTRandFlat::shoot(0., 10.);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void txs::EventAction::EndOfEventAction(const G4Event*)
 {   
+	Analysis::FillH1("hval1", fEdep);
 	Analysis::FillNtupleColumn("val1", fEdep);
 	Analysis::AddNtupleRow();
 

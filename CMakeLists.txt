@@ -5,7 +5,27 @@
 # Setup the project
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(texansim)
-set(useROOT true)
+
+## ---   Set the analysis package you want to use here --- ##
+##
+set(theAnalyzer "ROOT")
+# set(theAnalyzer "XML")
+# set(theAnalyzer "CSV")
+
+
+
+
+#----------------------------------------------------------------------------
+# Define analysis package
+#
+if(theAnalyzer STREQUAL "ROOT")
+    add_definitions(-DTEXAN_ANALYZE_ROOT)
+elseif(theAnalyzer STREQUAL "XML")
+    add_definitions(-DTEXAN_ANALYZE_XML)
+elseif(theAnalyzer STREQUAL "CSV")
+    add_definitions(-DTEXAN_ANALYZE_CSV)
+endif(theAnalyzer STREQUAL "ROOT")
+
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
@@ -26,10 +46,10 @@ endif()
 #
 include(${Geant4_USE_FILE})
 include_directories(${PROJECT_SOURCE_DIR}/include)
-if(useROOT)
+if(theAnalyzer STREQUAL "ROOT")
 	EXECUTE_PROCESS(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CXX_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS}")
-endif(useROOT) 
+endif(theAnalyzer STREQUAL "ROOT")
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -42,10 +62,10 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(texansim.exe texansim.cc ${sources} ${headers})
-if(useROOT)
+if(theAnalyzer STREQUAL "ROOT")
 	EXECUTE_PROCESS(COMMAND root-config --libs OUTPUT_VARIABLE ROOT_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 	set(CMAKE_EXE_LINKER_FLAGS ${ROOT_LD_FLAGS})
-endif(useROOT)
+endif(theAnalyzer STREQUAL "ROOT")
 target_link_libraries(texansim.exe ${Geant4_LIBRARIES})
 
 #----------------------------------------------------------------------------

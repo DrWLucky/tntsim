@@ -4,9 +4,15 @@
 /// \brief Class for handling analysis stuff
 #include <map>
 
-
+#if   defined (TEXAN_ANALYZE_ROOT)
 #include "g4root.hh"
-
+#elif defined (TEXAN_ANALYZE_XML)
+#include "g4xml.hh"
+#elif defined (TEXAN_ANALYZE_CSV)
+#include "g4csv.hh"
+#else 
+#error("Analyzer not defined")
+#endif
 
 
 
