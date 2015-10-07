@@ -44,7 +44,7 @@ txs::RunAction::RunAction():
 txs::RunAction::~RunAction()
 {
 	/// Clean up analysis stuff
-	delete G4AnalysisManager::Instance();
+	Analysis::Cleanup();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

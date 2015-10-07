@@ -1,3 +1,4 @@
+#include <cassert>
 #include "G4UImanager.hh"
 #include "G4RootAnalysisManager.hh"
 #include "TexanAnalysis.hh"
@@ -6,6 +7,11 @@
 namespace txs = texansim;
 
 
+void txs::Analysis::Cleanup()
+{
+	/// \attention Call from RunAction destructor
+	delete G4AnalysisManager::Instance(); 
+}
 
 G4int txs::Analysis::BookH1(const G4String &name, const G4String &title, G4int nbins, G4double xmin, G4double xmax, const G4String &unitName, const G4String &fcnName)
 {

@@ -36,6 +36,9 @@ namespace texansim {
  */
 class Analysis {
 public:
+	/// Clean up - delete G4AnalysisManager
+	static void Cleanup();
+
   /// Book 1d histogram
 	static G4int BookH1(const G4String &name, const G4String &title, G4int nbins, G4double xmin, G4double xmax, const G4String &unitName="none", const G4String &fcnName="none");
 
