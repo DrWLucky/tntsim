@@ -36,18 +36,29 @@ public:
   /// Book 2d histogram
 	static G4int BookH2(const G4String &name, const G4String &title, G4int nxbins, G4double xmin, G4double xmax, G4int nybins, G4double ymin, G4double ymax,  const G4String &unitName="none", const G4String &fcnName="none");
 
-  /// Look up object ID by name
-	static G4int GetId(const G4String &name) { return gBookedMap()[name];	}
+  /// Look up Histogram ID by name
+	static G4int GetHistId(const G4String &name) { return gHistMap()[name];	}
+
+  /// Look up Ntuple column ID by name
+	static G4int GetColumnId(const G4String &name) { return gColumnMap()[name];	}
 
 	/// Add ntuple row
 	static G4bool AddNtupleRow() { return gAna->AddNtupleRow(); }
+
+	/// Fill 1d histogram by name
+	static G4bool FillH1(const G4String& name, G4double value, G4double weight=1.0)
+		{ return gAna->FillH1(GetHistId(name), value, weight); }
+
+	/// Fill 2d histogram by name
+	static G4bool FillH2(const G4String& name, G4double xvalue, G4double yvalue, G4double weight=1.0)
+		{ return gAna->FillH2(GetHistId(name), xvalue, yvalue, weight); }
 
   /// Fill NTuple column by name
 	template <class T>
 	static G4bool FillNtupleColumn(const G4String& name, const T& value)
 		{
 			G4cerr << "Warning in FillNtupleColumn: Defaulting fill to double\n";
-			return texansim::gAna->FillNtupleDColumn(GetId(name), value);
+			return texansim::gAna->FillNtupleDColumn(GetColumnId(name), value);
 		}
 
   /// Book NTuple column
@@ -61,13 +72,15 @@ public:
 						 << name << "\"\n";
 			G4int retval = gAna->CreateNtupleDColumn(name);
 
-			gBookedMap()[name] = retval;
+			gColumnMap()[name] = retval;
 			return retval;
 		}
 
 private:
-/// Private map 'singleton' instance
-	static std::map<G4String, G4int>& gBookedMap();
+/// Singleton map for histograms (1d and 2d)
+	static std::map<G4String, G4int>& gHistMap();
+/// Singleton map for NTuple columns (all types)
+	static std::map<G4String, G4int>& gColumnMap();
 };
 
 
@@ -75,21 +88,21 @@ private:
 template <>
 inline G4bool Analysis::FillNtupleColumn<G4double>(const G4String& name, const G4double& value)
 {
-	return texansim::gAna->FillNtupleDColumn(Analysis::GetId(name), value);
+	return texansim::gAna->FillNtupleDColumn(GetColumnId(name), value);
 }
 
 /// Specialization for float
 template <>
 inline G4bool Analysis::FillNtupleColumn<G4float>(const G4String& name, const G4float& value)
 {
-	return texansim::gAna->FillNtupleFColumn(Analysis::GetId(name), value);
+	return texansim::gAna->FillNtupleFColumn(GetColumnId(name), value);
 }
 
 /// Specialization for int
 template <>
 inline G4bool Analysis::FillNtupleColumn<G4int>(const G4String& name, const G4int& value)
 {
-	return texansim::gAna->FillNtupleIColumn(Analysis::GetId(name), value);
+	return texansim::gAna->FillNtupleIColumn(GetColumnId(name), value);
 }
 
 
@@ -99,7 +112,7 @@ template <>
 inline G4int Analysis::BookNtupleColumn<G4double>(const G4String& name)
 {
 	G4int retval = gAna->CreateNtupleDColumn(name);
-	gBookedMap()[name] = retval;
+	gColumnMap()[name] = retval;
 	return retval;
 }
 
@@ -108,7 +121,7 @@ template <>
 inline G4int Analysis::BookNtupleColumn<G4float>(const G4String& name)
 {
 	G4int retval = gAna->CreateNtupleFColumn(name);
-	gBookedMap()[name] = retval;
+	gColumnMap()[name] = retval;
 	return retval;
 }
 
@@ -117,7 +130,7 @@ template <>
 inline G4int Analysis::BookNtupleColumn<G4int>(const G4String& name)
 {
 	G4int retval = gAna->CreateNtupleIColumn(name);
-	gBookedMap()[name] = retval;
+	gColumnMap()[name] = retval;
 	return retval;
 }
 
