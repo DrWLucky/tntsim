@@ -18,7 +18,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 {
 public: 
 	/// Ctor
-	DetectorConstruction();
+	DetectorConstruction(const G4String& file);
 	/// Delete allocated stuff
 	virtual ~DetectorConstruction();
 	/// Construct the geometry

@@ -23,8 +23,7 @@ namespace txs = texansim;
 namespace {
 int usage()
 {
-	G4cerr << "usage: texansim <run*.mac> to run a simulation\n";
-	G4cerr << "       texansim --visualize [<gdml file>] to visualize geometry\n\n";
+	G4cerr << "usage: texansim <run*.mac> [--geometry <*.gdml>] [--visualize]\n";
 	return 1;
 }
 int novis()
@@ -39,18 +38,23 @@ int novis()
 
 int main(int argc, char** argv)
 {
-	/// - Check for macro file argument
-	if(argc < 2)
+	/// - Check arguments
+	if(argc < 2) // no macro file specified
 		return usage();
 
 	bool visualize = false;
-	std::auto_ptr<G4String> visfile(0);
-	if(G4String(argv[1]) == "--visualize") {
-		visualize = true;
-		if(argc >= 3)
-			visfile.reset(new G4String(argv[2]));
-	}
+	G4String geofile = TEXAN_BUILD_DIR + G4String("/empty.gdml");
 
+	for(int i = 2; i< argc; ++i) {
+		if(0) { }
+		else if(G4String(argv[i]) == "--visualize") {
+			visualize = true;
+		}
+		else if(G4String(argv[i]) == "--geometry") {
+			geofile = argv[++i];
+		}
+	}
+	
 	if(visualize) {
 #if defined(G4UI_USE) && defined(G4VIS_USE)
 		;
@@ -71,7 +75,7 @@ int main(int argc, char** argv)
 	/// - Set mandatory initialization classes
 	///
 	/// - Detector construction from GDML file (XML)
-	txs::DetectorConstruction* det = new txs::DetectorConstruction();
+	txs::DetectorConstruction* det = new txs::DetectorConstruction(geofile);
 	runManager->SetUserInitialization(det);
 
 	/// - TEMPORARY physics list
@@ -96,8 +100,6 @@ int main(int argc, char** argv)
 		{
 			std::auto_ptr<G4VisManager> visManager(new G4VisExecutive);
 			visManager->Initialize();
-			if(visfile.get() != 0)
-				UI->ApplyCommand(G4String( "/persistency/gdml/read " + (*visfile) ));
 			UI->ApplyCommand("/control/execute vis.mac");
 			ui->SessionStart();
 		}
