@@ -23,7 +23,7 @@ namespace txs = texansim;
 namespace {
 int usage()
 {
-	G4cerr << "usage: texansim <run*.mac> [--geometry <*.gdml>] [--visualize]\n";
+	G4cerr << "usage: texansim <run*.mac> [--geo <*.gdml>] [--visualize]\n\n";
 	return 1;
 }
 int novis()
@@ -42,16 +42,27 @@ int main(int argc, char** argv)
 	if(argc < 2) // no macro file specified
 		return usage();
 
+	if(G4String(argv[1]) == "--help" || G4String(argv[1]) == "-h")
+		return usage();
+	if(G4String(argv[1]) == "--visualize")
+		return usage();
+	if(G4String(argv[1]) == "--geo")
+		return usage();
+	
+
 	bool visualize = false;
 	G4String geofile = TEXAN_BUILD_DIR + G4String("/empty.gdml");
 
-	for(int i = 2; i< argc; ++i) {
+	for(int i = 1; i< argc; ++i) {
 		if(0) { }
 		else if(G4String(argv[i]) == "--visualize") {
 			visualize = true;
 		}
-		else if(G4String(argv[i]) == "--geometry") {
-			geofile = argv[++i];
+		else if(G4String(argv[i]) == "--geo") {
+			if(i+1 < argc)
+				geofile = argv[++i];
+			else
+				return usage();
 		}
 	}
 	
