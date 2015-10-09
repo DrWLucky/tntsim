@@ -8,7 +8,7 @@ namespace txs = texansim;
 
 txs::DetectorConstruction::DetectorConstruction()
 { 
-	fReadFile  = TEXAN_BUILD_DIR + G4String("/detectors.gdml");
+	fReadFile  = TEXAN_BUILD_DIR + G4String("/empty.gdml");
 	fParser    = new G4GDMLParser();		
 	fMessenger = new G4GDMLMessenger(fParser);
 }

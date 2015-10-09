@@ -24,7 +24,7 @@ namespace {
 int usage()
 {
 	G4cerr << "usage: texansim <run*.mac> to run a simulation\n";
-	G4cerr << "       texansim --visualize <gdml file> to visualize geometry\n\n";
+	G4cerr << "       texansim --visualize [<gdml file>] to visualize geometry\n\n";
 	return 1;
 }
 int novis()
@@ -44,11 +44,11 @@ int main(int argc, char** argv)
 		return usage();
 
 	bool visualize = false;
+	std::auto_ptr<G4String> visfile(0);
 	if(G4String(argv[1]) == "--visualize") {
+		visualize = true;
 		if(argc >= 3)
-			visualize = true;
-		else
-			return usage();
+			visfile.reset(new G4String(argv[2]));
 	}
 
 	if(visualize) {
@@ -96,7 +96,8 @@ int main(int argc, char** argv)
 		{
 			std::auto_ptr<G4VisManager> visManager(new G4VisExecutive);
 			visManager->Initialize();
-			UI->ApplyCommand(G4String("/persistency/gdml/read " + G4String(argv[2])));
+			if(visfile.get() != 0)
+				UI->ApplyCommand(G4String( "/persistency/gdml/read " + (*visfile) ));
 			UI->ApplyCommand("/control/execute vis.mac");
 			ui->SessionStart();
 		}
