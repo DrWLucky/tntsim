@@ -4,5 +4,4 @@ build/cmake_install.cmake
 build/core.*
 build/*.root
 build/*.exe
-build/*.gdml
 build/*.txt
