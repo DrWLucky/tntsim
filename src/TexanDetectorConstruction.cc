@@ -2,7 +2,6 @@
 /// \brief Implements detector construction (GDML) class.
 #include "G4GDMLParser.hh"
 #include "TexanDetectorConstruction.hh"
-#include "TexanDetectorMessenger.hh"
 #include "TexanUtils.hh"
 
 namespace txs = texansim;
