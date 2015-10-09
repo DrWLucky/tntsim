@@ -16,6 +16,12 @@ set(theAnalyzer "ROOT")
 
 
 #----------------------------------------------------------------------------
+# Set some preprocessor definitions
+#
+    add_definitions(-DTEXAN_BUILD_DIR=\"${PROJECT_BINARY_DIR}\")
+
+
+#----------------------------------------------------------------------------
 # Define analysis package
 #
 if(theAnalyzer STREQUAL "ROOT")

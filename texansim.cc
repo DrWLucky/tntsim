@@ -5,7 +5,7 @@
 #include "G4RunManager.hh"
 #include "G4MTRunManager.hh"
 #include "G4UImanager.hh"
-#include "G4GDMLParser.hh"
+
 
 // User files //
 #include "TexanDetectorConstruction.hh"  // Detector construction
@@ -26,9 +26,6 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	// GDML parser
-	G4GDMLParser parser;
-	parser.Read("/home/gacgroup/gchristian/packages/simulation/texansim/build/detectors.gdml");
 
 	/// Construct the default run manager
 #ifdef G4MULTITHREADED
@@ -37,10 +34,17 @@ int main(int argc, char** argv)
 	std::auto_ptr<G4RunManager> runManager (new G4RunManager);
 #endif
 
+	G4UImanager* UI = G4UImanager::GetUIpointer();
+	// UI->ApplyCommand("/persistency/gdml/read detector1.gdml");
+	// UI->ApplyCommand("/texansim/detectorFile detector1.gdml");
+
+
 	/// - Set mandatory initialization classes
 	///
 	/// - Detector construction from GDML file (XML)
-	runManager->SetUserInitialization(new txs::DetectorConstruction(parser.GetWorldVolume()));
+	txs::DetectorConstruction* det = new txs::DetectorConstruction();
+	runManager->SetUserInitialization(det);
+
 	/// - TEMPORARY physics list
 	/// \todo implement permanent (or changable) physics list
 	runManager->SetUserInitialization(new QGSP_BIC_HP);
@@ -51,7 +55,6 @@ int main(int argc, char** argv)
 	runManager->Initialize();
 
   /// - Read a macro file of commands
-	G4UImanager* UI = G4UImanager::GetUIpointer();
   G4String command  = "/control/execute ";
   G4String fileName = argv[1];
 	UI->ApplyCommand(command+fileName); 

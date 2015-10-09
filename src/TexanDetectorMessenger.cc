@@ -11,21 +11,22 @@
 
 namespace txs = texansim;
 
-
+#include <cassert>
 txs::DetectorMessenger::DetectorMessenger( txs::DetectorConstruction* myDet )
   : G4UImessenger(),
     fTheDetector( myDet ),
     fTheDetectorDir(0),
     fTheReadCommand(0)
-{ 
-  fTheDetectorDir = new G4UIdirectory( "/texan/detector/" );
-  fTheDetectorDir->SetGuidance("Detector control.");
+{
+  fTheDetectorDir = new G4UIdirectory( "/texansim/" );
+  fTheDetectorDir->SetGuidance("TEXANSIM control.");
 
-  fTheReadCommand = new G4UIcmdWithAString("/texan/detector/readFile", this);
+  fTheReadCommand = new G4UIcmdWithAString("/texansim/detectorFile", this);
   fTheReadCommand ->SetGuidance("READ GDML file with given name");
   fTheReadCommand ->SetParameterName("FileRead", false);
-  fTheReadCommand ->SetDefaultValue("detectors.gdml");
-  fTheReadCommand ->AvailableForStates(G4State_PreInit);
+	G4String detdir = TEXAN_BUILD_DIR + G4String("/detectors.gdml");
+  fTheReadCommand ->SetDefaultValue(detdir.data());
+	fTheReadCommand ->AvailableForStates(G4State_PreInit);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -38,10 +39,13 @@ txs::DetectorMessenger::~DetectorMessenger()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+
 void txs::DetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
 { 
+	G4cerr << newValue << "    <<<New Value\n";
+	assert(0);
   if ( command == fTheReadCommand )
   { 
-    fTheDetector->SetReadFile(newValue );
+    fTheDetector->SetReadFile(newValue);
   }
 }
