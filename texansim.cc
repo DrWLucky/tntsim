@@ -15,8 +15,7 @@
 #include "TexanActionInitialization.hh"  // Action initialization
 
 
-/// Namespace for all project classes
-namespace texansim {    }
+
 namespace txs = texansim;
 
 
@@ -36,8 +35,16 @@ int novis()
 }
 
 
+/// Namespace for all project classes
+namespace texansim {
+
+/// The main program
 int main(int argc, char** argv)
 {
+	/// I'm just putting this in the texansim namespace so that it
+	/// shows up under the namespace section of doxygen. The real
+	/// main() is a one-liner simply calling this.
+
 	/// - Check arguments
 	if(argc < 2) // no macro file specified
 		return usage();
@@ -118,3 +125,9 @@ int main(int argc, char** argv)
 
 	return 0;
 }
+
+}
+
+
+int main(int argc, char** argv)
+{ return txs::main(argc, argv); }
