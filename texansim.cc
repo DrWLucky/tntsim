@@ -2,6 +2,7 @@
 /// \brief Defines main() program
 ///
 #include <memory>
+#include <string>
 
 #include "G4RunManager.hh"
 #include "G4MTRunManager.hh"
@@ -26,7 +27,7 @@ namespace txs = texansim;
 namespace {
 int usage()
 {
-	G4cerr << "usage: texansim <run*.mac> [--geo[metry] <*.gdml>] [--vis[ualize]]\n\n";
+	G4cerr << "usage: texansim <run*.mac> [--geo[metry]=*.gdml] [--vis[ualize]]\n\n";
 	return 1;
 }
 int novis()
@@ -45,11 +46,10 @@ int main(int argc, char** argv)
 	if(argc < 2) // no macro file specified
 		return usage();
 
-	if(G4String(argv[1]) == "--help" || G4String(argv[1]) == "-h")
+	std::string arg1(argv[1]);
+	if(arg1 == "--help" || arg1 == "-h")
 		return usage();
-	if(G4String(argv[1]) == "--visualize" || G4String(argv[1]) == "--vis")
-		return usage();
-	if(G4String(argv[1]) == "--geometry"  || G4String(argv[1]) == "--geo")
+	if(arg1.substr(0,10) == "--geometry"  || arg1.substr(0,5) == "--geo")
 		return usage();
 	
 
@@ -57,15 +57,16 @@ int main(int argc, char** argv)
 	G4String geofile = TEXAN_BUILD_DIR + G4String("/empty.gdml");
 
 	for(int i = 1; i< argc; ++i) {
+		std::string arg = argv[i];
 		if(0) { }
-		else if(G4String(argv[i]) == "--visualize") {
+		else if(arg == "--visualize" || arg == "--vis") {
 			visualize = true;
 		}
-		else if(G4String(argv[i]) == "--geo") {
-			if(i+1 < argc)
-				geofile = argv[++i];
-			else
-				return usage();
+		else if(arg.substr(0,5) == "--geo") {
+			geofile = arg.substr(6);
+		}
+		else if(arg.substr(0,5) == "--geometry") {
+			geofile = arg.substr(11);
 		}
 	}
 	
