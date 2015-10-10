@@ -71,7 +71,7 @@
     <volume name="Detector" >
       <materialref ref="BC537" />
       <solidref ref="detector" />
-      <auxiliary auxtype="SensDet" auxvalue="Scint">
+      <auxiliary auxtype="SensDet" auxvalue="Scint" />
     </volume>
     <volume name="World" >
       <materialref ref="Air" />

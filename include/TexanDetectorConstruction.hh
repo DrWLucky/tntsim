@@ -26,6 +26,9 @@ public:
 	/// Set GDML file
 	void SetReadFile(const G4String& File);
 
+protected:
+	void ConstructSensitiveVolumes();
+
 private:
 	G4VPhysicalVolume *fWorld;
 	G4GDMLParser *fParser;
