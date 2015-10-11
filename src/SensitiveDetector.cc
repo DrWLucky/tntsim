@@ -1,8 +1,8 @@
-/// \file TexanSensitiveDetector.cc
+/// \file SensitiveDetector.cc
 /// \brief Implementation of the SensitiveDetector class
 ///
 #include <cassert>
-#include "TexanSensitiveDetector.hh"
+#include "texan/SensitiveDetector.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4Step.hh"
 #include "G4ThreeVector.hh"

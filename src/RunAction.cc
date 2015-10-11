@@ -1,10 +1,11 @@
-/// \file TexanRunAction.cc
-/// \brief Implementation of the TexanRunAction class
+/// \file RunAction.cc
+/// \brief Implementation of the RunAction class
 #include <cassert>
 
-#include "TexanRunAction.hh"
-#include "TexanPrimaryGeneratorAction.hh"
-#include "TexanDetectorConstruction.hh"
+#include "texan/Analysis.hh"
+#include "texan/RunAction.hh"
+#include "texan/PrimaryGeneratorAction.hh"
+#include "texan/DetectorConstruction.hh"
 
 #include "G4Run.hh"
 #include "G4UImanager.hh"
@@ -13,7 +14,6 @@
 #include "G4LogicalVolume.hh"
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
-#include "TexanAnalysis.hh"
 
 
 namespace txs = texansim;

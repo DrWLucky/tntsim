@@ -1,16 +1,16 @@
-/// \file TexanActionInitialization.cc
-/// \brief Implementation of the TexanActionInitialization class
+/// \file ActionInitialization.cc
+/// \brief Implementation of the ActionInitialization class
 
-#include "TexanActionInitialization.hh"
-#include "TexanPrimaryGeneratorAction.hh"
-#include "TexanRunAction.hh"
-#include "TexanEventAction.hh"
+#include "texan/ActionInitialization.hh"
+#include "texan/PrimaryGeneratorAction.hh"
+#include "texan/RunAction.hh"
+#include "texan/EventAction.hh"
 
 
 namespace txs = texansim;
 
 txs::ActionInitialization::ActionInitialization()
- : G4VUserActionInitialization()
+	: G4VUserActionInitialization()
 {}
 
 
@@ -37,4 +37,4 @@ void txs::ActionInitialization::Build() const
   
   txs::EventAction* eventAction = new txs::EventAction;
   SetUserAction(eventAction);
-}  
+}

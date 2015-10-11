@@ -1,11 +1,11 @@
-/// \file TexanDetectorConstruction.cc
+/// \file DetectorConstruction.cc
 /// \brief Implements detector construction (GDML) class.
 #include "G4GDMLParser.hh"
 #include "G4SDManager.hh"
 
-#include "TexanDetectorConstruction.hh"
-#include "TexanSensitiveDetector.hh"
-#include "TexanUtils.hh"
+#include "texan/DetectorConstruction.hh"
+#include "texan/SensitiveDetector.hh"
+#include "texan/Utils.hh"
 
 
 

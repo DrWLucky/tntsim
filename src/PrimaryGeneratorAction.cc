@@ -1,7 +1,7 @@
-/// \file TexanPrimaryGeneratorAction.cc
+/// \file PrimaryGeneratorAction.cc
 /// \brief Primary generator action
 ///
-#include "TexanPrimaryGeneratorAction.hh"
+#include "texan/PrimaryGeneratorAction.hh"
 
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"

@@ -1,7 +1,9 @@
+/// \file Analysis.cc
+/// \brief Implements analysis classes
 #include <cassert>
 #include "G4UImanager.hh"
 #include "G4RootAnalysisManager.hh"
-#include "TexanAnalysis.hh"
+#include "texan/Analysis.hh"
 
 
 namespace txs = texansim;

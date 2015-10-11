@@ -33,4 +33,3 @@ Installation Instructions:
 
 Coding Conventions:
   - Use texansim namespace to enclose project classes (often alias to txs in .cc files)
-  - Prefix file names with Texan, i.e. TexanDetectorConstruction.hh

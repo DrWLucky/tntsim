@@ -14,10 +14,10 @@
 
 
 // User files //
-#include "TexanDetectorConstruction.hh"  // Detector construction
-#include "QGSP_BIC_HP.hh"                // Physics list
-#include "TexanActionInitialization.hh"  // Action initialization
-#include "TexanSensitiveDetector.hh"
+#include "QGSP_BIC_HP.hh"                 // Physics list
+#include "texan/DetectorConstruction.hh"  // Detector construction
+#include "texan/ActionInitialization.hh"  // Action initialization
+#include "texan/SensitiveDetector.hh"
 
 
 namespace txs = texansim;
