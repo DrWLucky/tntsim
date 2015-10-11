@@ -46,10 +46,10 @@ public:
 	static G4int BookH2(const G4String &name, const G4String &title, G4int nxbins, G4double xmin, G4double xmax, G4int nybins, G4double ymin, G4double ymax,  const G4String &unitName="none", const G4String &fcnName="none");
 
   /// Look up Histogram ID by name
-	static G4int GetHistId(const G4String &name) { return gHistMap()[name];	}
+	static G4int GetHistId(const G4String &name);
 	
   /// Look up Ntuple column ID by name
-	static G4int GetColumnId(const G4String &name) { return gColumnMap()[name];	}
+	static G4int GetColumnId(const G4String &name);
 
 	/// Fill 1d histogram by name
 	static G4bool FillH1(const G4String& name, G4double value, G4double weight=1.0)
@@ -248,10 +248,12 @@ public:
 // END COPIES //
 
 private:
+	typedef std::map<G4String, G4int> IdLookup_t;
+
 /// Singleton map for histograms (1d and 2d)
-	static std::map<G4String, G4int>& gHistMap();
+	static IdLookup_t& gHistMap();
 /// Singleton map for NTuple columns (all types)
-	static std::map<G4String, G4int>& gColumnMap();
+	static IdLookup_t& gColumnMap();
 /// Singleton G4AnalysManager instance (just an alias)
 	static G4AnalysisManager* gAna() { return G4AnalysisManager::Instance(); }
 };

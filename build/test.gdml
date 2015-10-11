@@ -4,8 +4,8 @@
 
   <!-- =============== DEFINITIONS =============== -->
   <define>
-    <position name="DetectorinWorldp" unit="mm" x="0" y="0" z="0" />
-    <rotation name="DetectorinWorldr" unit="degree" x="0" y="0" z="0" />
+    <position name="DetectorinWorldp" unit="cm" x="0" y="0" z="0" />
+    <rotation name="DetectorinWorldr" unit="degree" x="0" y="0" z="0.5" />
 
     <constant name="HALFPI" value="3.14159/2."/>
     <constant name="PI" value="3.14159"/>
@@ -63,8 +63,8 @@
   <!-- =============== SOLIDS =============== -->
   <solids>
     <box  aunit="radian" lunit="m" name="world" x="1" y="1" z="10" />
-    <box  aunit="radian" lunit="m" name="detector" x="1" y="1" z="10" />
-    <!-- <tube aunit="radian" lunit="cm" name="detector" z="30" rmax="3" deltaphi="TWOPI" /> -->
+    <box  aunit="radian" lunit="m" name="detector" x="0.06" y="0.06" z="0.3" />
+    <!-- <tube aunit="radian" lunit="cm" name="detector" z="300" rmax="100" deltaphi="TWOPI" /> -->
   </solids>
 
   <!-- =============== STRUCTURE =============== -->

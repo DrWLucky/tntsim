@@ -31,20 +31,41 @@ G4int txs::Analysis::BookH2(const G4String &name, const G4String &title, G4int n
 	return id;
 }
 
-std::map<G4String, G4int>& txs::Analysis::gHistMap()
+txs::Analysis::IdLookup_t& txs::Analysis::gHistMap()
 {
-	std::map<G4String, G4int>* m = 0;
+	static IdLookup_t* m = 0;
 	if(!m) {
-		m = new std::map<G4String, G4int>();
+		m = new IdLookup_t();
 	}
 	return *m;
 }
 
-std::map<G4String, G4int>& txs::Analysis::gColumnMap()
+txs::Analysis::IdLookup_t& txs::Analysis::gColumnMap()
 {
-	std::map<G4String, G4int>* m = 0;
+	static IdLookup_t* m = 0;
 	if(!m) {
-		m = new std::map<G4String, G4int>();
+		m = new IdLookup_t();
 	}
 	return *m;
+}
+
+
+G4int txs::Analysis::GetHistId(const G4String &name)
+{
+	IdLookup_t::const_iterator it = gHistMap().find(name);
+	if(it != gHistMap().end())
+		return it->second;
+
+	G4cerr << "Error getting hostogram id: \"" << name << "\"\n";
+	return -1;
+}
+
+G4int txs::Analysis::GetColumnId(const G4String &name)
+{
+	IdLookup_t::const_iterator it = gColumnMap().find(name);
+	if(it != gColumnMap().end())
+		return it->second;
+
+	G4cerr << "Error getting column id: \"" << name << "\"\n";
+	return -1;
 }

@@ -40,8 +40,7 @@ void txs::EventAction::EndOfEventAction(const G4Event* event)
 	G4VHitsCollection* hc = event->GetHCofThisEvent()->GetHC(0);
 	for(G4int i=0; i< TXS_MAX_HITS; ++i) {
 
-		G4String colname = FormatStr1("fEdep", i);
-		
+		G4String colname = FormatStr1("fEdep", i);	
 		G4double edep = (i < (G4int)hc->GetSize()) ?
 			dynamic_cast<ArrayHit*>(hc->GetHit(i))->GetEdep() : 0;
 
