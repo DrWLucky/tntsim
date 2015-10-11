@@ -4,7 +4,7 @@
 #include "G4SDManager.hh"
 
 #include "texan/DetectorConstruction.hh"
-#include "texan/SensitiveDetector.hh"
+#include "texan/ArraySD.hh"
 #include "texan/Utils.hh"
 
 
@@ -41,7 +41,7 @@ G4VPhysicalVolume* txs::DetectorConstruction::Construct()
 void txs::DetectorConstruction::ConstructSDandField()
 {
 	G4SDManager* SDman = G4SDManager::GetSDMpointer();
-	txs::SensitiveDetector* scintSD = new txs::SensitiveDetector("Scint");
+	txs::ArraySD* scintSD = new txs::ArraySD("Scint");
 	SDman->AddNewDetector( scintSD );
 
 

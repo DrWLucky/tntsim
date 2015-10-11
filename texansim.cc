@@ -11,13 +11,10 @@
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 
-
-
 // User files //
 #include "QGSP_BIC_HP.hh"                 // Physics list
 #include "texan/DetectorConstruction.hh"  // Detector construction
 #include "texan/ActionInitialization.hh"  // Action initialization
-#include "texan/SensitiveDetector.hh"
 
 
 namespace txs = texansim;
@@ -127,79 +124,6 @@ int main(int argc, char** argv)
 
 	/// - UI stuff
 	G4UImanager* UI = G4UImanager::GetUIpointer();
-
-
-# if 0
-
-	/// - Sensitive detectors
-	G4SDManager* SDman = G4SDManager::GetSDMpointer();
-	txs::SensitiveDetector* scintSD = new txs::SensitiveDetector("Scint");
-	SDman->AddNewDetector( scintSD );
-
-
-
-	///////////////////////////////////////////////////////////////////////
-   //
-   // Example how to retrieve Auxiliary Information for sensitive detector
-   //
-	const G4GDMLAuxMapType* auxmap = parser.GetAuxMap();
-	G4cout << "Found " << auxmap->size()
-				 << " volume(s) with auxiliary information."
-				 << G4endl << G4endl;
-	for(G4GDMLAuxMapType::const_iterator iter=auxmap->begin();
-			iter!=auxmap->end(); iter++) 
-	{
-		G4cout << "Volume " << ((*iter).first)->GetName()
-					 << " has the following list of auxiliary information: "
-					 << G4endl << G4endl;
-		for (G4GDMLAuxListType::const_iterator vit=(*iter).second.begin();
-				 vit!=(*iter).second.end(); vit++)
-		{
-			G4cout << "--> Type: " << (*vit).type
-						 << " Value: " << (*vit).value << G4endl;
-		}
-	}
-	G4cout << G4endl;
-
-	// The same as above, but now we are looking for
-	// sensitive detectors setting them for the volumes
-
-	for(G4GDMLAuxMapType::const_iterator iter=auxmap->begin();
-			iter!=auxmap->end(); iter++) 
-	{
-		G4cout << "Volume " << ((*iter).first)->GetName()
-					 << " has the following list of auxiliary information: "
-					 << G4endl << G4endl;
-		for (G4GDMLAuxListType::const_iterator vit=(*iter).second.begin();
-				 vit!=(*iter).second.end();vit++)
-		{
-			if ((*vit).type=="SensDet")
-			{
-				G4cout << "Attaching sensitive detector " << (*vit).value
-							 << " to volume " << ((*iter).first)->GetName()
-							 <<  G4endl << G4endl;
-
-				G4VSensitiveDetector* mydet = 
-					SDman->FindSensitiveDetector((*vit).value);
-				if(mydet) 
-				{
-					G4LogicalVolume* myvol = (*iter).first;
-					myvol->SetSensitiveDetector(mydet);
-				}
-				else
-				{
-					G4cout << (*vit).value << " detector not found" << G4endl;
-				}
-			}
-		}
-	}
-	//
-	// End of Auxiliary Information block
-	//
-	////////////////////////////////////////////////////////////////////////
-
-#endif
-
 
 	if(!visualize) { // run simulation
 		G4String command  = "/control/execute ";
