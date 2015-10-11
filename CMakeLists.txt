@@ -19,7 +19,7 @@ set(theAnalyzer "ROOT")
 # Set some preprocessor definitions
 #
     add_definitions(-DTEXAN_BUILD_DIR=\"${PROJECT_BINARY_DIR}\")
-
+    add_definitions(-DTXS_MAX_HITS=10)
 
 #----------------------------------------------------------------------------
 # Define analysis package

@@ -6,6 +6,7 @@
 #include "texansim/RunAction.hh"
 #include "texansim/PrimaryGeneratorAction.hh"
 #include "texansim/DetectorConstruction.hh"
+#include "texansim/Utils.hh"
 
 #include "G4Run.hh"
 #include "G4UImanager.hh"
@@ -29,12 +30,16 @@ txs::RunAction::RunAction():
 	/// Default file name (overwrite with macro /analysis/setFileName)
 	Analysis::SetFileName("texansim_output");
 
-  /// Create ntuple
+  /// Create ntuple and rows
 	Analysis::CreateNtuple("t", "TEXAN Geant4 simulation event data");
-	Analysis::BookNtupleColumn<G4double>("var1");
+
+	Analysis::BookNtupleColumn<G4int>("fNumHits");
+	for(G4int i=0; i< TXS_MAX_HITS; ++i) {
+		Analysis::BookNtupleColumn<G4double>(FormatStr1<G4int>("fEdep", i));
+	}
 	Analysis::FinishNtuple();
 
-	/// Create histogram
+	/// Create histograms
 	Analysis::BookH1("hst1", "", 100, 0, 10, "MeV");
 	Analysis::BookH2("hst2", "", 100, 0, 10, 100, 0, 10, "MeV");
 }

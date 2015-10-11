@@ -3,11 +3,13 @@
 ///
 #include "texansim/EventAction.hh"
 #include "texansim/Analysis.hh"
+#include "texansim/Utils.hh"
+#include "texansim/ArrayHit.hh"
 // #include "texansim/Run.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
-#include "Randomize.hh"
+// #include "Randomize.hh"
 
 
 namespace txs = texansim;
@@ -16,8 +18,7 @@ namespace txs = texansim;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 txs::EventAction::EventAction()
-: G4UserEventAction(),
-  fEdep(0.)
+: G4UserEventAction()
 {} 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -29,22 +30,24 @@ txs::EventAction::~EventAction()
 
 void txs::EventAction::BeginOfEventAction(const G4Event*)
 {    
-  fEdep = G4MTRandFlat::shoot(0., 10.);
+	;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void txs::EventAction::EndOfEventAction(const G4Event*)
+void txs::EventAction::EndOfEventAction(const G4Event* event)
 {   
-	Analysis::FillH1("hval1", fEdep);
-	Analysis::FillNtupleColumn("val1", fEdep);
+	G4VHitsCollection* hc = event->GetHCofThisEvent()->GetHC(0);
+	for(G4int i=0; i< TXS_MAX_HITS; ++i) {
+
+		G4String colname = FormatStr1("fEdep", i);
+		
+		G4double edep = (i < (G4int)hc->GetSize()) ?
+			dynamic_cast<ArrayHit*>(hc->GetHit(i))->GetEdep() : 0;
+
+		Analysis::FillNtupleColumn(colname, edep);
+	}
+
+	Analysis::FillNtupleColumn("fNumHits", (G4int)hc->GetSize());
 	Analysis::AddNtupleRow();
-
-  // accumulate statistics in B1Run
-  // B1Run* run 
-  //   = static_cast<B1Run*>(
-  //       G4RunManager::GetRunManager()->GetNonConstCurrentRun());
-  // run->AddEdep(fEdep);
-
-	
 }
