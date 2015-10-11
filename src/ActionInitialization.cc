@@ -1,10 +1,10 @@
 /// \file ActionInitialization.cc
 /// \brief Implementation of the ActionInitialization class
 
-#include "texan/ActionInitialization.hh"
-#include "texan/PrimaryGeneratorAction.hh"
-#include "texan/RunAction.hh"
-#include "texan/EventAction.hh"
+#include "texansim/ActionInitialization.hh"
+#include "texansim/PrimaryGeneratorAction.hh"
+#include "texansim/RunAction.hh"
+#include "texansim/EventAction.hh"
 
 
 namespace txs = texansim;

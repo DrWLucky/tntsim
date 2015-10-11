@@ -2,10 +2,10 @@
 /// \brief Implementation of the RunAction class
 #include <cassert>
 
-#include "texan/Analysis.hh"
-#include "texan/RunAction.hh"
-#include "texan/PrimaryGeneratorAction.hh"
-#include "texan/DetectorConstruction.hh"
+#include "texansim/Analysis.hh"
+#include "texansim/RunAction.hh"
+#include "texansim/PrimaryGeneratorAction.hh"
+#include "texansim/DetectorConstruction.hh"
 
 #include "G4Run.hh"
 #include "G4UImanager.hh"

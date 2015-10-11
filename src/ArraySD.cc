@@ -9,7 +9,7 @@
 #include "G4ios.hh"
 #include "G4SystemOfUnits.hh"
 
-#include "texan/ArraySD.hh"
+#include "texansim/ArraySD.hh"
 
 
 

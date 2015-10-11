@@ -13,8 +13,8 @@
 
 // User files //
 #include "QGSP_BIC_HP.hh"                 // Physics list
-#include "texan/DetectorConstruction.hh"  // Detector construction
-#include "texan/ActionInitialization.hh"  // Action initialization
+#include "texansim/DetectorConstruction.hh"  // Detector construction
+#include "texansim/ActionInitialization.hh"  // Action initialization
 
 
 namespace txs = texansim;

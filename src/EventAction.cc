@@ -1,9 +1,9 @@
 /// \file EventAction.cc
 /// \brief Implementation of the EventAction class
 ///
-#include "texan/EventAction.hh"
-#include "texan/Analysis.hh"
-// #include "texan/Run.hh"
+#include "texansim/EventAction.hh"
+#include "texansim/Analysis.hh"
+// #include "texansim/Run.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"

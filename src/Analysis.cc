@@ -3,7 +3,7 @@
 #include <cassert>
 #include "G4UImanager.hh"
 #include "G4RootAnalysisManager.hh"
-#include "texan/Analysis.hh"
+#include "texansim/Analysis.hh"
 
 
 namespace txs = texansim;

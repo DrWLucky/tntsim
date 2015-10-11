@@ -3,9 +3,9 @@
 #include "G4GDMLParser.hh"
 #include "G4SDManager.hh"
 
-#include "texan/DetectorConstruction.hh"
-#include "texan/ArraySD.hh"
-#include "texan/Utils.hh"
+#include "texansim/DetectorConstruction.hh"
+#include "texansim/ArraySD.hh"
+#include "texansim/Utils.hh"
 
 
 
