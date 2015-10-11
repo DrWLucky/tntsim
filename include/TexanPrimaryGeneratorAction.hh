@@ -19,10 +19,10 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
 public:
 	PrimaryGeneratorAction(
-		const G4String& particleName = "geantino",
-		G4double energy = 1.*MeV,
-		G4ThreeVector position= G4ThreeVector(0,0,0),
-		G4ThreeVector momentumDirection = G4ThreeVector(0,0,1));    
+		const G4String& particleName,
+		G4double energy,
+		G4ThreeVector position,
+		G4ThreeVector momentumDirection);
 	~PrimaryGeneratorAction();
 
 	// methods

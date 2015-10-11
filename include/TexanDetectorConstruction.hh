@@ -23,11 +23,10 @@ public:
 	virtual ~DetectorConstruction();
 	/// Construct the geometry
 	virtual G4VPhysicalVolume *Construct();
+	/// Construct sensitive volumes
+	virtual void ConstructSDandField();
 	/// Set GDML file
 	void SetReadFile(const G4String& File);
-
-protected:
-	void ConstructSensitiveVolumes();
 
 private:
 	G4VPhysicalVolume *fWorld;

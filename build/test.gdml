@@ -62,8 +62,9 @@
 
   <!-- =============== SOLIDS =============== -->
   <solids>
-    <box  aunit="radian" lunit="m" name="world" x="1" y="1" z="1" />
-    <tube aunit="radian" lunit="cm" name="detector" z="30" rmax="3" deltaphi="TWOPI" />
+    <box  aunit="radian" lunit="m" name="world" x="1" y="1" z="10" />
+    <box  aunit="radian" lunit="m" name="detector" x="1" y="1" z="10" />
+    <!-- <tube aunit="radian" lunit="cm" name="detector" z="30" rmax="3" deltaphi="TWOPI" /> -->
   </solids>
 
   <!-- =============== STRUCTURE =============== -->

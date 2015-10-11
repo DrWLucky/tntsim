@@ -26,7 +26,7 @@ namespace txs = texansim;
 namespace {
 int usage()
 {
-	G4cerr << "usage: texansim <run*.mac> [--geo[metry]=*.gdml] [--vis[ualize]]\n\n";
+	G4cerr << "usage: texansim <run*.mac> [--geo[metry]=*.gdml] [--threads=N] [--vis[ualize]]\n\n";
 	return 1;
 }
 int novis()
@@ -58,8 +58,11 @@ int main(int argc, char** argv)
 		return usage();
 	if(arg1.substr(0,10) == "--geometry"  || arg1.substr(0,5) == "--geo")
 		return usage();
+	if(arg1.substr(0,9) == "--threads")
+		return usage();
 	
 
+	G4int nthreads = 0;
 	bool visualize = false;
 	G4String geofile = TEXAN_BUILD_DIR + G4String("/empty.gdml");
 
@@ -69,11 +72,14 @@ int main(int argc, char** argv)
 		else if(arg == "--visualize" || arg == "--vis") {
 			visualize = true;
 		}
-		else if(arg.substr(0,5) == "--geo") {
+		else if(arg.substr(0,6) == "--geo=") {
 			geofile = arg.substr(6);
 		}
-		else if(arg.substr(0,5) == "--geometry") {
+		else if(arg.substr(0,11) == "--geometry=") {
 			geofile = arg.substr(11);
+		}
+		else if(arg.substr(0, 10) == "--threads=") {
+			nthreads = atoi(arg.substr(10).c_str());
 		}
 	}
 	
@@ -87,11 +93,20 @@ int main(int argc, char** argv)
 
 
 	/// - Construct the default run manager
+	std::auto_ptr<G4RunManager> runManager(0);
+
+	if(nthreads != 0) { // Multi-threaded
 #ifdef G4MULTITHREADED
- 	std::auto_ptr<G4RunManager> runManager (new G4MTRunManager);
+		runManager.reset(new G4MTRunManager());
+		static_cast<G4MTRunManager*>(runManager.get())->SetNumberOfThreads(nthreads);
+		G4cout << "Enabling multi-threaded support, number of threads = " << nthreads << G4endl;
 #else
-	std::auto_ptr<G4RunManager> runManager (new G4RunManager);
+		G4cerr << "Multi-threading support not enabled!\n";
+		return 1;
 #endif
+	} else { // Single thread
+		runManager.reset(new G4RunManager());
+	}
 
 
 	/// - Set mandatory initialization classes

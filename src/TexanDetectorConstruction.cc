@@ -25,22 +25,20 @@ txs::DetectorConstruction::~DetectorConstruction()
 	Zap(fMessenger);
 }
 
-G4VPhysicalVolume* txs::DetectorConstruction::Construct()
-{
-	fParser->Read(fReadFile);	
-	ConstructSensitiveVolumes();
-	fWorld = fParser->GetWorldVolume();
-	return fWorld;
-}
-
 void txs::DetectorConstruction::SetReadFile( const G4String& File )
 {
   fReadFile=File;
 }
 
 
+G4VPhysicalVolume* txs::DetectorConstruction::Construct()
+{
+	fParser->Read(fReadFile);	
+	fWorld = fParser->GetWorldVolume();
+	return fWorld;
+}
 
-void txs::DetectorConstruction::ConstructSensitiveVolumes()
+void txs::DetectorConstruction::ConstructSDandField()
 {
 	G4SDManager* SDman = G4SDManager::GetSDMpointer();
 	txs::SensitiveDetector* scintSD = new txs::SensitiveDetector("Scint");
