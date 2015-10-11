@@ -8,7 +8,7 @@
 #include "G4ThreeVector.hh"
 #include "G4SDManager.hh"
 #include "G4ios.hh"
-
+#include "G4SystemOfUnits.hh"
 
 namespace txs = texansim;
 
@@ -35,10 +35,10 @@ void txs::SensitiveDetector::Initialize(G4HCofThisEvent*)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4bool txs::SensitiveDetector::ProcessHits(G4Step*, G4TouchableHistory*)
+G4bool txs::SensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*)
 {
-	assert(0 && "SensitiveDetector");
-  G4cout << "Processing hits ...." << G4endl; 
+	G4double edep = step->GetTotalEnergyDeposit()/MeV;
+  G4cout << "Processing hits ....  Energy deposited: " << edep << " MeV" << G4endl;
   return true;
 }
 
