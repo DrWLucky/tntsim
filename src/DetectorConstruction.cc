@@ -41,7 +41,7 @@ G4VPhysicalVolume* txs::DetectorConstruction::Construct()
 void txs::DetectorConstruction::ConstructSDandField()
 {
 	G4SDManager* SDman = G4SDManager::GetSDMpointer();
-	txs::ArraySD* scintSD = new txs::ArraySD("Scint");
+	txs::ArraySD* scintSD = new txs::ArraySD("Scint", "ArrayHitsCollection");
 	SDman->AddNewDetector( scintSD );
 
 
