@@ -37,16 +37,24 @@ void txs::EventAction::BeginOfEventAction(const G4Event*)
 
 void txs::EventAction::EndOfEventAction(const G4Event* event)
 {   
-	G4VHitsCollection* hc = event->GetHCofThisEvent()->GetHC(0);
+	// G4VHitsCollection* hc = event->GetHCofThisEvent()->GetHC(0);
+	ArrayHitsCollection& hc =
+		static_cast<ArrayHitsCollection&>(*(event->GetHCofThisEvent()->GetHC(0)));
+	
+
 	for(G4int i=0; i< TXS_MAX_HITS; ++i) {
 
 		G4String colname = FormatStr1("fEdep", i);	
-		G4double edep = (i < (G4int)hc->GetSize()) ?
-			dynamic_cast<ArrayHit*>(hc->GetHit(i))->GetEdep() : 0;
+		// G4double edep = (i < (G4int)hc->GetSize()) ?
+		// 	dynamic_cast<ArrayHit*>(hc->GetHit(i))->GetEdep() : 0;
+
+		G4double edep = (i < (G4int)hc.GetSize()) ?
+			hc[i]->GetEdep() : 0;
+
 
 		Analysis::FillNtupleColumn(colname, edep);
 	}
 
-	Analysis::FillNtupleColumn("fNumHits", (G4int)hc->GetSize());
+			Analysis::FillNtupleColumn("fNumHits", (G4int)hc.GetSize());
 	Analysis::AddNtupleRow();
 }

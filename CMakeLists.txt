@@ -101,6 +101,9 @@ find_package(Doxygen)
 		      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		      COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
+    add_custom_target(docinstall
+		      scp -r ${CMAKE_CURRENT_BINARY_DIR}/doc/html christian@io.physics.tamu.edu:/home/users/christian/public_html/software/texansim/
+    )
     endif(DOXYGEN_FOUND)
 
 

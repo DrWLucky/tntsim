@@ -7,8 +7,8 @@
 #include "texansim/PrimaryGeneratorAction.hh"
 #include "texansim/DetectorConstruction.hh"
 #include "texansim/Utils.hh"
+#include "texansim/Run.hh"
 
-#include "G4Run.hh"
 #include "G4UImanager.hh"
 #include "G4RunManager.hh"
 #include "G4LogicalVolumeStore.hh"
@@ -25,6 +25,9 @@ namespace txs = texansim;
 txs::RunAction::RunAction():
 	G4UserRunAction()
 {
+
+	G4cerr << "RunAction::RunAction" << G4endl;
+
 	/// Set up all of the analysis stuff
 	
 	/// Default file name (overwrite with macro /analysis/setFileName)
@@ -42,6 +45,12 @@ txs::RunAction::RunAction():
 	/// Create histograms
 	Analysis::BookH1("hst1", "", 100, 0, 10, "MeV");
 	Analysis::BookH2("hst2", "", 100, 0, 10, 100, 0, 10, "MeV");
+
+
+	// G4int G4Threading::G4GetThreadId() { return G4ThreadID; }
+	// G4bool G4Threading::IsWorkerThread() { return (G4ThreadID>=0); }
+
+	// fFile = new TFile(Form("rootout_t%i.root")
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -62,13 +71,13 @@ G4Run* txs::RunAction::GenerateRun()
   /// also the ideal place to set variables which affect the physics table (such as 
   /// production thresholds) for a particular run, because GenerateRun() is invoked before 
   /// the calculation of the physics table.
-	return new G4Run;
+	return new txs::Run();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 
-void txs::RunAction::BeginOfRunAction(const G4Run*)
+void txs::RunAction::BeginOfRunAction(const G4Run* r)
 {
 	/// This method is invoked before entering the event loop. A typical use of this
 	/// method would be to initialize and/or book histograms for a particular run. 
@@ -78,6 +87,13 @@ void txs::RunAction::BeginOfRunAction(const G4Run*)
 	/// Default file name is set in the constructor.
 	/// Can be overwritten with the macro /analysis/setFileName
 	Analysis::OpenFile();
+
+	G4cerr << "BeginOfRunAction: " << G4Threading::G4GetThreadId() << G4endl;;
+
+
+	// G4int G4Threading::G4GetThreadId() { return G4ThreadID; }
+	// G4bool G4Threading::IsWorkerThread() { return (G4ThreadID>=0); }
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -93,3 +109,4 @@ void txs::RunAction::EndOfRunAction(const G4Run*)
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
