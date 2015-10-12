@@ -36,6 +36,9 @@ namespace texansim {
  */
 class Analysis {
 public:
+	/// Call from main() before entering threads
+	static void ConstructSingletons();
+
 	/// Clean up - delete G4AnalysisManager
 	static void Cleanup();
 

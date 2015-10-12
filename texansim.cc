@@ -15,6 +15,7 @@
 #include "QGSP_BIC_HP.hh"                 // Physics list
 #include "texansim/DetectorConstruction.hh"  // Detector construction
 #include "texansim/ActionInitialization.hh"  // Action initialization
+#include "texansim/Analysis.hh"
 
 
 namespace txs = texansim;
@@ -58,6 +59,9 @@ int main(int argc, char** argv)
 	if(arg1.substr(0,9) == "--threads")
 		return usage();
 	
+
+	/// - Needed for thread safety: call Analysis::CallSingletons();
+	Analysis::ConstructSingletons();
 
 	G4int nthreads = 0;
 	bool visualize = false;

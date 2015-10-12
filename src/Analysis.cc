@@ -9,6 +9,13 @@
 namespace txs = texansim;
 
 
+void txs::Analysis::ConstructSingletons()
+{
+	if(gAna()) { }
+	if(gHistMap().size()) { }
+	if(gColumnMap().size()) { }
+}
+
 void txs::Analysis::Cleanup()
 {
 	/// \attention Call from RunAction destructor
