@@ -15,7 +15,9 @@
 #ifdef G4MULTITHREADED
 #include "TChain.h"
 #endif
+#include "TSystem.h"
 #include "TObjArray.h"
+
 
 #include "G4ios.hh"
 #include "G4Threading.hh"
@@ -61,6 +63,7 @@ txs::RootPersistenceManager::RootPersistenceManager():
 
 void txs::RootPersistenceManager::SetFilename(const G4String& name)
 {
+	/// - Append extension and thread markers
 #ifdef G4MULTITHREADED
 	fFilename = name;
 	if(G4Threading::IsWorkerThread())
@@ -68,6 +71,13 @@ void txs::RootPersistenceManager::SetFilename(const G4String& name)
 #else
 	fFilename = name;
 #endif
+
+	/// - If file is already open, re-name it
+	if(fFile) {
+		TXS_THREADLOCK;
+		G4String newname = GetFilename() + ".root";
+		gSystem->Rename(fFile->GetName(), newname.data());
+	}
 }
 
 G4bool txs::RootPersistenceManager::OpenFile()

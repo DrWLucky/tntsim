@@ -1,4 +1,4 @@
-/// \file TexanUtils.hh
+/// \file Utils.hh
 /// \brief Short inline utility functions
 #include <sstream>
 #include "G4String.hh"

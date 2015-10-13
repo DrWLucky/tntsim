@@ -1,4 +1,4 @@
-/// \file TexanPrimaryGeneratorAction.hh
+/// \file PrimaryGeneratorAction.hh
 /// \brief Primary generator action
 ///
 #ifndef TexanPrimaryGeneratorAction_h

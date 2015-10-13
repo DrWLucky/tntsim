@@ -1,4 +1,4 @@
-/// \file TexanRunAction.hh
+/// \file RunAction.hh
 /// \brief Definition of the TexanRunAction class
 
 #ifndef TexanRunAction_h

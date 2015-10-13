@@ -1,4 +1,4 @@
-/// \file TexanActionInitialization.hh
+/// \file ActionInitialization.hh
 /// \brief Definition of the TexanActionInitialization class
 
 #ifndef TexanActionInitialization_h

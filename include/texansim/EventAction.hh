@@ -1,4 +1,4 @@
-/// \file TexanEventAction.hh
+/// \file EventAction.hh
 /// \brief Definition of the EventAction class
 
 #ifndef TexanEventAction_h

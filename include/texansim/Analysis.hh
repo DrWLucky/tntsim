@@ -1,6 +1,6 @@
 #ifndef HAVE_TEXAN_ANALYSIS_HH
 #define HAVE_TEXAN_ANALYSIS_HH 1
-/// \file TexanAnalysis.hh
+/// \file Analysis.hh
 /// \brief Class for handling analysis stuff
 #include <map>
 

@@ -15,13 +15,19 @@ texansim::Run::Run():
 	fPersistence = new RootPersistenceManager();
 	fPersistence->OpenFile();
 
+	/// - Add histograms
 	fPersistence->AddHistogram1d("hEdep", "Deposited energy", 20, 0, 20, &fEdep, VPersistenceManager::kDouble);
+
+
+	/// - Add primitives
 	fPersistence->AddPrimitive("edep", &fEdep, VPersistenceManager::kDouble);
+
+	/// - Add classes
 }
 
 texansim::Run::~Run()
 {
-	/// Take care of persistence closing and output
+	/// Take care of persistence closing and output: write/close/delete output
 	fPersistence->Write();
 	fPersistence->Close();
 	delete fPersistence;
@@ -29,12 +35,14 @@ texansim::Run::~Run()
 
 void texansim::Run::RecordEvent(const G4Event* event)
 {
-	/// Get event data and save, also call G4Run version.
+	/// Get hit data and save from event's hit collection, save event to disk.
 	ArrayHitsCollection& hc =
 		static_cast<ArrayHitsCollection&>(*(event->GetHCofThisEvent()->GetHC(0)));
 
 	fEdep = ((G4int)hc.GetSize() > 0) ? hc[0]->GetEdep() : 0;
 
 	fPersistence->SaveEvent();
+
+	/// Also need to call base class version
 	G4Run::RecordEvent(event);
 }

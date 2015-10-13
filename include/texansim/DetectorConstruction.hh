@@ -1,4 +1,4 @@
-/// \file TexanDetectorConstruction.hh
+/// \file DetectorConstruction.hh
 /// \brief Definition of detector construction class using GDML
 //
 #ifndef HAVE_TexanDETECTORCONSTRUCTION_H_
