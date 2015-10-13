@@ -9,6 +9,9 @@
 
 namespace texansim {
 
+class VPersistenceManager;
+class RunAction;
+
 /// Custom Run class, we want to override the RecordEvent() function for anaysis
 class Run : public G4Run
 {
@@ -19,6 +22,11 @@ public:
 	~Run();
 	/// Override RecordEvent() to perform analysis functions
 	virtual void RecordEvent(const G4Event* event);
+
+private:
+	/// For output
+	VPersistenceManager* fPersistence;
+	G4double fEdep;
 };
 
 }

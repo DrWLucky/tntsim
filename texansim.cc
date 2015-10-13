@@ -5,7 +5,9 @@
 #include <string>
 
 #include "G4RunManager.hh"
+#ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
+#endif
 #include "G4UImanager.hh"
 #include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
@@ -65,7 +67,7 @@ int main(int argc, char** argv)
 
 	G4int nthreads = 0;
 	bool visualize = false;
-	G4String geofile = TEXAN_BUILD_DIR + G4String("/empty.gdml");
+	G4String geofile = TEXAN_BUILD_DIR + G4String("/test.gdml");
 
 	for(int i = 1; i< argc; ++i) {
 		std::string arg = argv[i];
@@ -81,6 +83,7 @@ int main(int argc, char** argv)
 		}
 		else if(arg.substr(0, 10) == "--threads=") {
 			nthreads = atoi(arg.substr(10).c_str());
+			if(nthreads == 1) nthreads = 0;
 		}
 	}
 	

@@ -77,7 +77,7 @@ G4Run* txs::RunAction::GenerateRun()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 
-void txs::RunAction::BeginOfRunAction(const G4Run* r)
+void txs::RunAction::BeginOfRunAction(const G4Run*)
 {
 	/// This method is invoked before entering the event loop. A typical use of this
 	/// method would be to initialize and/or book histograms for a particular run. 
@@ -87,13 +87,6 @@ void txs::RunAction::BeginOfRunAction(const G4Run* r)
 	/// Default file name is set in the constructor.
 	/// Can be overwritten with the macro /analysis/setFileName
 	Analysis::OpenFile();
-
-	G4cerr << "BeginOfRunAction: " << G4Threading::G4GetThreadId() << G4endl;;
-
-
-	// G4int G4Threading::G4GetThreadId() { return G4ThreadID; }
-	// G4bool G4Threading::IsWorkerThread() { return (G4ThreadID>=0); }
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
