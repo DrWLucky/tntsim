@@ -9,6 +9,10 @@
 #include "G4String.hh"
 #include "G4Types.hh"
 
+
+
+class G4UImessenger;
+
 namespace texansim {
 
 
@@ -33,11 +37,13 @@ public:
 	enum Type_t { kDouble = 0, kFloat = 1, kInt = 2 };
 
 public:
-	/// Ctor (empty in base class)
-	VPersistenceManager() { }
+	/// Ctor
+	/*! Initialize default messenger */
+	VPersistenceManager();
 
-	/// Dtor (empty in base class)
-	virtual ~VPersistenceManager() { }
+	/// Dtor
+	/*! Delete default messenger */
+	virtual ~VPersistenceManager();
 
 	/// Set output file name
 	/*! Argument should be the desired file name _without_ an extensions.
@@ -166,6 +172,29 @@ public:
 	 *  After calling this, the destructor should be redundant.
 	 */ 
 	virtual void Close() = 0;
+
+	
+	/// Get pointer to UI messenger
+	G4UImessenger* GetMessenger() const;
+
+
+	/// Set custom UI messenger
+	/*! Call this function to use your own derived G4UIMessenger class.
+	 *  Default is to use texansim::PersistenceMessenger
+	 */
+	void SetMessenger(G4UImessenger* messenger);
+
+
+protected:
+	static G4String& GetFilenameBase();
+	
+
+private:
+	/// UI messenger instance
+	G4UImessenger* fMessenger;
+
+
+	friend class G4UIMessenger;
 };
 
 }
