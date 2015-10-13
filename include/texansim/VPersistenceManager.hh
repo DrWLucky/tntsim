@@ -81,10 +81,15 @@ public:
 	 *
 	 * \param name Desired name of the serialized object
 	 * \param classname Text specifying the class name of the serialized object
-	 * \param addr Pointer to the object instance you wish to serialize.
+	 * \param addrObj Pointer to the ADDRESS of the object instance you wish to serialize.
+	 *  Example
+	 *  \code
+	 *   TTexan* fTexan = new TTexan("texan", "Texan detector array");
+	 *   fPersistenceManager->AddObject(fTexan->GetName(), fTexan->ClassName(), &fTexan)
+	 *  \endcode
 	 * \attention The object at _addr_ must live at least as long as this class
 	 */
-	virtual G4bool AddObject(const G4String& name, const G4String& classname, void* addr) = 0;
+	virtual G4bool AddObject(const G4String& name, const G4String& classname, void* addrObj) = 0;
 
 
 	/// Add primitive type (double, float, int) to be saved

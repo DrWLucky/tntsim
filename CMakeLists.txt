@@ -18,8 +18,8 @@ set(theAnalyzer "ROOT")
 #----------------------------------------------------------------------------
 # Set some preprocessor definitions
 #
-    add_definitions(-DTEXAN_BUILD_DIR=\"${PROJECT_BINARY_DIR}\")
-    add_definitions(-DTXS_MAX_HITS=10)
+add_definitions(-DTEXAN_BUILD_DIR=\"${PROJECT_BINARY_DIR}\")
+add_definitions(-DTXS_MAX_HITS=10)
 
 #----------------------------------------------------------------------------
 # Define analysis package
@@ -31,6 +31,7 @@ elseif(theAnalyzer STREQUAL "XML")
 elseif(theAnalyzer STREQUAL "CSV")
     add_definitions(-DTEXAN_ANALYZE_CSV)
 endif(theAnalyzer STREQUAL "ROOT")
+
 
 
 #----------------------------------------------------------------------------
@@ -65,14 +66,15 @@ file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 
 #----------------------------------------------------------------------------
-# Add the executable, and link it to the Geant4 libraries
+# Add the executable, and link it to the Geant4/ROOT/Analysis libraries
 #
+find_library(LIBTEXANA Texana)
 add_executable(texansim.exe texansim.cc ${sources} ${headers})
 if(theAnalyzer STREQUAL "ROOT")
 	EXECUTE_PROCESS(COMMAND root-config --libs OUTPUT_VARIABLE ROOT_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 	set(CMAKE_EXE_LINKER_FLAGS ${ROOT_LD_FLAGS})
 endif(theAnalyzer STREQUAL "ROOT")
-target_link_libraries(texansim.exe ${Geant4_LIBRARIES})
+target_link_libraries(texansim.exe ${Geant4_LIBRARIES} ${LIBTEXANA})
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we

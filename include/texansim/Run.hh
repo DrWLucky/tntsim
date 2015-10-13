@@ -5,7 +5,7 @@
 #include "G4Run.hh"
 
 
-
+class TTexan;
 
 namespace texansim {
 
@@ -27,6 +27,8 @@ private:
 	/// For output
 	VPersistenceManager* fPersistence;
 	G4double fEdep;
+
+	TTexan* fTexan;
 };
 
 }

@@ -56,8 +56,6 @@ txs::RootPersistenceManager::RootPersistenceManager():
 	/// Initialize arrays
 	fHists1d = new TObjArray();
 	fHists2d = new TObjArray();
-	fHists1d->SetOwner(true);
-	fHists2d->SetOwner(true);
 }
 
 
@@ -111,9 +109,7 @@ G4bool txs::RootPersistenceManager::OpenFile()
 G4bool txs::RootPersistenceManager::AddObject(const G4String& name, const G4String& classname, void* obj)
 {
 	TXS_THREADLOCK;
-	if(!fTree)
-		return false;
-	return fTree->Branch(name.data(), classname.data(), &obj);
+	return fTree ? fTree->Branch(name.data(), classname.data(), obj) : false;
 }
 
 G4bool txs::RootPersistenceManager::AddPrimitive(const G4String& name, void* p, Type_t type)
@@ -341,16 +337,14 @@ void txs::RootPersistenceManager::Merge()
 	}
 
 	fFile->cd();
-	TTree* tmerged = chain->CopyTree("");
-	tmerged->AutoSave();
-
 	for(int j=0; j< fHists1d->GetEntries(); ++j) {
 		fHists1d->At(j)->Write();
 	}
 	for(int j=0; j< fHists2d->GetEntries(); ++j) {
 		fHists2d->At(j)->Write();
 	}
-
+	
+	chain->Write();
 	chain->Delete();
 		
 #else
