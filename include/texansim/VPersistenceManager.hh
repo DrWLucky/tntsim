@@ -185,8 +185,8 @@ public:
 	void SetMessenger(G4UImessenger* messenger);
 
 
-protected:
-	static G4String& GetFilenameBase();
+// protected:
+// 	static G4String& GetFilenameBase();
 	
 
 private:
@@ -194,7 +194,7 @@ private:
 	G4UImessenger* fMessenger;
 
 
-	friend class G4UIMessenger;
+	// friend class G4UIMessenger;
 };
 
 }

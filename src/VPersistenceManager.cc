@@ -36,10 +36,10 @@ void texansim::VPersistenceManager::SetMessenger(G4UImessenger* messenger)
 
 
 
-G4String& texansim::VPersistenceManager::GetFilenameBase()
-{
-	static G4String* fname = 0;
-	if(fname == 0)
-		fname = new G4String();
-	return *fname;
-}
+// G4String& texansim::VPersistenceManager::GetFilenameBase()
+// {
+// 	static G4String* fname = 0;
+// 	if(fname == 0)
+// 		fname = new G4String();
+// 	return *fname;
+// }

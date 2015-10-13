@@ -21,7 +21,7 @@ txs::PersistenceMessenger::PersistenceMessenger(VPersistenceManager* manager):
 	fDirectory->SetGuidance("Set persistent event output parameters");
       
 	fSetFilenameCmd 
-		= new G4UIcmdWithAString("/placement/setFilename", this);
+		= new G4UIcmdWithAString("/persistence/setFilename", this);
 	fSetFilenameCmd->SetGuidance("Change persistent event output filename");
 	fSetFilenameCmd->SetParameterName("Filename", false);
 }
@@ -36,6 +36,7 @@ txs::PersistenceMessenger::~PersistenceMessenger()
 
 void txs::PersistenceMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 {
+	if(fManager == 0) return;
 	if(command == fSetFilenameCmd) { 
 		G4cout << "Setting persistence output file name to \"" << newValue << "\"" << G4endl;
 		fManager->SetFilename(newValue);
