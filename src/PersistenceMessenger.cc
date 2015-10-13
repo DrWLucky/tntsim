@@ -7,13 +7,16 @@
 
 #include "G4UIcmdWithAString.hh"
 
+#include <algorithm>
+
 
 namespace txs = texansim;
 
 
-txs::PersistenceMessenger::PersistenceMessenger(VPersistenceManager* manager):
+
+
+txs::PersistenceMessenger::PersistenceMessenger():
 	G4UImessenger(),
-	fManager(manager),
 	fDirectory(0),
 	fSetFilenameCmd(0)
 {
@@ -36,11 +39,29 @@ txs::PersistenceMessenger::~PersistenceMessenger()
 
 void txs::PersistenceMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 {
-	if(fManager == 0) return;
-	if(command == fSetFilenameCmd) { 
-		G4cout << "Setting persistence output file name to \"" << newValue << "\"" << G4endl;
-		fManager->SetFilename(newValue);
+	if ( command == fSetFilenameCmd ) {
+		fCommands.insert(std::make_pair(command, newValue));
 	} else {
 		G4cerr << "Ignoring invalid UI command \"" << command->GetCommandPath() << "\"" << G4endl;
 	}
+}
+
+
+
+namespace { struct DoApplyCommand {
+	txs::VPersistenceManager* fManager;
+	DoApplyCommand(txs::VPersistenceManager* manager):
+		fManager(manager) { }
+	void operator() (const std::pair<G4UIcommand*, G4String>& element)
+		{
+			const G4String& newValue = element.second;
+			G4cout << "Setting new persistence output file name to \"" << newValue << "\"" << G4endl;
+			fManager->SetFilename(newValue);		
+		}
+}; }
+
+void txs::PersistenceMessenger::ApplyCommands(VPersistenceManager* manager)
+{
+	DoApplyCommand applyCommand(manager);
+	std::for_each(fCommands.begin(), fCommands.end(), applyCommand);
 }

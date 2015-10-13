@@ -10,36 +10,41 @@
 
 texansim::VPersistenceManager::VPersistenceManager()
 {
-	fMessenger = new PersistenceMessenger(this);
+	;
 }
 
 
 
 texansim::VPersistenceManager::~VPersistenceManager()
 {
-	Zap(fMessenger);
+	;
 }
 
 
-
-G4UImessenger* texansim::VPersistenceManager::GetMessenger() const
+void texansim::VPersistenceManager::InitializeBase()
 {
-	return fMessenger;
+	/// Set default filename ("g4output")
+	SetFilename("g4output");
+
+	/// Check for UI messenges and if found, do them
+	if (gMessenger != NULL) {
+		static_cast<PersistenceMessenger*>(gMessenger)->ApplyCommands(this);
+	}
+}
+
+
+G4UImessenger* texansim::VPersistenceManager::GetMessenger()
+{
+	return gMessenger;
 }
 
 
 
 void texansim::VPersistenceManager::SetMessenger(G4UImessenger* messenger)
 {
-	ResetPointer(fMessenger, messenger);
+	/// \todo assert that not in thread
+	gMessenger = messenger;
 }
 
 
-
-// G4String& texansim::VPersistenceManager::GetFilenameBase()
-// {
-// 	static G4String* fname = 0;
-// 	if(fname == 0)
-// 		fname = new G4String();
-// 	return *fname;
-// }
+G4UImessenger* texansim::VPersistenceManager::gMessenger = NULL;

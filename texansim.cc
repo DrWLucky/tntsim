@@ -18,7 +18,10 @@
 #include "texansim/DetectorConstruction.hh"  // Detector construction
 #include "texansim/ActionInitialization.hh"  // Action initialization
 #include "texansim/Analysis.hh"
+#include "texansim/VPersistenceManager.hh"
 #include "texansim/PersistenceMessenger.hh"
+
+
 
 namespace txs = texansim;
 
@@ -45,7 +48,6 @@ namespace texansim {
 /// The main program
 int main(int argc, char** argv)
 {
-	new texansim::PersistenceMessenger(0);
 	/// I'm just putting this in the texansim namespace so that it
 	/// shows up under the namespace section of doxygen. The real
 	/// main() is a one-liner simply calling this.
@@ -112,6 +114,8 @@ int main(int argc, char** argv)
 	} else { // Single thread
 		runManager.reset(new G4RunManager());
 	}
+
+	txs::VPersistenceManager::SetMessenger(new PersistenceMessenger());
 
 
 	/// - Set mandatory initialization classes

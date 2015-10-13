@@ -49,11 +49,11 @@ txs::RootPersistenceManager::RootPersistenceManager():
 	fFile(0)
 {
 	TXS_THREADLOCK;
+	
+	/// Initialize base (chooses the correct file name)
+	InitializeBase();
 
-	/// Set default filename
-	SetFilename("g4output");
-
-	/// Create tree
+	/// Initialize arrays
 	fHists1d = new TObjArray();
 	fHists2d = new TObjArray();
 	fHists1d->SetOwner(true);

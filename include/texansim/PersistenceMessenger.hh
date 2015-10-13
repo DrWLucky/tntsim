@@ -3,6 +3,7 @@
 ///
 #ifndef TXS_PERSISTENCE_MESSENGER_HH_8675309
 #define TXS_PERSISTENCE_MESSENGER_HH_8675309
+#include <map>
 #include "G4UImessenger.hh"
 
 
@@ -17,17 +18,21 @@ class VPersistenceManager;
 class PersistenceMessenger : public G4UImessenger
 {
 public:
-	/// Ctor, associate to specific persistence manager instance
-	PersistenceMessenger(VPersistenceManager* manager);
+	/// Ctor
+	PersistenceMessenger();
 	/// Dtor, empty
 	~PersistenceMessenger();
 	/// Set new value
 	virtual void SetNewValue(G4UIcommand *command, G4String newValue);
+	/// Apply commands
+	void ApplyCommands(VPersistenceManager* manager);
 
 private:
-	VPersistenceManager* fManager;
+	typedef std::map<G4UIcommand*, G4String> CommandMap_t;
+
 	G4UIdirectory* fDirectory;
 	G4UIcmdWithAString* fSetFilenameCmd;
+	CommandMap_t fCommands;
 };
 
 }

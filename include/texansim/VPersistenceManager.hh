@@ -175,26 +175,28 @@ public:
 
 	
 	/// Get pointer to UI messenger
-	G4UImessenger* GetMessenger() const;
+	static G4UImessenger* GetMessenger();
 
 
 	/// Set custom UI messenger
 	/*! Call this function to use your own derived G4UIMessenger class.
 	 *  Default is to use texansim::PersistenceMessenger
 	 */
-	void SetMessenger(G4UImessenger* messenger);
+	static void SetMessenger(G4UImessenger* messenger);
 
 
-// protected:
-// 	static G4String& GetFilenameBase();
-	
+protected:
+	/// Initialization functions for base classes
+	/*! \attention This should be explicitly called in any
+	 *  derived constructors.
+	 *  \warning Should only be called from thread-locked code.
+	*/
+	void InitializeBase();
+
 
 private:
-	/// UI messenger instance
-	G4UImessenger* fMessenger;
-
-
-	// friend class G4UIMessenger;
+	/// UI messenger instance (GLOBAL)
+	static G4UImessenger* gMessenger;
 };
 
 }
