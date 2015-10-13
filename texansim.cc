@@ -65,7 +65,8 @@ int main(int argc, char** argv)
 		return usage();
 	
 
-	/// - Needed for thread safety: call Analysis::CallSingletons();
+	/// - Set up analysis stuff
+	txs::VPersistenceManager::SetMessenger(new PersistenceMessenger());
 	Analysis::ConstructSingletons();
 
 	G4int nthreads = 0;
@@ -114,8 +115,6 @@ int main(int argc, char** argv)
 	} else { // Single thread
 		runManager.reset(new G4RunManager());
 	}
-
-	txs::VPersistenceManager::SetMessenger(new PersistenceMessenger());
 
 
 	/// - Set mandatory initialization classes

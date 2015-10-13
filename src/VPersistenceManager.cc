@@ -5,6 +5,8 @@
 #include "texansim/PersistenceMessenger.hh"
 #include "texansim/Utils.hh"
 
+#include <cassert>
+#include "G4Threading.hh"
 
 
 
@@ -23,28 +25,32 @@ texansim::VPersistenceManager::~VPersistenceManager()
 
 void texansim::VPersistenceManager::InitializeBase()
 {
-	/// Set default filename ("g4output")
+	/// Takes care of filename stuff:
+	/// - Set default filename ("g4output")
 	SetFilename("g4output");
 
-	/// Check for UI messenges and if found, do them
+	/// - Check for UI message to change file name
 	if (gMessenger != NULL) {
-		static_cast<PersistenceMessenger*>(gMessenger)->ApplyCommands(this);
+		GetMessenger()->ApplyCommands(this);
 	}
 }
 
 
-G4UImessenger* texansim::VPersistenceManager::GetMessenger()
+texansim::DelayedMessenger* texansim::VPersistenceManager::GetMessenger()
 {
 	return gMessenger;
 }
 
 
 
-void texansim::VPersistenceManager::SetMessenger(G4UImessenger* messenger)
+void texansim::VPersistenceManager::SetMessenger(DelayedMessenger* messenger)
 {
-	/// \todo assert that not in thread
+#ifdef G4MULTITHREADED
+	assert(G4Threading::IsWorkerThread() == false);
+#endif
+
 	gMessenger = messenger;
 }
 
 
-G4UImessenger* texansim::VPersistenceManager::gMessenger = NULL;
+texansim::DelayedMessenger* texansim::VPersistenceManager::gMessenger = NULL;

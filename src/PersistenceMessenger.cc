@@ -16,7 +16,7 @@ namespace txs = texansim;
 
 
 txs::PersistenceMessenger::PersistenceMessenger():
-	G4UImessenger(),
+	DelayedMessenger(),
 	fDirectory(0),
 	fSetFilenameCmd(0)
 {
@@ -60,8 +60,10 @@ namespace { struct DoApplyCommand {
 		}
 }; }
 
-void txs::PersistenceMessenger::ApplyCommands(VPersistenceManager* manager)
+void txs::PersistenceMessenger::ApplyCommands(void* managerAddr)
 {
+	VPersistenceManager* manager =
+		reinterpret_cast<VPersistenceManager*>(managerAddr);
 	DoApplyCommand applyCommand(manager);
 	std::for_each(fCommands.begin(), fCommands.end(), applyCommand);
 }

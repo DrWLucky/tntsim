@@ -11,9 +11,10 @@
 
 
 
-class G4UImessenger;
-
 namespace texansim {
+
+
+class DelayedMessenger;
 
 
 /// Pure abstract persistence manager class
@@ -175,14 +176,16 @@ public:
 
 	
 	/// Get pointer to UI messenger
-	static G4UImessenger* GetMessenger();
-
+	static DelayedMessenger* GetMessenger();
+	
 
 	/// Set custom UI messenger
-	/*! Call this function to use your own derived G4UIMessenger class.
-	 *  Default is to use texansim::PersistenceMessenger
+	/*! Call this function to use a specific G4UIMessenger class.
+	 *  \attention Must be called from main(), BEFORE opening threads.
+	 *   Default setting is NULL, meaning /persistence/... UI commands are
+	 *   disabled.
 	 */
-	static void SetMessenger(G4UImessenger* messenger);
+	static void SetMessenger(DelayedMessenger* messenger);
 
 
 protected:
@@ -196,7 +199,7 @@ protected:
 
 private:
 	/// UI messenger instance (GLOBAL)
-	static G4UImessenger* gMessenger;
+	static DelayedMessenger* gMessenger;
 };
 
 }

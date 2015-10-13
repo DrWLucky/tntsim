@@ -4,7 +4,7 @@
 #ifndef TXS_PERSISTENCE_MESSENGER_HH_8675309
 #define TXS_PERSISTENCE_MESSENGER_HH_8675309
 #include <map>
-#include "G4UImessenger.hh"
+#include "texansim/DelayedMessenger.hh"
 
 
 class G4UIcmdWithAString;
@@ -15,7 +15,7 @@ class VPersistenceManager;
 
 
 /// Persistence messenger class
-class PersistenceMessenger : public G4UImessenger
+class PersistenceMessenger : public DelayedMessenger
 {
 public:
 	/// Ctor
@@ -25,7 +25,7 @@ public:
 	/// Set new value
 	virtual void SetNewValue(G4UIcommand *command, G4String newValue);
 	/// Apply commands
-	void ApplyCommands(VPersistenceManager* manager);
+	void ApplyCommands(void* managerAddr);
 
 private:
 	typedef std::map<G4UIcommand*, G4String> CommandMap_t;
