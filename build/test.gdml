@@ -14,7 +14,7 @@
 
   <!-- =============== MATERIALS =============== -->
   <materials>
-    <element Z="12" formula="C" name="Carbon" >
+    <element Z="6" formula="C" name="Carbon" >
       <atom value="12" />
     </element>
 
@@ -62,8 +62,9 @@
 
   <!-- =============== SOLIDS =============== -->
   <solids>
-    <box  aunit="radian" lunit="m" name="world" x="1" y="1" z="10" />
-    <box  aunit="radian" lunit="m" name="detector" x="0.06" y="0.06" z="0.3" />
+    <box  aunit="radian" lunit="m" name="world" x="10" y="10" z="10" />
+    <box  aunit="radian" lunit="m" name="detector" x="1" y="1" z="1" />
+    <!-- <box  aunit="radian" lunit="m" name="detector" x="0.06" y="0.06" z="0.3" /> -->
     <!-- <tube aunit="radian" lunit="m" name="detector" z="300" rmax="0.9" rmin = "0" deltaphi="TWOPI" /> -->
   </solids>
 

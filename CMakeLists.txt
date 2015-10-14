@@ -47,6 +47,8 @@ else()
 endif()
 
 
+
+
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 # Setup include directory for this project
@@ -57,6 +59,14 @@ if(theAnalyzer STREQUAL "ROOT")
 	EXECUTE_PROCESS(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CXX_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS}")
 endif(theAnalyzer STREQUAL "ROOT")
+
+
+add_custom_command(OUTPUT Dict.cxx COMMAND rootcint ARGS -f Dict.cxx -c -I${Geant4_INCLUDE_DIR} -I${PROJECT_SOURCE_DIR}/include/texansim ${PROJECT_SOURCE_DIR}/include/texansim/HitData.hh ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h DEPENDS ${PROJECT_SOURCE_DIR}/include/texansim/HitData.hh ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h)
+
+add_custom_target(Dict.cxx DEPENDS ${PROJECT_SOURCE_DIR}/include/texansim/HitData.hh ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h)
+
+# add_dependencies( Dict.cxx)
+
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -69,7 +79,7 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4/ROOT/Analysis libraries
 #
 find_library(LIBTEXANA Texana)
-add_executable(texansim.exe texansim.cc ${sources} ${headers})
+add_executable(texansim.exe texansim.cc ${sources} ${headers} Dict.cxx)
 if(theAnalyzer STREQUAL "ROOT")
 	EXECUTE_PROCESS(COMMAND root-config --libs OUTPUT_VARIABLE ROOT_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 	set(CMAKE_EXE_LINKER_FLAGS ${ROOT_LD_FLAGS})

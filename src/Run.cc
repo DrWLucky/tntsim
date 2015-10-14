@@ -2,6 +2,7 @@
 /// \brief Implements texansim::Run class
 ///
 #include "texansim/Run.hh"
+#include "texansim/HitData.hh"
 #include "texansim/ArrayHit.hh"
 #include "texansim/RootPersistenceManager.hh"
 
@@ -17,6 +18,7 @@ texansim::Run::Run():
 	G4Run()
 {
 	fTexan = new TTexan("texan", "");
+	fHitData = new HitData();
 
 	/// Set up persistence output
 	fPersistence = new RootPersistenceManager();
@@ -27,9 +29,10 @@ texansim::Run::Run():
 
 
 	/// - Add primitives
-	fPersistence->AddPrimitive("edep", &fEdep, VPersistenceManager::kDouble);
+	fPersistence->AddPrimitive("numhits", &fNumHits,        VPersistenceManager::kInt);
 
 	/// - Add classes
+	fPersistence->AddObject("hit", fHitData->ClassName(), &fHitData);
 	fPersistence->AddObject(fTexan->GetName(), fTexan->ClassName(), &fTexan);
 }
 
@@ -40,6 +43,7 @@ texansim::Run::~Run()
 	fPersistence->Close();
 	delete fPersistence;
 	delete fTexan;
+	delete fHitData;
 }
 
 void texansim::Run::RecordEvent(const G4Event* event)
@@ -50,13 +54,21 @@ void texansim::Run::RecordEvent(const G4Event* event)
 	ArrayHitsCollection& hc =
 		static_cast<ArrayHitsCollection&>(*(event->GetHCofThisEvent()->GetHC(0)));
 
-	for(int i=0; i< 32; ++i) {
-		if(i >= (G4int)hc.GetSize())
-			continue;
-		fTexan->SetEcal(i, hc[i]->GetEdep());
+	fHitData->Initialize( hc.GetSize() );
+
+	for(int i=0; i< (G4int)hc.GetSize(); ++i) {
+		if(i < 32) {
+			fTexan->fParticleMass[i]   = hc[i]->fMass;
+			fTexan->fParticleCharge[i] = hc[i]->fCharge;
+			fTexan->SetEcal(i, hc[i]->GetEdep());
+		}
+
+		fHitData->fEdep[i] = hc[i]->GetEdep();
+		fHitData->fSum += fHitData->fEdep[i];
 	}
 		
 	fEdep = ((G4int)hc.GetSize() > 0) ? hc[0]->GetEdep() : 0;
+	fNumHits = hc.GetSize();
 
 	fPersistence->SaveEvent();
 

@@ -64,6 +64,9 @@ G4bool txs::ArraySD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   newHit->SetEdep(edep);
   newHit->SetPos (aStep->GetPostStepPoint()->GetPosition());
 
+	newHit->fMass   = aStep->GetTrack()->GetDynamicParticle()->GetMass();
+	newHit->fCharge = aStep->GetTrack()->GetDynamicParticle()->GetCharge();
+
   fHitsCollection->insert( newHit );
   newHit->Print();
 

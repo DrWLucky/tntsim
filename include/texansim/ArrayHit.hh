@@ -50,11 +50,12 @@ public:
 	G4double GetEdep() const     { return fEdep; };
 	G4ThreeVector GetPos() const { return fPos; };
 
-private:
+public: //private:
 
 	G4int         fTrackID;
 	G4int         fChamberNb;
 	G4double      fEdep;
+	G4double      fMass, fCharge;
 	G4ThreeVector fPos;
 };
 

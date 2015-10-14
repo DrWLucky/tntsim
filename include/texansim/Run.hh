@@ -11,6 +11,7 @@ namespace texansim {
 
 class VPersistenceManager;
 class RunAction;
+class HitData;
 
 /// Custom Run class, we want to override the RecordEvent() function for anaysis
 class Run : public G4Run
@@ -27,7 +28,9 @@ private:
 	/// For output
 	VPersistenceManager* fPersistence;
 	G4double fEdep;
+	G4int fNumHits;
 
+	HitData* fHitData;
 	TTexan* fTexan;
 };
 
