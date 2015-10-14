@@ -114,7 +114,7 @@ find_package(Doxygen)
 		      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		      COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
-    add_custom_target(docinstall
+    add_custom_target(docinstall DEPENDS doc COMMAND
 		      scp -r ${CMAKE_CURRENT_BINARY_DIR}/doc/html christian@io.physics.tamu.edu:/home/users/christian/public_html/software/texansim/
     )
     endif(DOXYGEN_FOUND)
@@ -130,3 +130,4 @@ add_custom_target(texansim DEPENDS texansim.exe)
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
 install(TARGETS texansim.exe DESTINATION bin)
+install(TARGETS HitData DESTINATION lib)

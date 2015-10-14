@@ -4,7 +4,7 @@
 #include "G4SDManager.hh"
 
 #include "texansim/DetectorConstruction.hh"
-#include "texansim/ArraySD.hh"
+#include "texansim/TexanSD.hh"
 #include "texansim/Utils.hh"
 
 
@@ -41,10 +41,8 @@ G4VPhysicalVolume* txs::DetectorConstruction::Construct()
 void txs::DetectorConstruction::ConstructSDandField()
 {
 	G4SDManager* SDman = G4SDManager::GetSDMpointer();
-	txs::ArraySD* scintSD = new txs::ArraySD("Scint", "ArrayHitsCollection");
-	SDman->AddNewDetector( scintSD );
-
-
+	txs::TexanSD* texanSD = new txs::TexanSD("TEXAN", "TexanHitsCollection");
+	SDman->AddNewDetector( texanSD );
 
 	const G4GDMLAuxMapType* auxmap = fParser->GetAuxMap();
 	G4cout << "Found " << auxmap->size()

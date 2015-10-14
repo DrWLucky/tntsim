@@ -1,9 +1,9 @@
-/// \file ArraySD.cc
-/// \brief Implementation of the ArraySD class
+/// \file TexanSD.cc
+/// \brief Implementation of the TexanSD class
 ///
 #include <cassert>
 
-#include "texansim/ArraySD.hh"
+#include "texansim/TexanSD.hh"
 
 #include "G4HCofThisEvent.hh"
 #include "G4Step.hh"
@@ -20,7 +20,7 @@ namespace txs = texansim;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-txs::ArraySD::ArraySD(const G4String& name, const G4String& hitsCollectionName)
+txs::TexanSD::TexanSD(const G4String& name, const G4String& hitsCollectionName)
   : G4VSensitiveDetector(name),
 		fHitsCollection(NULL)
 {
@@ -29,17 +29,17 @@ txs::ArraySD::ArraySD(const G4String& name, const G4String& hitsCollectionName)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-txs::ArraySD::~ArraySD()
+txs::TexanSD::~TexanSD()
 {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void txs::ArraySD::Initialize(G4HCofThisEvent* hce)
+void txs::TexanSD::Initialize(G4HCofThisEvent* hce)
 {
   /// - Create hits collection
   fHitsCollection 
-    = new ArrayHitsCollection(SensitiveDetectorName, collectionName[0]); 
+    = new TexanHitsCollection(SensitiveDetectorName, collectionName[0]); 
 
   /// - Add this collection in hce
   G4int hcID 
@@ -49,7 +49,7 @@ void txs::ArraySD::Initialize(G4HCofThisEvent* hce)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4bool txs::ArraySD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
+G4bool txs::TexanSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 {
 	/// - Read deposited energy, abort if 0
 	G4double edep = aStep->GetTotalEnergyDeposit();
@@ -57,7 +57,7 @@ G4bool txs::ArraySD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 		return false;
 
 	/// - Create new hit object, fill with data from detector, add to hits collection
-	ArrayHit* newHit = new ArrayHit();
+	TexanHit* newHit = new TexanHit();
 
   // newHit->SetTrackID  (aStep->GetTrack()->GetTrackID());
   // newHit->SetChamberNb(aStep->GetPreStepPoint()->GetTouchableHandle()
@@ -76,7 +76,7 @@ G4bool txs::ArraySD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void txs::ArraySD::EndOfEvent(G4HCofThisEvent*)
+void txs::TexanSD::EndOfEvent(G4HCofThisEvent*)
 {
   if ( verboseLevel>1 ) { 
 		G4int nofHits = fHitsCollection->entries();

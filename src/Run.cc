@@ -3,7 +3,7 @@
 ///
 #include "texansim/Run.hh"
 #include "texansim/HitData.hh"
-#include "texansim/ArrayHit.hh"
+#include "texansim/TexanHit.hh"
 #include "texansim/RootPersistenceManager.hh"
 
 #include "G4Event.hh"
@@ -58,8 +58,8 @@ void texansim::Run::RecordEvent(const G4Event* event)
 	/// Get hit data and save from event's hit collection, save event to disk.
 	fTexan->Reset();
 
-	ArrayHitsCollection& hc =
-		static_cast<ArrayHitsCollection&>(*(event->GetHCofThisEvent()->GetHC(0)));
+	TexanHitsCollection& hc =
+		static_cast<TexanHitsCollection&>(*(event->GetHCofThisEvent()->GetHC(0)));
 
 	fEdep = 0;
 	fNumHits = hc.GetSize();

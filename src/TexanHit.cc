@@ -1,7 +1,7 @@
-/// \file ArrayHit.cc
-/// \brief Implementation of the ArrayHit class
+/// \file TexanHit.cc
+/// \brief Implementation of the TexanHit class
 
-#include "texansim/ArrayHit.hh"
+#include "texansim/TexanHit.hh"
 #include "G4UnitsTable.hh"
 #include "G4VVisManager.hh"
 #include "G4Circle.hh"
@@ -13,52 +13,29 @@
 namespace txs = texansim;
 
 namespace texansim {
-G4ThreadLocal G4Allocator<texansim::ArrayHit>* ArrayHitAllocator = 0;
+G4ThreadLocal G4Allocator<texansim::TexanHit>* TexanHitAllocator = 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-txs::ArrayHit::ArrayHit()
+txs::TexanHit::TexanHit()
  : G4VHit()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-txs::ArrayHit::~ArrayHit() {}
+txs::TexanHit::~TexanHit() {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-// txs::ArrayHit::ArrayHit(const txs::ArrayHit& right)
-//   : G4VHit()
-// {
-//   fTrackID   = right.fTrackID;
-//   fChamberNb = right.fChamberNb;
-//   fEdep      = right.fEdep;
-//   fPos       = right.fPos;
-// }
-
-// //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-// const txs::ArrayHit& txs::ArrayHit::operator=(const txs::ArrayHit& right)
-// {
-//   fTrackID   = right.fTrackID;
-//   fChamberNb = right.fChamberNb;
-//   fEdep      = right.fEdep;
-//   fPos       = right.fPos;
-
-//   return *this;
-// }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4int txs::ArrayHit::operator==(const txs::ArrayHit& right) const
+G4int txs::TexanHit::operator==(const txs::TexanHit& right) const
 {
   return ( this == &right ) ? 1 : 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void txs::ArrayHit::Draw()
+void txs::TexanHit::Draw()
 {
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
   if(pVVisManager)
@@ -76,7 +53,7 @@ void txs::ArrayHit::Draw()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void txs::ArrayHit::Print()
+void txs::TexanHit::Print()
 {
 	G4ThreeVector pos(fData.fX, fData.fY, fData.fZ);
   G4cout
