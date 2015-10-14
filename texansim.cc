@@ -17,7 +17,6 @@
 #include "QGSP_BIC_HP.hh"                 // Physics list
 #include "texansim/DetectorConstruction.hh"  // Detector construction
 #include "texansim/ActionInitialization.hh"  // Action initialization
-#include "texansim/Analysis.hh"
 #include "texansim/VPersistenceManager.hh"
 #include "texansim/PersistenceMessenger.hh"
 
@@ -67,7 +66,7 @@ int main(int argc, char** argv)
 
 	/// - Set up analysis stuff
 	txs::VPersistenceManager::SetMessenger(new PersistenceMessenger());
-	Analysis::ConstructSingletons();
+
 
 	G4int nthreads = 0;
 	bool visualize = false;

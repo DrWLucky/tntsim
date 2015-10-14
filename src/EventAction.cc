@@ -2,14 +2,7 @@
 /// \brief Implementation of the EventAction class
 ///
 #include "texansim/EventAction.hh"
-#include "texansim/Analysis.hh"
-#include "texansim/Utils.hh"
-#include "texansim/ArrayHit.hh"
-// #include "texansim/Run.hh"
-
 #include "G4Event.hh"
-#include "G4RunManager.hh"
-// #include "Randomize.hh"
 
 
 namespace txs = texansim;
@@ -35,26 +28,9 @@ void txs::EventAction::BeginOfEventAction(const G4Event*)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void txs::EventAction::EndOfEventAction(const G4Event* event)
+void txs::EventAction::EndOfEventAction(const G4Event*)
 {   
-	// G4VHitsCollection* hc = event->GetHCofThisEvent()->GetHC(0);
-	ArrayHitsCollection& hc =
-		static_cast<ArrayHitsCollection&>(*(event->GetHCofThisEvent()->GetHC(0)));
-	
-
-	for(G4int i=0; i< TXS_MAX_HITS; ++i) {
-
-		G4String colname = FormatStr1("fEdep", i);	
-		// G4double edep = (i < (G4int)hc->GetSize()) ?
-		// 	dynamic_cast<ArrayHit*>(hc->GetHit(i))->GetEdep() : 0;
-
-		G4double edep = 0; //i < (G4int)hc.GetSize()) ?
-//			hc[i]->GetEdep() : 0;
-
-
-		Analysis::FillNtupleColumn(colname, edep);
-	}
-
-			Analysis::FillNtupleColumn("fNumHits", (G4int)hc.GetSize());
-	Analysis::AddNtupleRow();
+	/// Presently empty - analysis stuff done in G4Run::RecordEvent
+	/// \todo I think we can get rid of this class entirely...
+	;
 }
