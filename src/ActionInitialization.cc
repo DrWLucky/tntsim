@@ -4,7 +4,6 @@
 #include "texansim/ActionInitialization.hh"
 #include "texansim/PrimaryGeneratorAction.hh"
 #include "texansim/RunAction.hh"
-#include "texansim/EventAction.hh"
 
 
 namespace txs = texansim;
@@ -34,7 +33,4 @@ void txs::ActionInitialization::Build() const
 																		G4ThreeVector(0,0,1))
 		);
   SetUserAction(new txs::RunAction);
-  
-  txs::EventAction* eventAction = new txs::EventAction;
-  SetUserAction(eventAction);
 }
