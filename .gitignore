@@ -6,3 +6,8 @@ build/*.root
 build/*.exe
 build/*.txt
 build/Doxyfile
+build/HitDataDict.*
+build/*.mac
+build/*.gdml
+build/*.so
+build/doc

@@ -61,11 +61,11 @@ if(theAnalyzer STREQUAL "ROOT")
 endif(theAnalyzer STREQUAL "ROOT")
 
 
-add_custom_command(OUTPUT Dict.cxx COMMAND rootcint ARGS -f Dict.cxx -c -I${Geant4_INCLUDE_DIR} -I${PROJECT_SOURCE_DIR}/include/texansim ${PROJECT_SOURCE_DIR}/include/texansim/HitData.hh ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h DEPENDS ${PROJECT_SOURCE_DIR}/include/texansim/HitData.hh ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h)
+add_custom_command(OUTPUT HitDataDict.cxx COMMAND rootcint ARGS -f HitDataDict.cxx -c -I${Geant4_INCLUDE_DIR} -I${PROJECT_SOURCE_DIR}/include/texansim ${PROJECT_SOURCE_DIR}/include/texansim/HitData.hh ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h DEPENDS ${PROJECT_SOURCE_DIR}/include/texansim/HitData.hh ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h)
 
-add_custom_target(Dict.cxx DEPENDS ${PROJECT_SOURCE_DIR}/include/texansim/HitData.hh ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h)
+add_custom_target(HitDataDict.cxx DEPENDS ${PROJECT_SOURCE_DIR}/include/texansim/HitData.hh ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h)
 
-# add_dependencies( Dict.cxx)
+# add_dependencies( HitDataDict.cxx)
 
 
 #----------------------------------------------------------------------------
@@ -79,7 +79,8 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4/ROOT/Analysis libraries
 #
 find_library(LIBTEXANA Texana)
-add_executable(texansim.exe texansim.cc ${sources} ${headers} Dict.cxx)
+add_executable(texansim.exe texansim.cc ${sources} ${headers} HitDataDict.cxx)
+add_library(HitData SHARED HitDataDict.cxx)
 if(theAnalyzer STREQUAL "ROOT")
 	EXECUTE_PROCESS(COMMAND root-config --libs OUTPUT_VARIABLE ROOT_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 	set(CMAKE_EXE_LINKER_FLAGS ${ROOT_LD_FLAGS})

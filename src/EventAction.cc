@@ -48,8 +48,8 @@ void txs::EventAction::EndOfEventAction(const G4Event* event)
 		// G4double edep = (i < (G4int)hc->GetSize()) ?
 		// 	dynamic_cast<ArrayHit*>(hc->GetHit(i))->GetEdep() : 0;
 
-		G4double edep = (i < (G4int)hc.GetSize()) ?
-			hc[i]->GetEdep() : 0;
+		G4double edep = 0; //i < (G4int)hc.GetSize()) ?
+//			hc[i]->GetEdep() : 0;
 
 
 		Analysis::FillNtupleColumn(colname, edep);

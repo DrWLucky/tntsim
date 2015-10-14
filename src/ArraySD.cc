@@ -58,14 +58,15 @@ G4bool txs::ArraySD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 
 	/// - Create new hit object, fill with data from detector, add to hits collection
 	ArrayHit* newHit = new ArrayHit();
-  newHit->SetTrackID  (aStep->GetTrack()->GetTrackID());
-  newHit->SetChamberNb(aStep->GetPreStepPoint()->GetTouchableHandle()
-											 ->GetCopyNumber());
-  newHit->SetEdep(edep);
-  newHit->SetPos (aStep->GetPostStepPoint()->GetPosition());
 
-	newHit->fMass   = aStep->GetTrack()->GetDynamicParticle()->GetMass();
-	newHit->fCharge = aStep->GetTrack()->GetDynamicParticle()->GetCharge();
+  // newHit->SetTrackID  (aStep->GetTrack()->GetTrackID());
+  // newHit->SetChamberNb(aStep->GetPreStepPoint()->GetTouchableHandle()
+	// 										 ->GetCopyNumber());
+  newHit->fData.fEdep = edep;
+  // newHit->SetPos (aStep->GetPostStepPoint()->GetPosition());
+
+	// newHit->fMass   = aStep->GetTrack()->GetDynamicParticle()->GetMass();
+	// newHit->fCharge = aStep->GetTrack()->GetDynamicParticle()->GetCharge();
 
   fHitsCollection->insert( newHit );
   newHit->Print();

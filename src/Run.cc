@@ -9,8 +9,13 @@
 #include "G4Event.hh"
 #include "G4Threading.hh"
 #include "G4RunManager.hh"
-#include "TTree.h"
+
+#include "TClass.h"
+#include "TClonesArray.h"
+
 #include "texana/TTexan.h"
+
+
 
 
 
@@ -18,22 +23,24 @@ texansim::Run::Run():
 	G4Run()
 {
 	fTexan = new TTexan("texan", "");
-	fHitData = new HitData();
+	fHitArray = new TClonesArray( HitData::Class()->GetName() );
 
 	/// Set up persistence output
 	fPersistence = new RootPersistenceManager();
 	fPersistence->OpenFile();
 
 	/// - Add histograms
-	fPersistence->AddHistogram1d("hEdep", "Deposited energy", 20, 0, 20, &fEdep, VPersistenceManager::kDouble);
-
+	fPersistence->AddHistogram1d("hEdep", "Total Deposited energy", 200, 0, 20,
+															 &fEdep, VPersistenceManager::kDouble);
 
 	/// - Add primitives
-	fPersistence->AddPrimitive("numhits", &fNumHits,        VPersistenceManager::kInt);
+	fPersistence->AddPrimitive("fNumHits", &fNumHits,  VPersistenceManager::kInt);
+	fPersistence->AddPrimitive("fEdep", &fEdep, VPersistenceManager::kDouble);
 
 	/// - Add classes
-	fPersistence->AddObject("hit", fHitData->ClassName(), &fHitData);
 	fPersistence->AddObject(fTexan->GetName(), fTexan->ClassName(), &fTexan);
+	fPersistence->AddObject("hit", "TClonesArray", &fHitArray);
+	fHitArray->BypassStreamer();
 }
 
 texansim::Run::~Run()
@@ -43,7 +50,7 @@ texansim::Run::~Run()
 	fPersistence->Close();
 	delete fPersistence;
 	delete fTexan;
-	delete fHitData;
+	delete fHitArray;
 }
 
 void texansim::Run::RecordEvent(const G4Event* event)
@@ -54,21 +61,23 @@ void texansim::Run::RecordEvent(const G4Event* event)
 	ArrayHitsCollection& hc =
 		static_cast<ArrayHitsCollection&>(*(event->GetHCofThisEvent()->GetHC(0)));
 
-	fHitData->Initialize( hc.GetSize() );
+	fEdep = 0;
+	fNumHits = hc.GetSize();
+	fHitArray->Clear();
 
-	for(int i=0; i< (G4int)hc.GetSize(); ++i) {
+	for(G4int i=0; i< fNumHits; ++i) {
+		// Experimental class
 		if(i < 32) {
-			fTexan->fParticleMass[i]   = hc[i]->fMass;
-			fTexan->fParticleCharge[i] = hc[i]->fCharge;
-			fTexan->SetEcal(i, hc[i]->GetEdep());
+			// fTexan->fParticleMass[i]   = hc[i]->GetHitData().fMass;
+			// fTexan->fParticleCharge[i] = hc[i]->fCharge;
+			fTexan->SetEcal(i, hc[i]->GetData().fEdep);
 		}
 
-		fHitData->fEdep[i] = hc[i]->GetEdep();
-		fHitData->fSum += fHitData->fEdep[i];
+		// Hit array
+		TObject*& hitMemory = (*fHitArray)[i];
+		HitData* hitdata = new(hitMemory) HitData(hc[i]->GetData());
+		fEdep += hitdata->fEdep;
 	}
-		
-	fEdep = ((G4int)hc.GetSize() > 0) ? hc[0]->GetEdep() : 0;
-	fNumHits = hc.GetSize();
 
 	fPersistence->SaveEvent();
 

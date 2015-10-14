@@ -19,11 +19,7 @@ G4ThreadLocal G4Allocator<texansim::ArrayHit>* ArrayHitAllocator = 0;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 txs::ArrayHit::ArrayHit()
- : G4VHit(),
-   fTrackID(-1),
-   fChamberNb(-1),
-   fEdep(0.),
-   fPos(G4ThreeVector())
+ : G4VHit()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -32,26 +28,26 @@ txs::ArrayHit::~ArrayHit() {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-txs::ArrayHit::ArrayHit(const txs::ArrayHit& right)
-  : G4VHit()
-{
-  fTrackID   = right.fTrackID;
-  fChamberNb = right.fChamberNb;
-  fEdep      = right.fEdep;
-  fPos       = right.fPos;
-}
+// txs::ArrayHit::ArrayHit(const txs::ArrayHit& right)
+//   : G4VHit()
+// {
+//   fTrackID   = right.fTrackID;
+//   fChamberNb = right.fChamberNb;
+//   fEdep      = right.fEdep;
+//   fPos       = right.fPos;
+// }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+// //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-const txs::ArrayHit& txs::ArrayHit::operator=(const txs::ArrayHit& right)
-{
-  fTrackID   = right.fTrackID;
-  fChamberNb = right.fChamberNb;
-  fEdep      = right.fEdep;
-  fPos       = right.fPos;
+// const txs::ArrayHit& txs::ArrayHit::operator=(const txs::ArrayHit& right)
+// {
+//   fTrackID   = right.fTrackID;
+//   fChamberNb = right.fChamberNb;
+//   fEdep      = right.fEdep;
+//   fPos       = right.fPos;
 
-  return *this;
-}
+//   return *this;
+// }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -67,7 +63,8 @@ void txs::ArrayHit::Draw()
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
   if(pVVisManager)
   {
-    G4Circle circle(fPos);
+		G4ThreeVector pos(fData.fX, fData.fY, fData.fZ);
+    G4Circle circle(pos);
     circle.SetScreenSize(4.);
     circle.SetFillStyle(G4Circle::filled);
     G4Colour colour(1.,0.,0.);
@@ -81,12 +78,13 @@ void txs::ArrayHit::Draw()
 
 void txs::ArrayHit::Print()
 {
+	G4ThreeVector pos(fData.fX, fData.fY, fData.fZ);
   G4cout
-     << "  trackID: " << fTrackID << " chamberNb: " << fChamberNb
+     // << "  trackID: " << fTrackID << " chamberNb: " << fChamberNb
      << "Edep: "
-     << std::setw(7) << G4BestUnit(fEdep,"Energy")
+     << std::setw(7) << G4BestUnit(fData.fEdep,"Energy")
      << " Position: "
-     << std::setw(7) << G4BestUnit( fPos,"Length")
+     << std::setw(7) << G4BestUnit( pos,"Length")
      << G4endl;
 }
 

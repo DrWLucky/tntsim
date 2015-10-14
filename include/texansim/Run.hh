@@ -6,12 +6,12 @@
 
 
 class TTexan;
+class TClonesArray;
 
 namespace texansim {
 
 class VPersistenceManager;
 class RunAction;
-class HitData;
 
 /// Custom Run class, we want to override the RecordEvent() function for anaysis
 class Run : public G4Run
@@ -27,10 +27,13 @@ public:
 private:
 	/// For output
 	VPersistenceManager* fPersistence;
-	G4double fEdep;
+	/// Total number of hits
 	G4int fNumHits;
-
-	HitData* fHitData;
+	/// Sum of deposited energy
+	G4double fEdep;
+	/// Array of all hits in the event
+	TClonesArray* fHitArray;
+	/// "Experimental" analysis class
 	TTexan* fTexan;
 };
 

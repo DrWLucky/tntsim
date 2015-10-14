@@ -10,9 +10,13 @@
 #include "G4ThreeVector.hh"
 #include "tls.hh"
 
+#include "texansim/HitData.hh"
 
 
 namespace texansim {
+
+
+class ArraySD;
 
 /// Array hit class
 /**
@@ -24,11 +28,11 @@ class ArrayHit : public G4VHit
 {
 public:
 	ArrayHit();
-	ArrayHit(const ArrayHit&);
+	// ArrayHit(const ArrayHit&);
 	virtual ~ArrayHit();
 
 	// operators
-	const ArrayHit& operator=(const ArrayHit&);
+	// const ArrayHit& operator=(const ArrayHit&);
 	G4int operator==(const ArrayHit&) const;
 
 	inline void* operator new(size_t);
@@ -38,25 +42,13 @@ public:
 	virtual void Draw();
 	virtual void Print();
 
-	// Set methods
-	void SetTrackID  (G4int track)      { fTrackID = track; };
-	void SetChamberNb(G4int chamb)      { fChamberNb = chamb; };
-	void SetEdep     (G4double de)      { fEdep = de; };
-	void SetPos      (G4ThreeVector xyz){ fPos = xyz; };
+	// Get access to hit data
+	const HitData& GetData() const { return fData; }
 
-	// Get methods
-	G4int GetTrackID() const     { return fTrackID; };
-	G4int GetChamberNb() const   { return fChamberNb; };
-	G4double GetEdep() const     { return fEdep; };
-	G4ThreeVector GetPos() const { return fPos; };
+private:
+	HitData fData;
 
-public: //private:
-
-	G4int         fTrackID;
-	G4int         fChamberNb;
-	G4double      fEdep;
-	G4double      fMass, fCharge;
-	G4ThreeVector fPos;
+	friend class ArraySD;
 };
 
 
