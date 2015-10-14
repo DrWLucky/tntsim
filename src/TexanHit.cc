@@ -40,7 +40,7 @@ void txs::TexanHit::Draw()
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
   if(pVVisManager)
   {
-		G4ThreeVector pos(fData.fX, fData.fY, fData.fZ);
+		G4ThreeVector pos(GetData().fX, GetData().fY, GetData().fZ);
     G4Circle circle(pos);
     circle.SetScreenSize(4.);
     circle.SetFillStyle(G4Circle::filled);
@@ -55,11 +55,11 @@ void txs::TexanHit::Draw()
 
 void txs::TexanHit::Print()
 {
-	G4ThreeVector pos(fData.fX, fData.fY, fData.fZ);
+	G4ThreeVector pos(GetData().fX, GetData().fY, GetData().fZ);
   G4cout
      // << "  trackID: " << fTrackID << " chamberNb: " << fChamberNb
      << "Edep: "
-     << std::setw(7) << G4BestUnit(fData.fEdep,"Energy")
+     << std::setw(7) << G4BestUnit(GetData().fEdep,"Energy")
      << " Position: "
      << std::setw(7) << G4BestUnit( pos,"Length")
      << G4endl;

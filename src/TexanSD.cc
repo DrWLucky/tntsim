@@ -6,11 +6,11 @@
 #include "texansim/TexanSD.hh"
 
 #include "G4HCofThisEvent.hh"
-#include "G4Step.hh"
 #include "G4ThreeVector.hh"
 #include "G4SDManager.hh"
+#include "G4Step.hh"
 #include "G4ios.hh"
-#include "G4SystemOfUnits.hh"
+
 
 
 
@@ -18,7 +18,8 @@ namespace txs = texansim;
 
 
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+
 
 txs::TexanSD::TexanSD(const G4String& name, const G4String& hitsCollectionName)
   : G4VSensitiveDetector(name),
@@ -27,13 +28,15 @@ txs::TexanSD::TexanSD(const G4String& name, const G4String& hitsCollectionName)
 	collectionName.insert(hitsCollectionName);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+
 
 txs::TexanSD::~TexanSD()
 {
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+
 
 void txs::TexanSD::Initialize(G4HCofThisEvent* hce)
 {
@@ -47,7 +50,9 @@ void txs::TexanSD::Initialize(G4HCofThisEvent* hce)
   hce->AddHitsCollection( hcID, fHitsCollection ); 
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+
+
 
 G4bool txs::TexanSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 {
@@ -62,8 +67,10 @@ G4bool txs::TexanSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   // newHit->SetTrackID  (aStep->GetTrack()->GetTrackID());
   // newHit->SetChamberNb(aStep->GetPreStepPoint()->GetTouchableHandle()
 	// 										 ->GetCopyNumber());
-  newHit->fData.fEdep = edep;
-  // newHit->SetPos (aStep->GetPostStepPoint()->GetPosition());
+
+	newHit->SetEdep(edep);
+	newHit->SetTime(aStep->GetTrack()->GetGlobalTime());
+	newHit->SetPosition(aStep->GetPostStepPoint()->GetPosition());
 
 	// newHit->fMass   = aStep->GetTrack()->GetDynamicParticle()->GetMass();
 	// newHit->fCharge = aStep->GetTrack()->GetDynamicParticle()->GetCharge();
@@ -74,7 +81,8 @@ G4bool txs::TexanSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   return true;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+
 
 void txs::TexanSD::EndOfEvent(G4HCofThisEvent*)
 {

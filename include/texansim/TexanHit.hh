@@ -10,7 +10,7 @@
 #include "G4ThreeVector.hh"
 #include "tls.hh"
 
-#include "texansim/HitData.hh"
+#include "texansim/GenericHit.hh"
 
 
 namespace texansim {
@@ -19,7 +19,9 @@ namespace texansim {
 class TexanSD;
 
 /// TEXAN neutron array hit class
-class TexanHit : public G4VHit
+class TexanHit
+	: public G4VHit,
+		public GenericHit
 {
 public:
 	/// Ctor
@@ -38,16 +40,6 @@ public:
 	virtual void Draw();
 	/// Print an event 
 	virtual void Print();
-
-	/// Get read-only access to hit data
-	const HitData& GetData() const { return fData; }
-
-private:
-	/// Contains hit data
-	HitData fData;
-
-	/// Let associated sensitive detector class write to this one
-	friend class TexanSD;
 };
 
 

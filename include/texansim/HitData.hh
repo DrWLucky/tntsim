@@ -9,13 +9,28 @@
 namespace texansim {
 
 /// Simple container for hit data
+/*! Units are:
+ *  - Energy: MeV
+ *  - Position: cm
+ *  - Angle: degrees
+ *  - Time: ns
+ */
 struct HitData
 	: public TObject
 {
-	G4double fEdep; /// Energy deposited in the hit (MeV)
-	G4double fX;    /// X position (cm)
-	G4double fY;    /// Y position (cm)
-	G4double fZ;    /// Z position (cm)
+	G4double fEdep;  /// Energy deposited in the hit (MeV)
+	G4double fTime;  /// Global time (since event creation)
+
+	G4double fX;     /// X position
+	G4double fY;     /// Y position
+	G4double fZ;     /// Z position
+
+	G4double fR;     /// Spherical coordinates radius
+	G4double fTheta; /// Spherical coordinates radius polar angle
+	G4double fPhi;   /// Spherical coordinates radius azimuthal angle
+
+	G4double fRho;   /// Cylindrical coordinates radius
+
 
 	ClassDef(HitData, 1);
 };
