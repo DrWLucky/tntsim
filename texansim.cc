@@ -14,7 +14,7 @@
 #include "G4UIExecutive.hh"
 
 // User files //
-#include "QGSP_BIC_HP.hh"                 // Physics list
+#include "QGSP_BERT_HP.hh"                 // Physics list
 #include "texansim/DetectorConstruction.hh"  // Detector construction
 #include "texansim/ActionInitialization.hh"  // Action initialization
 #include "texansim/VPersistenceManager.hh"
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
 
 	/// - TEMPORARY physics list
 	/// \todo implement permanent (or changable) physics list
-	runManager->SetUserInitialization(new QGSP_BIC_HP);
+	runManager->SetUserInitialization(new QGSP_BERT_HP);
 	/// - Action initialization
 	runManager->SetUserInitialization(new txs::ActionInitialization);
 

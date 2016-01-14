@@ -6,7 +6,15 @@
 #pragma link C++ nestedclasses;
 
 
-#pragma link C++ class texansim::HitData+;
+#pragma link C++ defined_in TG4Hit.h;
 
 
 #endif
+
+
+
+
+
+/* Local Variables:  */
+/* mode: c++         */
+/* End:              */

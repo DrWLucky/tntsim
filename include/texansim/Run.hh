@@ -25,6 +25,10 @@ public:
 	virtual void RecordEvent(const G4Event* event);
 
 private:
+	Run(const Run&):G4Run() { }
+	Run& operator=(const Run&) { return *this; }
+
+private:
 	/// For output
 	VPersistenceManager* fPersistence;
 	/// Total number of hits
@@ -33,6 +37,10 @@ private:
 	G4double fEdep;
 	/// Array of all hits in the event
 	TClonesArray* fHitArray;
+	///
+	G4int fNumPrimaryHits;
+	///
+	TClonesArray* fPrimaryHits;
 	/// "Experimental" analysis class
 	TTexan* fTexan;
 };

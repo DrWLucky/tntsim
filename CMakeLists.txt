@@ -61,11 +61,9 @@ if(theAnalyzer STREQUAL "ROOT")
 endif(theAnalyzer STREQUAL "ROOT")
 
 
-add_custom_command(OUTPUT HitDataDict.cxx COMMAND rootcint ARGS -f HitDataDict.cxx -c -I${Geant4_INCLUDE_DIR} -I${PROJECT_SOURCE_DIR}/include/texansim ${PROJECT_SOURCE_DIR}/include/texansim/HitData.hh ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h DEPENDS ${PROJECT_SOURCE_DIR}/include/texansim/HitData.hh ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h)
+add_custom_command(OUTPUT G4HitDict.cxx COMMAND rootcint ARGS -f G4HitDict.cxx -c -I${Geant4_INCLUDE_DIR} -I${PROJECT_SOURCE_DIR}/include/texansim ${PROJECT_SOURCE_DIR}/include/texansim/TG4Hit.h ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h DEPENDS ${PROJECT_SOURCE_DIR}/include/texansim/TG4Hit.h ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h)
 
-add_custom_target(HitDataDict.cxx DEPENDS ${PROJECT_SOURCE_DIR}/include/texansim/HitData.hh ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h)
-
-# add_dependencies( HitDataDict.cxx)
+add_custom_target(G4HitDict.cxx DEPENDS ${PROJECT_SOURCE_DIR}/include/texansim/TG4Hit.h ${PROJECT_SOURCE_DIR}/src/TG4Hit.cc ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h)
 
 
 #----------------------------------------------------------------------------
@@ -79,8 +77,8 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4/ROOT/Analysis libraries
 #
 find_library(LIBTEXANA Texana)
-add_executable(texansim.exe texansim.cc ${sources} ${headers} HitDataDict.cxx)
-add_library(HitData SHARED HitDataDict.cxx)
+add_executable(texansim.exe texansim.cc ${sources} ${headers} G4HitDict.cxx)
+add_library(G4Hit SHARED G4HitDict.cxx ${PROJECT_SOURCE_DIR}/src/TG4Hit.cc)
 if(theAnalyzer STREQUAL "ROOT")
 	EXECUTE_PROCESS(COMMAND root-config --libs OUTPUT_VARIABLE ROOT_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 	set(CMAKE_EXE_LINKER_FLAGS ${ROOT_LD_FLAGS})
@@ -130,4 +128,4 @@ add_custom_target(texansim DEPENDS texansim.exe)
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
 install(TARGETS texansim.exe DESTINATION bin)
-install(TARGETS HitData DESTINATION lib)
+install(TARGETS G4Hit DESTINATION lib)

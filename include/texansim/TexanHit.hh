@@ -10,8 +10,9 @@
 #include "G4ThreeVector.hh"
 #include "tls.hh"
 
-#include "texansim/GenericHit.hh"
 
+#include "G4Step.hh"
+// class G4Step;
 
 namespace texansim {
 
@@ -19,13 +20,13 @@ namespace texansim {
 class TexanSD;
 
 /// TEXAN neutron array hit class
-class TexanHit
-	: public G4VHit,
-		public GenericHit
+class TexanHit : public G4VHit
 {
 public:
 	/// Ctor
 	TexanHit();
+	/// Sets step
+	TexanHit(G4Step*);
 	/// Dtor
 	virtual ~TexanHit();
 
@@ -40,6 +41,15 @@ public:
 	virtual void Draw();
 	/// Print an event 
 	virtual void Print();
+
+	/// Get step
+	const G4Step* GetStep() const { return fStep; }
+	/// Set step
+	void SetStep(G4Step* step) { fStep = new G4Step(*step); }
+
+private:
+	/// Store pointer to G4Step for later processing
+	G4Step* fStep;
 };
 
 

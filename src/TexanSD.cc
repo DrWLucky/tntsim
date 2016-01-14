@@ -8,6 +8,7 @@
 #include "G4HCofThisEvent.hh"
 #include "G4ThreeVector.hh"
 #include "G4SDManager.hh"
+#include "G4VProcess.hh"
 #include "G4Step.hh"
 #include "G4ios.hh"
 
@@ -56,12 +57,14 @@ void txs::TexanSD::Initialize(G4HCofThisEvent* hce)
 
 G4bool txs::TexanSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 {
-	/// - Read deposited energy, abort if 0
-	G4double edep = aStep->GetTotalEnergyDeposit();
-	if(edep == 0)
+#if 0
+	if ( aStep->GetTrack()->GetTrackID() != 1 )
 		return false;
 
-	/// - Create new hit object, fill with data from detector, add to hits collection
+	/// - Read deposited energy
+	G4double edep = aStep->GetTotalEnergyDeposit();
+
+	/// - Create new TexanHit object to fill with data and add to hits collection
 	TexanHit* newHit = new TexanHit();
 
   // newHit->SetTrackID  (aStep->GetTrack()->GetTrackID());
@@ -72,12 +75,22 @@ G4bool txs::TexanSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 	newHit->SetTime(aStep->GetTrack()->GetGlobalTime());
 	newHit->SetPosition(aStep->GetPostStepPoint()->GetPosition());
 
-	// newHit->fMass   = aStep->GetTrack()->GetDynamicParticle()->GetMass();
-	// newHit->fCharge = aStep->GetTrack()->GetDynamicParticle()->GetCharge();
+	G4String pname = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+	newHit->SetProcessName(pname);
+	newHit->SetParticleName(aStep->GetTrack()->GetDefinition()->GetParticleName());
 
-  fHitsCollection->insert( newHit );
-  newHit->Print();
 
+	newHit->SetStep(aStep);
+
+  fHitsCollection->insert(newHit);
+#endif
+
+
+	TexanHit* newHit = new TexanHit(aStep);
+  fHitsCollection->insert(newHit);
+
+  if(verboseLevel > 1)
+		newHit->Print();
   return true;
 }
 

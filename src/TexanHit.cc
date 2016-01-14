@@ -7,7 +7,7 @@
 #include "G4Circle.hh"
 #include "G4Colour.hh"
 #include "G4VisAttributes.hh"
-
+#include "G4Step.hh"
 #include <iomanip>
 
 namespace txs = texansim;
@@ -19,12 +19,21 @@ G4ThreadLocal G4Allocator<texansim::TexanHit>* TexanHitAllocator = 0;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 txs::TexanHit::TexanHit()
- : G4VHit()
+	: G4VHit(), fStep(0)
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-txs::TexanHit::~TexanHit() {}
+txs::TexanHit::TexanHit(G4Step* step)
+	: G4VHit()
+{
+	SetStep(step);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+txs::TexanHit::~TexanHit()
+{ if(fStep) delete fStep; }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -40,7 +49,7 @@ void txs::TexanHit::Draw()
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
   if(pVVisManager)
   {
-		G4ThreeVector pos(GetData().fX, GetData().fY, GetData().fZ);
+		const G4ThreeVector &pos = fStep->GetPostStepPoint()->GetPosition();
     G4Circle circle(pos);
     circle.SetScreenSize(4.);
     circle.SetFillStyle(G4Circle::filled);
@@ -55,14 +64,14 @@ void txs::TexanHit::Draw()
 
 void txs::TexanHit::Print()
 {
-	G4ThreeVector pos(GetData().fX, GetData().fY, GetData().fZ);
+	const G4ThreeVector &pos = fStep->GetPostStepPoint()->GetPosition();
   G4cout
-     // << "  trackID: " << fTrackID << " chamberNb: " << fChamberNb
-     << "Edep: "
-     << std::setw(7) << G4BestUnit(GetData().fEdep,"Energy")
-     << " Position: "
-     << std::setw(7) << G4BestUnit( pos,"Length")
-     << G4endl;
+		<< "  trackID: " << fStep->GetTrack()->GetTrackID() // << " chamberNb: " << fChamberNb
+		<< "Edep: "
+		<< std::setw(7) << G4BestUnit(fStep->GetTotalEnergyDeposit(), "Energy") //GetData().fEdep,"Energy")
+		<< " Position: "
+		<< std::setw(7) << G4BestUnit( pos,"Length")
+		<< G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -30,7 +30,11 @@ public:
 	/// Set deposited energy
 	void SetEdep(G4double edep) { fData.fEdep = edep / MeV; }
 	/// Set time
-	void SetTime(G4double time) { fData.fTime = time / ns;  }
+	void SetTime(G4double time) { fData.fTime = time / ns; }
+	/// Set process name
+	void SetProcessName(const char* name) { fData.fProcessName = name; }
+	/// Set particle name
+	void SetParticleName(const char* name) { fData.fParticleName = name; }
 
 private:
 	/// Contains hit data
