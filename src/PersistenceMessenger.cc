@@ -1,16 +1,16 @@
 /// \file PersistenceMessenger.cc
 /// \brief Implements PersistenceManager class
 ///
-#include "texansim/PersistenceMessenger.hh"
-#include "texansim/VPersistenceManager.hh"
-#include "texansim/Utils.hh"
+#include "tntsim/PersistenceMessenger.hh"
+#include "tntsim/VPersistenceManager.hh"
+#include "tntsim/Utils.hh"
 
 #include "G4UIcmdWithAString.hh"
 
 #include <algorithm>
 
 
-namespace txs = texansim;
+namespace txs = tntsim;
 
 
 

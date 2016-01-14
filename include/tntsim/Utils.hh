@@ -4,7 +4,7 @@
 #include "G4String.hh"
 
 
-namespace texansim {
+namespace tntsim {
 
 /// Delete a pointer and set to NULL
 template <class T>

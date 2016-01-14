@@ -1,4 +1,4 @@
-/// \file texansim.cc
+/// \file tntsim.cc
 /// \brief Defines main() program
 ///
 #include <memory>
@@ -15,20 +15,20 @@
 
 // User files //
 #include "QGSP_BERT_HP.hh"                 // Physics list
-#include "texansim/DetectorConstruction.hh"  // Detector construction
-#include "texansim/ActionInitialization.hh"  // Action initialization
-#include "texansim/VPersistenceManager.hh"
-#include "texansim/PersistenceMessenger.hh"
+#include "tntsim/DetectorConstruction.hh"  // Detector construction
+#include "tntsim/ActionInitialization.hh"  // Action initialization
+#include "tntsim/VPersistenceManager.hh"
+#include "tntsim/PersistenceMessenger.hh"
 
 
 
-namespace txs = texansim;
+namespace txs = tntsim;
 
 
 namespace {
 int usage()
 {
-	G4cerr << "usage: texansim <run*.mac> [--geo[metry]=*.gdml] [--threads=N] [--vis[ualize]]\n\n";
+	G4cerr << "usage: tntsim <run*.mac> [--geo[metry]=*.gdml] [--threads=N] [--vis[ualize]]\n\n";
 	return 1;
 }
 int novis()
@@ -42,12 +42,12 @@ int novis()
 
 
 /// Namespace for all project classes
-namespace texansim {
+namespace tntsim {
 
 /// The main program
 int main(int argc, char** argv)
 {
-	/// I'm just putting this in the texansim namespace so that it
+	/// I'm just putting this in the tntsim namespace so that it
 	/// shows up under the namespace section of doxygen. The real
 	/// main() is a one-liner simply calling this.
 

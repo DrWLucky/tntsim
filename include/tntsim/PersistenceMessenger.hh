@@ -4,12 +4,12 @@
 #ifndef TXS_PERSISTENCE_MESSENGER_HH_8675309
 #define TXS_PERSISTENCE_MESSENGER_HH_8675309
 #include <map>
-#include "texansim/DelayedMessenger.hh"
+#include "tntsim/DelayedMessenger.hh"
 
 
 class G4UIcmdWithAString;
 
-namespace texansim {
+namespace tntsim {
 
 class VPersistenceManager;
 

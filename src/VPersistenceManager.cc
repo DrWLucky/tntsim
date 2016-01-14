@@ -1,29 +1,29 @@
 /// \file VPersistenceManager.cc
 /// \brief Implements VPersistence manager class
 ///
-#include "texansim/VPersistenceManager.hh"
-#include "texansim/PersistenceMessenger.hh"
-#include "texansim/Utils.hh"
+#include "tntsim/VPersistenceManager.hh"
+#include "tntsim/PersistenceMessenger.hh"
+#include "tntsim/Utils.hh"
 
 #include <cassert>
 #include "G4Threading.hh"
 
 
 
-texansim::VPersistenceManager::VPersistenceManager()
+tntsim::VPersistenceManager::VPersistenceManager()
 {
 	;
 }
 
 
 
-texansim::VPersistenceManager::~VPersistenceManager()
+tntsim::VPersistenceManager::~VPersistenceManager()
 {
 	;
 }
 
 
-void texansim::VPersistenceManager::InitializeBase()
+void tntsim::VPersistenceManager::InitializeBase()
 {
 	/// Takes care of filename stuff:
 	/// - Set default filename ("g4output")
@@ -36,14 +36,14 @@ void texansim::VPersistenceManager::InitializeBase()
 }
 
 
-texansim::DelayedMessenger* texansim::VPersistenceManager::GetMessenger()
+tntsim::DelayedMessenger* tntsim::VPersistenceManager::GetMessenger()
 {
 	return gMessenger;
 }
 
 
 
-void texansim::VPersistenceManager::SetMessenger(DelayedMessenger* messenger)
+void tntsim::VPersistenceManager::SetMessenger(DelayedMessenger* messenger)
 {
 #ifdef G4MULTITHREADED
 	assert(G4Threading::IsWorkerThread() == false);
@@ -53,4 +53,4 @@ void texansim::VPersistenceManager::SetMessenger(DelayedMessenger* messenger)
 }
 
 
-texansim::DelayedMessenger* texansim::VPersistenceManager::gMessenger = NULL;
+tntsim::DelayedMessenger* tntsim::VPersistenceManager::gMessenger = NULL;

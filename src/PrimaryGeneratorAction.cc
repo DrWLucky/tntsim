@@ -1,7 +1,7 @@
 /// \file PrimaryGeneratorAction.cc
 /// \brief Primary generator action
 ///
-#include "texansim/PrimaryGeneratorAction.hh"
+#include "tntsim/PrimaryGeneratorAction.hh"
 
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"
@@ -9,7 +9,7 @@
 #include "G4ParticleDefinition.hh"
 
 
-namespace txs = texansim;
+namespace txs = tntsim;
 
 
 txs::PrimaryGeneratorAction::PrimaryGeneratorAction(      

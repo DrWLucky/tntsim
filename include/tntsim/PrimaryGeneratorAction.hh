@@ -13,7 +13,7 @@ class G4ParticleGun;
 class G4Event;
 
 
-namespace texansim {
+namespace tntsim {
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {

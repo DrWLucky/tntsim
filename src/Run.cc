@@ -1,10 +1,10 @@
 /// \file Run.cc
-/// \brief Implements texansim::Run class
+/// \brief Implements tntsim::Run class
 ///
-#include "texansim/Run.hh"
-#include "texansim/TexanHit.hh"
-#include "texansim/RootPersistenceManager.hh"
-#include "texansim/TG4Hit.h"
+#include "tntsim/Run.hh"
+#include "tntsim/TexanHit.hh"
+#include "tntsim/RootPersistenceManager.hh"
+#include "tntsim/TG4Hit.h"
 
 #include <TClonesArray.h>
 
@@ -18,7 +18,7 @@
 
 
 
-texansim::Run::Run():
+tntsim::Run::Run():
 	G4Run()
 {
 	fTexan = new TTexan("texan", "");
@@ -47,7 +47,7 @@ texansim::Run::Run():
 	fPrimaryHits->BypassStreamer();
 }
 
-texansim::Run::~Run()
+tntsim::Run::~Run()
 {
 	/// Take care of persistence closing and output: write/close/delete output
 	fPersistence->Write();
@@ -61,7 +61,7 @@ texansim::Run::~Run()
 
 
 
-void texansim::Run::RecordEvent(const G4Event* event)
+void tntsim::Run::RecordEvent(const G4Event* event)
 {
 	/// Get hit data and save from event's hit collection, save event to disk.
 	fTexan->Reset();

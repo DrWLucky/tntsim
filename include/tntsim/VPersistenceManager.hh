@@ -11,7 +11,7 @@
 
 
 
-namespace texansim {
+namespace tntsim {
 
 
 class DelayedMessenger;
@@ -30,7 +30,7 @@ class DelayedMessenger;
  *
  *  \attention Thread safety assumes that the class is used in a thread-local
  *  part of the code. An ideal place is a custom G4Run class (or perhaps an event
- *  or a hit). For an example, see the texansim::Run class.
+ *  or a hit). For an example, see the tntsim::Run class.
  */
 class VPersistenceManager {
 public:

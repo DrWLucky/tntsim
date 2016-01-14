@@ -7,7 +7,7 @@
 #include "TVector3.h"
 namespace CLHEP { class Hep3Vector; }
 
-namespace texansim {
+namespace tntsim {
 
 /// Simple container for hit data
 /*! Units are:
@@ -65,13 +65,13 @@ public:
 #ifndef __MAKECINT__
 #include "G4ThreeVector.hh"
 
-inline texansim::ThreeVector&
-texansim::ThreeVector::operator=(const CLHEP::Hep3Vector& rhs)
+inline tntsim::ThreeVector&
+tntsim::ThreeVector::operator=(const CLHEP::Hep3Vector& rhs)
 {
 	SetXYZ(rhs.x(), rhs.y(), rhs.z());
 	return *this;
 }
-inline CLHEP::Hep3Vector texansim::ThreeVector::CopyAsCLHEP()
+inline CLHEP::Hep3Vector tntsim::ThreeVector::CopyAsCLHEP()
 {
 	return CLHEP::Hep3Vector(X(), Y(), Z());
 }

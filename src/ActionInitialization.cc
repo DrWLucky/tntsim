@@ -1,12 +1,12 @@
 /// \file ActionInitialization.cc
 /// \brief Implementation of the ActionInitialization class
 
-#include "texansim/ActionInitialization.hh"
-#include "texansim/PrimaryGeneratorAction.hh"
-#include "texansim/RunAction.hh"
+#include "tntsim/ActionInitialization.hh"
+#include "tntsim/PrimaryGeneratorAction.hh"
+#include "tntsim/RunAction.hh"
 
 
-namespace txs = texansim;
+namespace txs = tntsim;
 
 txs::ActionInitialization::ActionInitialization()
 	: G4VUserActionInitialization()

@@ -2,13 +2,13 @@
 /// \brief Defines class to implement generic hit data-storage functions.
 #ifndef TXS_GENERIC_HIT_HEADER
 #define TXS_GENERIC_HIT_HEADER
-#include "texansim/HitData.hh"
-#include "texansim/Units.hh"
+#include "tntsim/HitData.hh"
+#include "tntsim/Units.hh"
 #include "G4ThreeVector.hh"
 
 
 
-namespace texansim {
+namespace tntsim {
 
 /// Implements data storage functions common to any type of hit.
 class GenericHit {

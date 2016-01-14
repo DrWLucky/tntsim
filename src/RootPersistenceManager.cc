@@ -1,7 +1,7 @@
 /// \file RootPersistenceManager.cc
 /// \brief Implements RootPersistenceManager class
-#include "texansim/RootPersistenceManager.hh"
-#include "texansim/Utils.hh"
+#include "tntsim/RootPersistenceManager.hh"
+#include "tntsim/Utils.hh"
 
 #include "TH1D.h"
 #include "TH1F.h"
@@ -27,7 +27,7 @@
 #include "G4MTRunManager.hh"
 #endif
 
-namespace txs =  texansim;
+namespace txs =  tntsim;
 
 
 #ifdef G4MULTITHREADED

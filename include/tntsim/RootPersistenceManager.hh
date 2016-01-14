@@ -2,7 +2,7 @@
 /// \brief ROOT implementation of VPersistenceManager
 #ifndef TXS_ROOT_PERSISTENCE_HEADER_FILE_8675309
 #define TXS_ROOT_PERSISTENCE_HEADER_FILE_8675309
-#include "texansim/VPersistenceManager.hh"
+#include "tntsim/VPersistenceManager.hh"
 #include <vector>
 #include <utility>
 
@@ -11,7 +11,7 @@ class TFile;
 class TTree;
 class TObjArray;
 
-namespace texansim {
+namespace tntsim {
 
 class RootPersistenceManager : public VPersistenceManager
 {

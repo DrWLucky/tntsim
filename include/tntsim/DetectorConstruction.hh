@@ -10,7 +10,7 @@
 class G4GDMLParser;
 class G4UImessenger;
 
-namespace texansim {
+namespace tntsim {
 
 
 /// Detector construction using the geometry read from a GDML (XML) file

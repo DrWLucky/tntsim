@@ -7,7 +7,7 @@
 #include "G4VUserActionInitialization.hh"
 
 
-namespace texansim {
+namespace tntsim {
 
 /// Action initialization class.
 class ActionInitialization : public G4VUserActionInitialization

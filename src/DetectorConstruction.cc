@@ -3,14 +3,14 @@
 #include "G4GDMLParser.hh"
 #include "G4SDManager.hh"
 
-#include "texansim/DetectorConstruction.hh"
-#include "texansim/TexanSD.hh"
-#include "texansim/Utils.hh"
+#include "tntsim/DetectorConstruction.hh"
+#include "tntsim/TexanSD.hh"
+#include "tntsim/Utils.hh"
 
 
 
 
-namespace txs = texansim;
+namespace txs = tntsim;
 
 txs::DetectorConstruction::DetectorConstruction(const G4String& file)
 { 

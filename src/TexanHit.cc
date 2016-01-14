@@ -1,7 +1,7 @@
 /// \file TexanHit.cc
 /// \brief Implementation of the TexanHit class
 
-#include "texansim/TexanHit.hh"
+#include "tntsim/TexanHit.hh"
 #include "G4UnitsTable.hh"
 #include "G4VVisManager.hh"
 #include "G4Circle.hh"
@@ -10,10 +10,10 @@
 #include "G4Step.hh"
 #include <iomanip>
 
-namespace txs = texansim;
+namespace txs = tntsim;
 
-namespace texansim {
-G4ThreadLocal G4Allocator<texansim::TexanHit>* TexanHitAllocator = 0;
+namespace tntsim {
+G4ThreadLocal G4Allocator<tntsim::TexanHit>* TexanHitAllocator = 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

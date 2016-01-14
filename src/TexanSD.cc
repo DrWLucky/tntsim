@@ -3,7 +3,7 @@
 ///
 #include <cassert>
 
-#include "texansim/TexanSD.hh"
+#include "tntsim/TexanSD.hh"
 
 #include "G4HCofThisEvent.hh"
 #include "G4ThreeVector.hh"
@@ -15,7 +15,7 @@
 
 
 
-namespace txs = texansim;
+namespace txs = tntsim;
 
 
 

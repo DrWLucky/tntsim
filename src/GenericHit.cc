@@ -1,11 +1,11 @@
 /// \file GenericHit.cc
 /// \brief Implements class to implement generic hit data-storage functions.
-#include "texansim/GenericHit.hh"
+#include "tntsim/GenericHit.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 
 
-namespace txs = texansim;
+namespace txs = tntsim;
 
 
 G4ThreeVector txs::GenericHit::GetPosition() const

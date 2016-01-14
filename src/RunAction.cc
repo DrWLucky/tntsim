@@ -2,11 +2,11 @@
 /// \brief Implementation of the RunAction class
 #include <cassert>
 
-#include "texansim/RunAction.hh"
-#include "texansim/PrimaryGeneratorAction.hh"
-#include "texansim/DetectorConstruction.hh"
-#include "texansim/Utils.hh"
-#include "texansim/Run.hh"
+#include "tntsim/RunAction.hh"
+#include "tntsim/PrimaryGeneratorAction.hh"
+#include "tntsim/DetectorConstruction.hh"
+#include "tntsim/Utils.hh"
+#include "tntsim/Run.hh"
 
 #include "G4UImanager.hh"
 #include "G4RunManager.hh"
@@ -16,7 +16,7 @@
 #include "G4SystemOfUnits.hh"
 
 
-namespace txs = texansim;
+namespace txs = tntsim;
 
 
 
@@ -39,7 +39,7 @@ G4Run* txs::RunAction::GenerateRun()
   // production thresholds) for a particular run, because GenerateRun() is invoked before 
   // the calculation of the physics table.
 	//
-	/// Return an instance of our custom class texansim::Run
+	/// Return an instance of our custom class tntsim::Run
 	return new txs::Run();
 }
 

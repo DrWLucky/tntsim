@@ -14,7 +14,7 @@
 #include "G4Step.hh"
 // class G4Step;
 
-namespace texansim {
+namespace tntsim {
 
 
 class TexanSD;
@@ -54,21 +54,21 @@ private:
 
 
 /// Templated hits collection
-typedef G4THitsCollection<texansim::TexanHit> TexanHitsCollection;
+typedef G4THitsCollection<tntsim::TexanHit> TexanHitsCollection;
 /// Hit collection allocator
-extern G4ThreadLocal G4Allocator<texansim::TexanHit>* TexanHitAllocator;
+extern G4ThreadLocal G4Allocator<tntsim::TexanHit>* TexanHitAllocator;
 
 }
 
 
-inline void* texansim::TexanHit::operator new(size_t)
+inline void* tntsim::TexanHit::operator new(size_t)
 {
   if(!TexanHitAllocator)
 		TexanHitAllocator = new G4Allocator<TexanHit>;
   return (void *) TexanHitAllocator->MallocSingle();
 }
 
-inline void texansim::TexanHit::operator delete(void *hit)
+inline void tntsim::TexanHit::operator delete(void *hit)
 {
   TexanHitAllocator->FreeSingle((TexanHit*) hit);
 }

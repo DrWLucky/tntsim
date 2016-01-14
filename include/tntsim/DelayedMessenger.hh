@@ -6,7 +6,7 @@
 #include "G4UImessenger.hh"
 
 
-namespace texansim {
+namespace tntsim {
 
 /// Delayed messenger class
 /*! Abstract class for prcessing UI messenges in a delayed manner.

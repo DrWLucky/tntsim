@@ -8,7 +8,7 @@
 class TTexan;
 class TClonesArray;
 
-namespace texansim {
+namespace tntsim {
 
 class VPersistenceManager;
 class RunAction;

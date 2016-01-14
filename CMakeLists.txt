@@ -4,7 +4,7 @@
 #----------------------------------------------------------------------------
 # Setup the project
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(texansim)
+project(tntsim)
 
 ## ---   Set the analysis package you want to use here --- ##
 ##
@@ -61,9 +61,9 @@ if(theAnalyzer STREQUAL "ROOT")
 endif(theAnalyzer STREQUAL "ROOT")
 
 
-add_custom_command(OUTPUT G4HitDict.cxx COMMAND rootcint ARGS -f G4HitDict.cxx -c -I${Geant4_INCLUDE_DIR} -I${PROJECT_SOURCE_DIR}/include/texansim ${PROJECT_SOURCE_DIR}/include/texansim/TG4Hit.h ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h DEPENDS ${PROJECT_SOURCE_DIR}/include/texansim/TG4Hit.h ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h)
+add_custom_command(OUTPUT G4HitDict.cxx COMMAND rootcint ARGS -f G4HitDict.cxx -c -I${Geant4_INCLUDE_DIR} -I${PROJECT_SOURCE_DIR}/include/tntsim ${PROJECT_SOURCE_DIR}/include/tntsim/TG4Hit.h ${PROJECT_SOURCE_DIR}/include/tntsim/Linkdef.h DEPENDS ${PROJECT_SOURCE_DIR}/include/tntsim/TG4Hit.h ${PROJECT_SOURCE_DIR}/include/tntsim/Linkdef.h)
 
-add_custom_target(G4HitDict.cxx DEPENDS ${PROJECT_SOURCE_DIR}/include/texansim/TG4Hit.h ${PROJECT_SOURCE_DIR}/src/TG4Hit.cc ${PROJECT_SOURCE_DIR}/include/texansim/Linkdef.h)
+add_custom_target(G4HitDict.cxx DEPENDS ${PROJECT_SOURCE_DIR}/include/tntsim/TG4Hit.h ${PROJECT_SOURCE_DIR}/src/TG4Hit.cc ${PROJECT_SOURCE_DIR}/include/tntsim/Linkdef.h)
 
 
 #----------------------------------------------------------------------------
@@ -77,13 +77,13 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4/ROOT/Analysis libraries
 #
 find_library(LIBTEXANA Texana)
-add_executable(texansim.exe texansim.cc ${sources} ${headers} G4HitDict.cxx)
+add_executable(tntsim.exe tntsim.cc ${sources} ${headers} G4HitDict.cxx)
 add_library(G4Hit SHARED G4HitDict.cxx ${PROJECT_SOURCE_DIR}/src/TG4Hit.cc)
 if(theAnalyzer STREQUAL "ROOT")
 	EXECUTE_PROCESS(COMMAND root-config --libs OUTPUT_VARIABLE ROOT_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 	set(CMAKE_EXE_LINKER_FLAGS ${ROOT_LD_FLAGS})
 endif(theAnalyzer STREQUAL "ROOT")
-target_link_libraries(texansim.exe ${Geant4_LIBRARIES} ${LIBTEXANA})
+target_link_libraries(tntsim.exe ${Geant4_LIBRARIES} ${LIBTEXANA})
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
@@ -113,7 +113,7 @@ find_package(Doxygen)
 		      COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
     add_custom_target(docinstall DEPENDS doc COMMAND
-		      scp -r ${CMAKE_CURRENT_BINARY_DIR}/doc/html christian@io.physics.tamu.edu:/home/users/christian/public_html/software/texansim/
+		      scp -r ${CMAKE_CURRENT_BINARY_DIR}/doc/html christian@io.physics.tamu.edu:/home/users/christian/public_html/software/tntsim/
     )
     endif(DOXYGEN_FOUND)
 
@@ -122,10 +122,10 @@ find_package(Doxygen)
 # For internal Geant4 use - but has no effect if you build this
 # example standalone
 #
-add_custom_target(texansim DEPENDS texansim.exe)
+add_custom_target(tntsim DEPENDS tntsim.exe)
 
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS texansim.exe DESTINATION bin)
+install(TARGETS tntsim.exe DESTINATION bin)
 install(TARGETS G4Hit DESTINATION lib)

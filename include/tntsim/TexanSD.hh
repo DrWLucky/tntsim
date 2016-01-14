@@ -5,13 +5,13 @@
 #define TEXAN_ARRAY_SD_HH 1
 
 #include "G4VSensitiveDetector.hh"
-#include "texansim/TexanHit.hh"
+#include "tntsim/TexanHit.hh"
 
 
 
 class G4Step;
 
-namespace texansim {
+namespace tntsim {
 
 /// Sensitive detector for TEXAN array.
 /** Sensitive detector to be attached to the GDML geometry
@@ -35,7 +35,7 @@ public:
 
 private:
 	/// Collection of hits
-	texansim::TexanHitsCollection* fHitsCollection;
+	tntsim::TexanHitsCollection* fHitsCollection;
 };
 
 }
