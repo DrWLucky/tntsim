@@ -10,38 +10,38 @@
 
 
 
-namespace txs = tntsim;
+namespace tnt = tntsim;
 
-txs::DetectorConstruction::DetectorConstruction(const G4String& file)
+tnt::DetectorConstruction::DetectorConstruction(const G4String& file)
 { 
 	fReadFile  = file;
 	fParser    = new G4GDMLParser();		
 	fMessenger = new G4GDMLMessenger(fParser);
 }
 
-txs::DetectorConstruction::~DetectorConstruction()
+tnt::DetectorConstruction::~DetectorConstruction()
 {
 	Zap(fParser);
 	Zap(fMessenger);
 }
 
-void txs::DetectorConstruction::SetReadFile( const G4String& File )
+void tnt::DetectorConstruction::SetReadFile( const G4String& File )
 {
   fReadFile=File;
 }
 
 
-G4VPhysicalVolume* txs::DetectorConstruction::Construct()
+G4VPhysicalVolume* tnt::DetectorConstruction::Construct()
 {
 	fParser->Read(fReadFile);	
 	fWorld = fParser->GetWorldVolume();
 	return fWorld;
 }
 
-void txs::DetectorConstruction::ConstructSDandField()
+void tnt::DetectorConstruction::ConstructSDandField()
 {
 	G4SDManager* SDman = G4SDManager::GetSDMpointer();
-	txs::TexanSD* texanSD = new txs::TexanSD("TEXAN", "TexanHitsCollection");
+	tnt::TexanSD* texanSD = new tnt::TexanSD("TEXAN", "TexanHitsCollection");
 	SDman->AddNewDetector( texanSD );
 
 	const G4GDMLAuxMapType* auxmap = fParser->GetAuxMap();

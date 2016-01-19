@@ -5,15 +5,15 @@
 #include "G4UnitsTable.hh"
 
 
-namespace txs = tntsim;
+namespace tnt = tntsim;
 
 
-G4ThreeVector txs::GenericHit::GetPosition() const
+G4ThreeVector tnt::GenericHit::GetPosition() const
 {
 	return G4ThreeVector(fData.fX * cm, fData.fY * cm, fData.fZ *cm);
 }
 
-void txs::GenericHit::SetPosition(const G4ThreeVector& pos)
+void tnt::GenericHit::SetPosition(const G4ThreeVector& pos)
 {
 	fData.fX = pos.getX() / cm;
 	fData.fY = pos.getY() / cm;

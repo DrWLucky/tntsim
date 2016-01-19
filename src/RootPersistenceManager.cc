@@ -27,7 +27,7 @@
 #include "G4MTRunManager.hh"
 #endif
 
-namespace txs =  tntsim;
+namespace tnt =  tntsim;
 
 
 #ifdef G4MULTITHREADED
@@ -45,7 +45,7 @@ G4int gNumClosedWorkerFiles = 0;
 }
 
 
-txs::RootPersistenceManager::RootPersistenceManager():
+tnt::RootPersistenceManager::RootPersistenceManager():
 	fFile(0)
 {
 	TXS_THREADLOCK;
@@ -59,7 +59,7 @@ txs::RootPersistenceManager::RootPersistenceManager():
 }
 
 
-void txs::RootPersistenceManager::SetFilename(const G4String& name)
+void tnt::RootPersistenceManager::SetFilename(const G4String& name)
 {
 	/// - Append extension and thread markers
 #ifdef G4MULTITHREADED
@@ -78,7 +78,7 @@ void txs::RootPersistenceManager::SetFilename(const G4String& name)
 	}
 }
 
-G4bool txs::RootPersistenceManager::OpenFile()
+G4bool tnt::RootPersistenceManager::OpenFile()
 {
 	TXS_THREADLOCK;
 
@@ -106,13 +106,13 @@ G4bool txs::RootPersistenceManager::OpenFile()
 }
 
 
-G4bool txs::RootPersistenceManager::AddObject(const G4String& name, const G4String& classname, void* obj)
+G4bool tnt::RootPersistenceManager::AddObject(const G4String& name, const G4String& classname, void* obj)
 {
 	TXS_THREADLOCK;
 	return fTree ? fTree->Branch(name.data(), classname.data(), obj) : false;
 }
 
-G4bool txs::RootPersistenceManager::AddPrimitive(const G4String& name, void* p, Type_t type)
+G4bool tnt::RootPersistenceManager::AddPrimitive(const G4String& name, void* p, Type_t type)
 {
 	TXS_THREADLOCK;
 	if(!fTree)
@@ -142,7 +142,7 @@ namespace { struct HistDir0 {
 	~HistDir0() { TH1::AddDirectory(true ); }
 }; }
 
-G4bool txs::RootPersistenceManager::AddHistogram1d(
+G4bool tnt::RootPersistenceManager::AddHistogram1d(
 	const G4String& name, const G4String& title,
 	G4int bins, G4double xlow, G4double xhigh,
 	void* valuePointer, Type_t type)
@@ -173,7 +173,7 @@ G4bool txs::RootPersistenceManager::AddHistogram1d(
 	return true;
 }
 
-G4bool txs::RootPersistenceManager::AddHistogram2d(
+G4bool tnt::RootPersistenceManager::AddHistogram2d(
 	const G4String& name, const G4String& title,
 	G4int xbins, G4double xlow, G4double xhigh,
 	G4int ybins, G4double ylow, G4double yhigh,
@@ -208,7 +208,7 @@ G4bool txs::RootPersistenceManager::AddHistogram2d(
 
 
 
-void txs::RootPersistenceManager::SaveEvent()
+void tnt::RootPersistenceManager::SaveEvent()
 {
 	fTree->Fill();
 
@@ -255,7 +255,7 @@ void txs::RootPersistenceManager::SaveEvent()
 }
 
 
-void txs::RootPersistenceManager::Write()
+void tnt::RootPersistenceManager::Write()
 {
 	TXS_THREADLOCK;
 	if(G4Threading::IsMultithreadedApplication()) {
@@ -277,7 +277,7 @@ void txs::RootPersistenceManager::Write()
 }
 
 
-txs::RootPersistenceManager::~RootPersistenceManager()
+tnt::RootPersistenceManager::~RootPersistenceManager()
 {
 	Close();
 
@@ -287,7 +287,7 @@ txs::RootPersistenceManager::~RootPersistenceManager()
 }
 
 #include <cassert>
-void txs::RootPersistenceManager::Close()
+void tnt::RootPersistenceManager::Close()
 {
 	TXS_THREADLOCK;
 	if(fFile) {
@@ -304,7 +304,7 @@ void txs::RootPersistenceManager::Close()
 	}
 }
 
-void txs::RootPersistenceManager::Merge()
+void tnt::RootPersistenceManager::Merge()
 {
 #ifdef G4MULTITHREADED
 	assert(gNumClosedWorkerFiles == gNumWorkerFiles);

@@ -10,12 +10,12 @@
 #include <algorithm>
 
 
-namespace txs = tntsim;
+namespace tnt = tntsim;
 
 
 
 
-txs::PersistenceMessenger::PersistenceMessenger():
+tnt::PersistenceMessenger::PersistenceMessenger():
 	DelayedMessenger(),
 	fDirectory(0),
 	fSetFilenameCmd(0)
@@ -30,14 +30,14 @@ txs::PersistenceMessenger::PersistenceMessenger():
 }
 
 
-txs::PersistenceMessenger::~PersistenceMessenger()
+tnt::PersistenceMessenger::~PersistenceMessenger()
 {
 	Zap(fDirectory);
 	Zap(fSetFilenameCmd);
 }
 
 
-void txs::PersistenceMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
+void tnt::PersistenceMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 {
 	if ( command == fSetFilenameCmd ) {
 		fCommands.insert(std::make_pair(command, newValue));
@@ -49,8 +49,8 @@ void txs::PersistenceMessenger::SetNewValue(G4UIcommand *command, G4String newVa
 
 
 namespace { struct DoApplyCommand {
-	txs::VPersistenceManager* fManager;
-	DoApplyCommand(txs::VPersistenceManager* manager):
+	tnt::VPersistenceManager* fManager;
+	DoApplyCommand(tnt::VPersistenceManager* manager):
 		fManager(manager) { }
 	void operator() (const std::pair<G4UIcommand*, G4String>& element)
 		{
@@ -60,7 +60,7 @@ namespace { struct DoApplyCommand {
 		}
 }; }
 
-void txs::PersistenceMessenger::ApplyCommands(void* managerAddr)
+void tnt::PersistenceMessenger::ApplyCommands(void* managerAddr)
 {
 	VPersistenceManager* manager =
 		reinterpret_cast<VPersistenceManager*>(managerAddr);

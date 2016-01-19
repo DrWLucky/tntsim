@@ -9,10 +9,10 @@
 #include "G4ParticleDefinition.hh"
 
 
-namespace txs = tntsim;
+namespace tnt = tntsim;
 
 
-txs::PrimaryGeneratorAction::PrimaryGeneratorAction(      
+tnt::PrimaryGeneratorAction::PrimaryGeneratorAction(      
 	const G4String& particleName, 
 	G4double energy,
 	G4ThreeVector position, 
@@ -35,14 +35,14 @@ txs::PrimaryGeneratorAction::PrimaryGeneratorAction(
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-txs::PrimaryGeneratorAction::~PrimaryGeneratorAction()
+tnt::PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
   delete fParticleGun;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void txs::PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+void tnt::PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
   // this function is called at the begining of event
 

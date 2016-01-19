@@ -10,7 +10,7 @@
 #include "G4Step.hh"
 #include <iomanip>
 
-namespace txs = tntsim;
+namespace tnt = tntsim;
 
 namespace tntsim {
 G4ThreadLocal G4Allocator<tntsim::TexanHit>* TexanHitAllocator = 0;
@@ -18,13 +18,13 @@ G4ThreadLocal G4Allocator<tntsim::TexanHit>* TexanHitAllocator = 0;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-txs::TexanHit::TexanHit()
+tnt::TexanHit::TexanHit()
 	: G4VHit(), fStep(0)
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-txs::TexanHit::TexanHit(G4Step* step)
+tnt::TexanHit::TexanHit(G4Step* step)
 	: G4VHit()
 {
 	SetStep(step);
@@ -32,19 +32,19 @@ txs::TexanHit::TexanHit(G4Step* step)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-txs::TexanHit::~TexanHit()
+tnt::TexanHit::~TexanHit()
 { if(fStep) delete fStep; }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4int txs::TexanHit::operator==(const txs::TexanHit& right) const
+G4int tnt::TexanHit::operator==(const tnt::TexanHit& right) const
 {
   return ( this == &right ) ? 1 : 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void txs::TexanHit::Draw()
+void tnt::TexanHit::Draw()
 {
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
   if(pVVisManager)
@@ -62,7 +62,7 @@ void txs::TexanHit::Draw()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void txs::TexanHit::Print()
+void tnt::TexanHit::Print()
 {
 	const G4ThreeVector &pos = fStep->GetPostStepPoint()->GetPosition();
   G4cout

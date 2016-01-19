@@ -16,21 +16,21 @@
 #include "G4SystemOfUnits.hh"
 
 
-namespace txs = tntsim;
+namespace tnt = tntsim;
 
 
 
 
-txs::RunAction::RunAction():
+tnt::RunAction::RunAction():
 	G4UserRunAction()
 { }
 
 
-txs::RunAction::~RunAction()
+tnt::RunAction::~RunAction()
 { }
 
 
-G4Run* txs::RunAction::GenerateRun()
+G4Run* tnt::RunAction::GenerateRun()
 {
 	// This method is invoked at the beginning of BeamOn. Because the user can inherit
   // the class G4Run and create his/her own concrete class to store some information about 
@@ -40,11 +40,11 @@ G4Run* txs::RunAction::GenerateRun()
   // the calculation of the physics table.
 	//
 	/// Return an instance of our custom class tntsim::Run
-	return new txs::Run();
+	return new tnt::Run();
 }
 
 
-void txs::RunAction::BeginOfRunAction(const G4Run*)
+void tnt::RunAction::BeginOfRunAction(const G4Run*)
 {
 	// This method is invoked before entering the event loop. A typical use of this
 	// method would be to initialize and/or book histograms for a particular run. 
@@ -53,7 +53,7 @@ void txs::RunAction::BeginOfRunAction(const G4Run*)
 
 
 
-void txs::RunAction::EndOfRunAction(const G4Run*)
+void tnt::RunAction::EndOfRunAction(const G4Run*)
 {
 	// This method is invoked at the very end of the run processing. It is typically
 	// used for a simple analysis of the processed run.

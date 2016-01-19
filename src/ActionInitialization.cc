@@ -6,31 +6,31 @@
 #include "tntsim/RunAction.hh"
 
 
-namespace txs = tntsim;
+namespace tnt = tntsim;
 
-txs::ActionInitialization::ActionInitialization()
+tnt::ActionInitialization::ActionInitialization()
 	: G4VUserActionInitialization()
 {}
 
 
 
-txs::ActionInitialization::~ActionInitialization()
+tnt::ActionInitialization::~ActionInitialization()
 {}
 
 
 
-void txs::ActionInitialization::BuildForMaster() const
+void tnt::ActionInitialization::BuildForMaster() const
 {
-  SetUserAction(new txs::RunAction);
+  SetUserAction(new tnt::RunAction);
 }
 
 
-void txs::ActionInitialization::Build() const
+void tnt::ActionInitialization::Build() const
 {
   SetUserAction(
-		new txs::PrimaryGeneratorAction("neutron", 10*MeV,
+		new tnt::PrimaryGeneratorAction("neutron", 10*MeV,
 																		G4ThreeVector(0,0,0),
 																		G4ThreeVector(0,0,1))
 		);
-  SetUserAction(new txs::RunAction);
+  SetUserAction(new tnt::RunAction);
 }

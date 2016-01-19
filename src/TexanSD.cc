@@ -15,14 +15,14 @@
 
 
 
-namespace txs = tntsim;
+namespace tnt = tntsim;
 
 
 
 
 
 
-txs::TexanSD::TexanSD(const G4String& name, const G4String& hitsCollectionName)
+tnt::TexanSD::TexanSD(const G4String& name, const G4String& hitsCollectionName)
   : G4VSensitiveDetector(name),
 		fHitsCollection(NULL)
 {
@@ -32,14 +32,14 @@ txs::TexanSD::TexanSD(const G4String& name, const G4String& hitsCollectionName)
 
 
 
-txs::TexanSD::~TexanSD()
+tnt::TexanSD::~TexanSD()
 {
 }
 
 
 
 
-void txs::TexanSD::Initialize(G4HCofThisEvent* hce)
+void tnt::TexanSD::Initialize(G4HCofThisEvent* hce)
 {
   /// - Create hits collection
   fHitsCollection 
@@ -55,7 +55,7 @@ void txs::TexanSD::Initialize(G4HCofThisEvent* hce)
 
 
 
-G4bool txs::TexanSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
+G4bool tnt::TexanSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 {
 #if 0
 	if ( aStep->GetTrack()->GetTrackID() != 1 )
@@ -97,7 +97,7 @@ G4bool txs::TexanSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 
 
 
-void txs::TexanSD::EndOfEvent(G4HCofThisEvent*)
+void tnt::TexanSD::EndOfEvent(G4HCofThisEvent*)
 {
   if ( verboseLevel>1 ) { 
 		G4int nofHits = fHitsCollection->entries();

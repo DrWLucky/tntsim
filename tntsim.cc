@@ -22,7 +22,7 @@
 
 
 
-namespace txs = tntsim;
+namespace tnt = tntsim;
 
 
 namespace {
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 	
 
 	/// - Set up analysis stuff
-	txs::VPersistenceManager::SetMessenger(new PersistenceMessenger());
+	tnt::VPersistenceManager::SetMessenger(new PersistenceMessenger());
 
 
 	G4int nthreads = 0;
@@ -119,14 +119,14 @@ int main(int argc, char** argv)
 	/// - Set mandatory initialization classes
 	///
 	/// - Detector construction from GDML file (XML)
-	txs::DetectorConstruction* det = new txs::DetectorConstruction(geofile);
+	tnt::DetectorConstruction* det = new tnt::DetectorConstruction(geofile);
 	runManager->SetUserInitialization(det);
 
 	/// - TEMPORARY physics list
 	/// \todo implement permanent (or changable) physics list
 	runManager->SetUserInitialization(new QGSP_BERT_HP);
 	/// - Action initialization
-	runManager->SetUserInitialization(new txs::ActionInitialization);
+	runManager->SetUserInitialization(new tnt::ActionInitialization);
 
 	/// - Initialize G4 kernel
 	runManager->Initialize();
@@ -156,4 +156,4 @@ int main(int argc, char** argv)
 
 
 int main(int argc, char** argv)
-{ return txs::main(argc, argv); }
+{ return tnt::main(argc, argv); }
