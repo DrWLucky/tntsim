@@ -11,3 +11,6 @@ build/*.mac
 build/*.gdml
 build/*.so
 build/doc
+build/G4HitDict.*
+build/examples
+build/*.out
