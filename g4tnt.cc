@@ -64,7 +64,7 @@ int main()
   //beamType = "conic";
   //beamType = "iso";
 
-  G4double Neutron_Eng = 1.0*MeV;    // Starting Energy
+  G4double Neutron_Eng = 15.0*MeV;    // Starting Energy
   G4double Det_Threshold = 0.5*MeV;  // Det. Threshold in MeVee
 
   // Detector-Types Defined (In TntDetectorConstruction.cc):
@@ -73,6 +73,7 @@ int main()
   //            DetDim[2]->NotUsed
   // bar - DetDim[0] = X Dim, DetDim[1] = Y Dim, DetDim[2] = ZDim
 
+# if 0
   // Cylinder defined is DEMON detector module (NE213)
 	G4String DetMaterial = "NE213";
   G4String DetType = "cylinder";
@@ -80,6 +81,15 @@ int main()
   DetDim[0] = 8.0*cm;     // rad. of cyl.
   DetDim[1] = 10.0*cm;    //DetDepth/2.
   DetDim[2] = 0.0*cm;     // z-dim
+#else
+  // TNT detector
+	G4String DetMaterial = "BC505";
+  G4String DetType = "bar";
+  G4ThreeVector DetDim;
+  DetDim[0] = 200.0*cm; // x
+  DetDim[1] = 200.0*cm; // y
+  DetDim[2] = 30.00*cm; // z
+#endif
 
   // Possible LightConv Settings:
   // "none" - no light conversion - get only energy deposited
