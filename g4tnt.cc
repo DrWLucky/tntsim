@@ -99,9 +99,9 @@ int main()
   G4String LightConv = "light+resol";
 
   // Set VerboseFlag to "1" to run in verbose mode
-  G4int VerboseFlag = 0;
+  G4int VerboseFlag = 1;
   // Set VisFlag to "1" to run in visualization mode
-  G4int VisFlag = 1;
+  G4int VisFlag = 0;
   //**** Note! You should run fewer events (such as < 1000) when using the viewer!
   G4String VisType = "OPENGL";   // Set vis type. OPENGL works in UBUNTU 12.04 and later
    //G4String VisType = "VRMLVIEW";
@@ -112,7 +112,7 @@ int main()
   //G4int ch_eng = 20000;
   G4int numberOfEvent;
   if (ch_eng == 0)
-    {numberOfEvent = 10;}
+    {numberOfEvent = 1000;}
   else
     { numberOfEvent = ch_eng*200; }  // 200 energies from 1 to 200 MeV
 

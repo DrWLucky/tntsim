@@ -283,7 +283,7 @@ G4VPhysicalVolume* TntDetectorConstruction::Construct()
 																			"detector",0,0,0);     // It's name, other props. 0
 
   //Detector Placement (at 0 degrees)
-	G4ThreeVector positionDetector = G4ThreeVector(0.,0.,25.*cm);
+	G4ThreeVector positionDetector = G4ThreeVector(0.,0.,200.*cm);
 	//G4RotationMatrix *rot1=new G4RotationMatrix();
 	//rot1->rotateX(90.*deg);
 
