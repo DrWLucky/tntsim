@@ -74,6 +74,7 @@ int main()
   // bar - DetDim[0] = X Dim, DetDim[1] = Y Dim, DetDim[2] = ZDim
 
   // Cylinder defined is DEMON detector module (NE213)
+	G4String DetMaterial = "NE213";
   G4String DetType = "cylinder";
   G4ThreeVector DetDim;
   DetDim[0] = 8.0*cm;     // rad. of cyl.
@@ -120,7 +121,7 @@ int main()
   CLHEP::HepRandom::showEngineStatus();
 
   // set mandatory initialization classes
-  G4VUserDetectorConstruction* detector = new TntDetectorConstruction(DetType,DetDim, LightConv);
+  G4VUserDetectorConstruction* detector = new TntDetectorConstruction(DetMaterial,DetType,DetDim, LightConv);
   runManager->SetUserInitialization(detector);
 
   G4VUserPhysicsList* physics = new TntPhysicsList;

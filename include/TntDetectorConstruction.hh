@@ -56,7 +56,7 @@ class TntDetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
 
-  TntDetectorConstruction(G4String Type, G4ThreeVector Dims, G4String Light);
+  TntDetectorConstruction(G4String Material, G4String Type, G4ThreeVector Dims, G4String Light);
   ~TntDetectorConstruction();
 
     G4VPhysicalVolume* Construct();
@@ -88,6 +88,7 @@ class TntDetectorConstruction : public G4VUserDetectorConstruction
   G4Material*         TargetMatter;  // pointer to the target  material
 
   // Class Variables
+	G4String DetMaterial;
   G4String DetType;
   G4ThreeVector DetDim;
   G4String Light_Conv_Method;

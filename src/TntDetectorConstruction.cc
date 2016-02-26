@@ -83,7 +83,7 @@ inline void calcMassFraction(G4double atomicRatio, // ratio N1/N2
 	*fraction2 = p2 / (p1 + p2);
 }
 
-inline G4Material* CreateHydrocarbon(
+inline G4Material* createHydrocarbon(
 	const char* name,
 	G4double density,
 	G4double HtoC_ratio,
@@ -95,20 +95,39 @@ inline G4Material* CreateHydrocarbon(
 	G4double mf1, mf2;
 	calcMassFraction(HtoC_ratio, pH->GetN(), pC->GetN(), &mf1, &mf2);
 	
-	G4cout << pH->GetN() << "     ofijweoifjweopfjweiopf      " << pC->GetN() << "\n";
-
 	hc->AddElement(pH, mf1);
 	hc->AddElement(pC, mf2);
 
 	return hc;
 }
+
+class MaterialNameIs {
+	G4String name_;
+public:
+	MaterialNameIs(const G4String& name):
+		name_(name) { }
+	bool operator() (G4Material* m)
+		{
+			return m->GetName() == name_;
+		}
+};
+
+G4Material* findMaterial(const G4String& name)
+{
+	G4MaterialTable* mt = G4Material::GetMaterialTable();
+	G4MaterialTable::iterator it =
+		std::find_if(mt->begin(), mt->end(), MaterialNameIs(name));
+
+	return it != mt->end() ? *it : 0;
+}
 }
 
-TntDetectorConstruction::TntDetectorConstruction(G4String Type,G4ThreeVector Dims,G4String Light)
- :solidWorld(0),  logicWorld(0),  physiWorld(0),
-  solidTarget(0), logicTarget(0), physiTarget(0),
-  solidDetector(0),logicDetector(0), physiDetector(0),
-  DetType(Type),DetDim(Dims),Light_Conv_Method(Light)
+TntDetectorConstruction::TntDetectorConstruction(
+	G4String Material, G4String Type,G4ThreeVector Dims,G4String Light)
+	:solidWorld(0),  logicWorld(0),  physiWorld(0),
+	 solidTarget(0), logicTarget(0), physiTarget(0),
+	 solidDetector(0),logicDetector(0), physiDetector(0),
+	 DetMaterial(Material),DetType(Type),DetDim(Dims),Light_Conv_Method(Light)
 {;}
 
 TntDetectorConstruction::~TntDetectorConstruction()
@@ -146,36 +165,36 @@ G4VPhysicalVolume* TntDetectorConstruction::Construct()
   // density = 7.87*g/cm3;
   // G4Material* Fe = new G4Material("Fe", z=26., a=55.845*g/mole, density);
 
- //  Vacuum
+	//  Vacuum
 
-    density = 0.00000001*mg/cm3;
-    G4Material* Vacuum = new G4Material("Vacuum", density, nel=2, kStateGas, 
-					temperature= 273.15*kelvin, pressure=0.0001*pascal);
-    Vacuum->AddElement(N, .7);
-    Vacuum->AddElement(O, .3);
+	density = 0.00000001*mg/cm3;
+	G4Material* Vacuum = new G4Material("Vacuum", density, nel=2, kStateGas, 
+																			temperature= 273.15*kelvin, pressure=0.0001*pascal);
+	Vacuum->AddElement(N, .7);
+	Vacuum->AddElement(O, .3);
 
 // NE213
-    density = 0.874*g/cm3 ;
-    G4Material* NE213 = new G4Material("NE213", density, nel=2);
-    NE213->AddElement(C, 90.779*perCent);    // New Calc w/ numbers from BC-501A
-    NE213->AddElement(H, 9.221*perCent);
-    //NE213->AddElement(C, 90.82*perCent);   // Marc's Calculation
-    //NE213->AddElement(H, 9.18*perCent);
+	density = 0.874*g/cm3 ;
+	G4Material* NE213 = new G4Material("NE213", density, nel=2);
+	NE213->AddElement(C, 90.779*perCent);    // New Calc w/ numbers from BC-501A
+	NE213->AddElement(H, 9.221*perCent);
+	//NE213->AddElement(C, 90.82*perCent);   // Marc's Calculation
+	//NE213->AddElement(H, 9.18*perCent);
 
-		{
-			const G4double* numAtomsVect = NE213->GetVecNbOfAtomsPerVolume();
-			G4double numC = numAtomsVect[0];
-			G4double numH = numAtomsVect[1];
-			G4cout << "NE-213: The Num. of C atoms is : " << numC << G4endl;
-			G4cout << "NE-213: The Num. of H atoms is : " << numH << G4endl;
-		}
+	{
+		const G4double* numAtomsVect = NE213->GetVecNbOfAtomsPerVolume();
+		G4double numC = numAtomsVect[0];
+		G4double numH = numAtomsVect[1];
+		G4cout << "NE-213: The Num. of C atoms is : " << numC << G4endl;
+		G4cout << "NE-213: The Num. of H atoms is : " << numH << G4endl;
+	}
 
-		// Add all of the plastic & liquid scintillators
+	// Add all of the plastic & liquid scintillators
 		
-		G4Material* BC505 = 
-			CreateHydrocarbon("BC505", 0.877*g/cm3, 1.331, H, C);
+	G4Material* BC505 = 
+		createHydrocarbon("BC505", 0.877*g/cm3, 1.331, H, C);
 
- // Print all the materials defined.
+	// Print all the materials defined.
   //
   G4cout << G4endl << "The materials defined are : " << G4endl << G4endl;
   G4cout << *(G4Material::GetMaterialTable()) << G4endl;
@@ -191,81 +210,90 @@ G4VPhysicalVolume* TntDetectorConstruction::Construct()
 
   //World logic volume - filled with vacuum 
   logicWorld = new G4LogicalVolume(solidWorld,         //solid of logical World
-				   Vacuum,             //material filling logic volume
-				   "World",0,0,0);     //Name, other properties 0.
+																	 Vacuum,             //material filling logic volume
+																	 "World",0,0,0);     //Name, other properties 0.
 
   //World Physical volume (placement)
   physiWorld = new G4PVPlacement(0,                // no rotation
-				 G4ThreeVector(),  // position at 0,0,0
-				 logicWorld,       // its logical volume
-				 "World",          // its name
-				 0,                // its mother volume;(0) for world
-				 false,            // no boolean op.
-				 0);               // not a copy
+																 G4ThreeVector(),  // position at 0,0,0
+																 logicWorld,       // its logical volume
+																 "World",          // its name
+																 0,                // its mother volume;(0) for world
+																 false,            // no boolean op.
+																 0);               // not a copy
   //World Visualization (see Demon)
- G4VisAttributes* WorldVisAtt
+	G4VisAttributes* WorldVisAtt
     = new G4VisAttributes(G4Colour(0.0,0.0,0.0));
 
-    WorldVisAtt->SetForceWireframe(true);
-    //logicWorld->SetVisAttributes(WorldVisAtt);
-    logicWorld->SetVisAttributes (G4VisAttributes::Invisible);
+	WorldVisAtt->SetForceWireframe(true);
+	//logicWorld->SetVisAttributes(WorldVisAtt);
+	logicWorld->SetVisAttributes (G4VisAttributes::Invisible);
     
   //
   // Detector Tube of NE213, placed along z-axis (Demon dimensions)
   //
 
-    G4double innerRadius = 0.*cm;
-    G4double startAngle = 0.*deg;
-    G4double spanAngle = 360.*deg;
+	G4double innerRadius = 0.*cm;
+	G4double startAngle = 0.*deg;
+	G4double spanAngle = 360.*deg;
     
-    G4double outerRadius;
-    G4double halfHeight;
+	G4double outerRadius;
+	G4double halfHeight;
  
-    if(DetType == "cylinder")
-      {
-	outerRadius = DetDim[0];
-	halfHeight = DetDim[1];
-	solidDetector = new G4Tubs("detector",innerRadius,outerRadius,halfHeight,startAngle,spanAngle);
-      }
-    else if(DetType == "bar")
-      {
-	G4double XDim = DetDim[0];
-	G4double YDim = DetDim[1];
-	G4double ZDim = DetDim[2];
-	G4cout << "The Det. Dims were : " << XDim/cm << " cm, " << YDim/cm << " cm, " << ZDim/cm << " cm. " << G4endl;
-	solidDetector = new G4Box("detector",XDim/2.,YDim/2.,ZDim/2.);
-      }
-    else 
-      { 
-	G4cerr << "DetType unknown !!" << G4endl;
-	G4cerr << "Please add type to Detector Construction!" << G4endl;
-	G4ExceptionSeverity severity=FatalException;
-	G4Exception("Program aborted in TntDetectorConstruction::Construct() method.", "Error",severity,"Error!");
-	//Note: the enum G4ExceptionSeverity has been defined since Geant4 release 5.0 and its values are: FatalException, FatalErrorInArgument, EventMustBeAborted, FatalException, and JustWarning. 
-	//G4Exception("Program aborted in TntDetectorConstruction::Construct() method.");
-      }
+	if(DetType == "cylinder")
+	{
+		outerRadius = DetDim[0];
+		halfHeight = DetDim[1];
+		solidDetector = new G4Tubs("detector",innerRadius,outerRadius,halfHeight,startAngle,spanAngle);
+	}
+	else if(DetType == "bar")
+	{
+		G4double XDim = DetDim[0];
+		G4double YDim = DetDim[1];
+		G4double ZDim = DetDim[2];
+		G4cout << "The Det. Dims were : " << XDim/cm << " cm, " << YDim/cm << " cm, " << ZDim/cm << " cm. " << G4endl;
+		solidDetector = new G4Box("detector",XDim/2.,YDim/2.,ZDim/2.);
+	}
+	else 
+	{ 
+		G4cerr << "DetType unknown !!" << G4endl;
+		G4cerr << "Please add type to Detector Construction!" << G4endl;
+		G4ExceptionSeverity severity=FatalException;
+		G4Exception("Program aborted in TntDetectorConstruction::Construct() method.", "Error",severity,"Error!");
+		//Note: the enum G4ExceptionSeverity has been defined since Geant4 release 5.0 and its values are: FatalException, FatalErrorInArgument, EventMustBeAborted, FatalException, and JustWarning. 
+		//G4Exception("Program aborted in TntDetectorConstruction::Construct() method.");
+	}
  
  
 
   //Detector Logic Volume (tube of NE213 w/ no shell)
   //Eventually need to add shell as a separate logical volume for multi-detector array
 
-  logicDetector = new G4LogicalVolume(solidDetector,         // Detector's solid
-				      NE213,                 // It's Material
-				      "detector",0,0,0);     // It's name, other props. 0
+	G4Material* detectorMaterial = findMaterial(DetMaterial);
+	if(!detectorMaterial)
+	{
+		G4cerr << "Couldn't find detector material: \"" << DetMaterial << "\"" << G4endl;
+
+		G4ExceptionSeverity severity=FatalException;
+		G4Exception("Program aborted in TntDetectorConstruction::Construct() method.", "Error",severity,"Error!");
+	}
+
+	logicDetector = new G4LogicalVolume(solidDetector,         // Detector's solid
+																			NE213,                 // It's Material
+																			"detector",0,0,0);     // It's name, other props. 0
 
   //Detector Placement (at 0 degrees)
- G4ThreeVector positionDetector = G4ThreeVector(0.,0.,25.*cm);
- //G4RotationMatrix *rot1=new G4RotationMatrix();
- //rot1->rotateX(90.*deg);
+	G4ThreeVector positionDetector = G4ThreeVector(0.,0.,25.*cm);
+	//G4RotationMatrix *rot1=new G4RotationMatrix();
+	//rot1->rotateX(90.*deg);
 
- physiDetector = new G4PVPlacement(0,                  // rotated 0
-				   positionDetector,  // position defined above
-				   logicDetector,     // its logical volume				  
-				   "detector",        // its name
-				   logicWorld,      // its mother  volume
-				   false,           // no boolean operations
-				   0);              // copy number 
+	physiDetector = new G4PVPlacement(0,                  // rotated 0
+																		positionDetector,  // position defined above
+																		logicDetector,     // its logical volume				  
+																		"detector",        // its name
+																		logicWorld,      // its mother  volume
+																		false,           // no boolean operations
+																		0);              // copy number 
   
   // Detector Visualization (is it there?)
   // colour is r,g,b between 0 and 1.
