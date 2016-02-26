@@ -64,6 +64,46 @@
 #include "G4VReadOutGeometry.hh"
 
 
+
+
+namespace {
+
+// calculate mass fraction from atomic ratios
+inline void calcMassFraction(G4double atomicRatio, // ratio N1/N2 
+														 G4double mass1, G4double mass2,
+														 G4double* fraction1, G4double* fraction2)
+{
+	G4double af1 = atomicRatio / (1 + atomicRatio); // atomic fraction
+	G4double af2 = 1. - af1; //atomic fraction
+
+	G4double p1 = mass1*af1;
+	G4double p2 = mass2*af2;
+
+	*fraction1 = p1 / (p1 + p2);
+	*fraction2 = p2 / (p1 + p2);
+}
+
+inline G4Material* CreateHydrocarbon(
+	const char* name,
+	G4double density,
+	G4double HtoC_ratio,
+	G4Element* pH,
+	G4Element* pC)
+{
+	G4Material* hc = new G4Material(name, density, 2);
+		
+	G4double mf1, mf2;
+	calcMassFraction(HtoC_ratio, pH->GetN(), pC->GetN(), &mf1, &mf2);
+	
+	G4cout << pH->GetN() << "     ofijweoifjweopfjweiopf      " << pC->GetN() << "\n";
+
+	hc->AddElement(pH, mf1);
+	hc->AddElement(pC, mf2);
+
+	return hc;
+}
+}
+
 TntDetectorConstruction::TntDetectorConstruction(G4String Type,G4ThreeVector Dims,G4String Light)
  :solidWorld(0),  logicWorld(0),  physiWorld(0),
   solidTarget(0), logicTarget(0), physiTarget(0),
@@ -84,10 +124,10 @@ G4VPhysicalVolume* TntDetectorConstruction::Construct()
   G4double density, temperature, pressure;
   G4int nel; // number of elements in compound
 
-  G4Element* N = new G4Element("Nitrogen", "N", z=7., a= 14.01*g/mole);
-  G4Element* O = new G4Element("Oxygen"  , "O", z=8., a= 16.00*g/mole);
-  G4Element* H  = new G4Element("Hydrogen","H" , z= 1., a= 1.01*g/mole);
-  G4Element* C  = new G4Element("Carbon"  ,"C" , z= 6., a= 12.011*g/mole); 
+  G4Element* N  = new G4Element("Nitrogen", "N",  z=7.,  a= 14.01*g/mole);
+  G4Element* O  = new G4Element("Oxygen"  , "O",  z=8.,  a= 16.00*g/mole);
+  G4Element* H  = new G4Element("Hydrogen", "H" , z= 1., a= 1.01*g/mole);
+  G4Element* C  = new G4Element("Carbon"  , "C" , z= 6., a= 12.011*g/mole); 
 
   // G4Material* Ar = 
   // new G4Material("ArgonGas", z= 18., a= 39.95*g/mole, density= 1.782*mg/cm3);
@@ -122,11 +162,18 @@ G4VPhysicalVolume* TntDetectorConstruction::Construct()
     //NE213->AddElement(C, 90.82*perCent);   // Marc's Calculation
     //NE213->AddElement(H, 9.18*perCent);
 
-    const G4double* numAtomsVect = NE213->GetVecNbOfAtomsPerVolume();
-    G4double numC = numAtomsVect[0];
-    G4double numH = numAtomsVect[1];
-    G4cout << "The Num. of C atoms is : " << numC << G4endl;
-    G4cout << "The Num. of H atoms is : " << numH << G4endl;
+		{
+			const G4double* numAtomsVect = NE213->GetVecNbOfAtomsPerVolume();
+			G4double numC = numAtomsVect[0];
+			G4double numH = numAtomsVect[1];
+			G4cout << "NE-213: The Num. of C atoms is : " << numC << G4endl;
+			G4cout << "NE-213: The Num. of H atoms is : " << numH << G4endl;
+		}
+
+		// Add all of the plastic & liquid scintillators
+		
+		G4Material* BC505 = 
+			CreateHydrocarbon("BC505", 0.877*g/cm3, 1.331, H, C);
 
  // Print all the materials defined.
   //
