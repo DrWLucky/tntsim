@@ -1,21 +1,12 @@
-//------------------------------------------------------------------
-//------------------------------------------------------------------
-// 
-// Margot neutron detector simulation for GEANT4 (version 4.8.2)
-//
-// First Created 14/02/07 - Brian Roeder, LPC Caen
-//                        - email - roeder@lpccaen.in2p3.fr
-//
-// Variation on the original Serra simulation for a Demon module
-// Switches from using "Primitive Scorers" for Detector sensitivity
-// to "Sensitive Detectors" that measure and output "Hit" positions
-// 
-// Envisioned as a first step toward multi-detector - tracking sims.
-//
-//
-//------------------------------------------------------------------
-// History
-//-----------------------------------------------------------------
-//
-// - 14/02/07 - copied files from Serra and switched names over.
-//            - started going to "Sensitive Detector" Readout
+Simulation code for Texas Neutron Telescope (TNT) at TAMU-CI
+
+Authors: Greg Christian (gchristian@tamu.edu)
+	 Darren Cola-Sinner
+
+
+
+
+Built off of Margot_EU simulation written by Brian Roeder
+Uses menate_R code for neutron simulation: realistic neutron
+interactions for energies in the MeV - 100 MeV range, including
+Carbon inelsatic processes.
