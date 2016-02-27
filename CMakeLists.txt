@@ -8,7 +8,7 @@
 #----------------------------------------------------------------------------
 # Setup the project
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(G4TNT)
+project(TNTSIM)
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
@@ -39,7 +39,7 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/root_files")
 #
 # Preprocessor derective for project source directory
 #
-add_definitions(-DG4TNT_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\")
+add_definitions(-DTNTSIM_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\")
 
 
 #----------------------------------------------------------------------------
@@ -103,7 +103,7 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #----------------------------------------------------------------------------
 # Set everything needed for the root dictonary and create the
 # dictionary
-set(G4TNT_HEADERS ${PROJECT_SOURCE_DIR}/include/TntSD.hh
+set(TNTSIM_HEADERS ${PROJECT_SOURCE_DIR}/include/TntSD.hh
                      ${PROJECT_SOURCE_DIR}/include/menate_R.hh 
 		     ${PROJECT_SOURCE_DIR}/include/TntDataRecordTree.hh 
 		     ${PROJECT_SOURCE_DIR}/include/TntDetectorConstruction.hh
@@ -112,20 +112,20 @@ set(G4TNT_HEADERS ${PROJECT_SOURCE_DIR}/include/TntSD.hh
 		     ${PROJECT_SOURCE_DIR}/include/TntPhysicsList.hh
 		     ${PROJECT_SOURCE_DIR}/include/TntDetHit.hh
 		     )
-#set(G4TNT_LINKDEF ${PROJECT_SOURCE_DIR}/src/G4TNTbLinkDef.hh )
-#set(G4TNT_DICTIONARY G4TNTDict.cc) 
-#ROOT_GENERATE_DICTIONARY("${G4TNT_HEADERS}" "${G4TNT_LINKDEF}" "${G4TNT_DICTIONARY}" "${ROOT_INCLUDE_DIR}")
+#set(TNTSIM_LINKDEF ${PROJECT_SOURCE_DIR}/src/TNTSIMbLinkDef.hh )
+#set(TNTSIM_DICTIONARY TNTSIMDict.cc) 
+#ROOT_GENERATE_DICTIONARY("${TNTSIM_HEADERS}" "${TNTSIM_LINKDEF}" "${TNTSIM_DICTIONARY}" "${ROOT_INCLUDE_DIR}")
 
 
 #----------------------------------------------------------------------------
 # Set the library version in the main CMakeLists.txt
-SET(G4TNT_MAJOR_VERSION 0)
-SET(G4TNT_MINOR_VERSION 0)
-SET(G4TNT_PATCH_VERSION 0)
-SET(G4TNT_VERSION "${G4TNT_MAJOR_VERSION}.${G4TNT_MINOR_VERSION}.${G4TNT_PATCH_VERSION}")
-SET(G4TNT_LIBRARY_PROPERTIES ${G4TNT_LIBRARY_PROPERTIES}
-    VERSION "${G4TNT_VERSION}"
-    SOVERSION "${G4TNT_MAJOR_VERSION}"
+SET(TNTSIM_MAJOR_VERSION 0)
+SET(TNTSIM_MINOR_VERSION 0)
+SET(TNTSIM_PATCH_VERSION 0)
+SET(TNTSIM_VERSION "${TNTSIM_MAJOR_VERSION}.${TNTSIM_MINOR_VERSION}.${TNTSIM_PATCH_VERSION}")
+SET(TNTSIM_LIBRARY_PROPERTIES ${TNTSIM_LIBRARY_PROPERTIES}
+    VERSION "${TNTSIM_VERSION}"
+    SOVERSION "${TNTSIM_MAJOR_VERSION}"
     SUFFIX ".sl"
 )
 
@@ -135,27 +135,27 @@ SET(G4TNT_LIBRARY_PROPERTIES ${G4TNT_LIBRARY_PROPERTIES}
 
 EXECUTE_PROCESS(COMMAND root-config --libs OUTPUT_VARIABLE ROOT_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(CMAKE_EXE_LINKER_FLAGS ${ROOT_LD_FLAGS})
-add_library(G4TNT_lib SHARED g4tnt.cc ${G4TNT_DICTIONARY} ${sources} ${headers})
-target_link_libraries(G4TNT_lib ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
-set_target_properties(G4TNT_lib PROPERTIES ${G4TNT_LIBRARY_PROPERTIES})
+add_library(TNTSIM_lib SHARED tntsim.cc ${TNTSIM_DICTIONARY} ${sources} ${headers})
+target_link_libraries(TNTSIM_lib ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+set_target_properties(TNTSIM_lib PROPERTIES ${TNTSIM_LIBRARY_PROPERTIES})
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(g4tnt.exe g4tnt.cc ${G4TNT_DICTIONARY} ${sources} ${headers})
-target_link_libraries(g4tnt.exe ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
-add_dependencies(g4tnt.exe G4TNT_lib)
+add_executable(tntsim.exe tntsim.cc ${TNTSIM_DICTIONARY} ${sources} ${headers})
+target_link_libraries(tntsim.exe ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+add_dependencies(tntsim.exe TNTSIM_lib)
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
-# build G4TNT. This is so that we can run the executable directly because it
+# build TNTSIM. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 # BTR comment - Add here geant4 macros if used...
 #
-set(G4TNT_SCRIPTS
+set(TNTSIM_SCRIPTS
   )
 
-foreach(_script ${G4TNT_SCRIPTS})
+foreach(_script ${TNTSIM_SCRIPTS})
   configure_file(
     ${PROJECT_SOURCE_DIR}/${_script}
     ${PROJECT_BINARY_DIR}/${_script}
@@ -168,12 +168,12 @@ endforeach()
 # For internal Geant4 use - but has no effect if you build this
 # example standalone
 #
-add_custom_target(G4TNT DEPENDS g4tnt.exe)
+add_custom_target(TNTSIM DEPENDS tntsim.exe)
 
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-#install(TARGETS G4TNT DESTINATION bin)
+#install(TARGETS TNTSIM DESTINATION bin)
 
 install(FILES ${headers}
         DESTINATION "./include"

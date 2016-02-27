@@ -168,7 +168,7 @@ void menate_R::ReadCrossSectionFile(G4String FileName, CrossSectionClass* theRea
  // 2/24/16 - BTR - directory where you find the cross sections.
 
 	// Get MENATEG4 directory from preprocessor definition, set in CMakeLists.txt
-	G4String DirName = G4String(G4TNT_SOURCE_DIR) + "/MENATEG4";
+	G4String DirName = G4String(TNTSIM_SOURCE_DIR) + "/MENATEG4";
 
 	FileName = DirName+"/"+FileName;
 
