@@ -51,7 +51,7 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 
   DataFile = new TFile(evt_file, "RECREATE");
   
-  TntEventTree = new TTree("EventTree","Tnt Scintillator Simulation Data");
+  TntEventTree = new TTree("t","Tnt Scintillator Simulation Data");
   TntEventTree->Branch("Energy_Initial",&eng_int,"eng_int/D");
   TntEventTree->Branch("Energy_Tnt",&eng_Tnt,"eng_Tnt/D");
   TntEventTree->Branch("Energy_Proton",&eng_Tnt_proton,"eng_Tnt_proton/D");
