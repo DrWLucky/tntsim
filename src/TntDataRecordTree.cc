@@ -17,6 +17,7 @@
 // 
 //
 #include <cassert> 
+#include "TntGlobalParams.hh"
 #include "TntDataRecordTree.hh"
 using namespace std;
 
@@ -97,9 +98,9 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
   //
   cout <<"\n Starting Data Tree Constructor" << endl;
   
-  const Char_t* evt_file = "TntDataTree.root";
-
-  DataFile = new TFile(evt_file, "RECREATE");
+//  const Char_t* evt_file = "TntDataTree.root";
+	
+  DataFile = new TFile(TntGlobalParams::Instance()->GetRootFileName().c_str(), "RECREATE");
 //G4cout << DataFile << "!!" << G4endl;
 
 //////////////////////////// BY Shuya 160407 TO CHANGE TREE TO HISTOGRAMS IN ROOT ////////////////////////////////////
@@ -519,6 +520,7 @@ void TntDataRecordTree::senddataTOF(G4double time)
  
 void TntDataRecordTree::ShowDataFromEvent()
 {
+#if 0
 	G4cout << "================OUTPUT SENT FROM TntDataRecordTree====================================" << G4endl;
 	G4cout << "The Energy of the Initial Particle was:    " << eng_int << G4endl;
 	G4cout << "The Position of the First Hit was (cm <-note!) (Distance from (x=0,y=0,z=0)):    " << FirstHitMag << G4endl;
@@ -539,6 +541,7 @@ void TntDataRecordTree::ShowDataFromEvent()
 	G4cout << "Measured C12 Energy Loss in this Event (MeV):    " << edep_Tnt_C12 << G4endl;
 	G4cout << "Measured Electron/Gamma Eng. Loss (MeV):               " << edep_Tnt_EG << G4endl;
 	G4cout << "Measured Energy Loss from Exotic Particles (Be9,etc) (MeV):" << edep_Tnt_Exotic << G4endl;
+#endif
 }
 
 void TntDataRecordTree::FillTree()

@@ -58,29 +58,53 @@
 
 //by Shuya 160406
 #include "TntDataRecordTree.hh"
+#include "TntGlobalParams.hh"
 #include "globals.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
+
+
 using namespace std;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 //by Shuya 160421. I added this to count the Event Number instead of EventID. 
 //Because this code is multithreading, GetEventID gives a random (not ordered) event number, which is inconvenient to create Root File in TntDataRecord.cc.
-  G4int Counter = 0;
+G4int Counter = 0;
 
 //by Shuya 160502. I added this to count the total number of photons created in one event (including Detectgor, housing, etc). 
-  G4int NumOfCreatedPhotons = 0;
+G4int NumOfCreatedPhotons = 0;
 
 //by Shuya 160509. 
 //NOTE!!!! You have to change the parameters for PmtBackHit,PmtFronHit arrays in TntDataRecord.hh
-  G4int NX = 4;
-  G4int NY = 4;
+G4int NX = 4;
+G4int NY = 4;
+
+G4String macfile = "";
+
+namespace{ void ReadArgs(int argc, char** argv)
+{
+	for(int i=1; i< argc; ++i) {
+		if(false) { }
+		else if(G4String(argv[i]) == "-energy") {
+			TntGlobalParams::Instance()->SetNeutronEnergy(atof(argv[++i]) * MeV);
+		}
+		else if(G4String(argv[i]) == "-beamtype") {
+			TntGlobalParams::Instance()->SetBeamType(argv[++i]);
+		}
+		else if(G4String(argv[i]) == "-rootfile") {
+			TntGlobalParams::Instance()->SetRootFileName(argv[++i]);
+		}
+		else if(i == 1) {
+			macfile = argv[i];
+		}
+	}
+} }
 
 int main(int argc, char** argv)
 {
 
-
+	ReadArgs(argc, argv);
 
 //by Shuya 160421. All copied from tntsim.cc
 //  G4int numberOfEvent = 10;
@@ -90,7 +114,7 @@ int main(int argc, char** argv)
   G4int VisFlag = 0;
   //**** Note! You should run fewer events (such as < 1000) when using the viewer!
   G4String VisType = "OPENGL";   // Set vis type. OPENGL works in UBUNTU 12.04 and later
-   //G4String VisType = "VRMLVIEW";
+	//G4String VisType = "VRMLVIEW";
   G4int SaveVisFile = 0;         // Set to 1 to save OPENGL picture to G4OpenGL.eps file
 
 
@@ -100,7 +124,7 @@ int main(int argc, char** argv)
 #ifdef G4MULTITHREADED
   G4MTRunManager * runManager = new G4MTRunManager;
 //by Shuya 160502. If you don't want multi-threading, use this.
- runManager->SetNumberOfThreads(1);
+	runManager->SetNumberOfThreads(1);
 #else
   G4RunManager * runManager = new G4RunManager;
 #endif
@@ -137,88 +161,99 @@ int main(int argc, char** argv)
   // get the pointer to the UI manager and set verbosities
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
-  if(argc==1){
+  if(macfile.empty()) {
 #ifdef G4UI_USE
     G4UIExecutive* ui = new G4UIExecutive(argc, argv);
-#ifdef G4VIS_USE
-    UImanager->ApplyCommand("/control/execute vis.mac");
-#endif
-    if (ui->IsGUI())
-       UImanager->ApplyCommand("/control/execute gui.mac");
+// #ifdef G4VIS_USE
+//     UImanager->ApplyCommand("/control/execute vis.mac");
+// #endif
+		if (ui->IsGUI()) {
+			UImanager->ApplyCommand("/control/execute gui.mac");
+		}
+		UImanager->ApplyCommand("/run/initialize");
+		UImanager->ApplyCommand("/control/verbose 0");
+		UImanager->ApplyCommand("/run/verbose 0");
+		UImanager->ApplyCommand("/event/verbose 0");
+		UImanager->ApplyCommand("/tracking/verbose 0");
+		UImanager->ApplyCommand("/material/verbose 0");
+		UImanager->ApplyCommand("/cuts/verbose 0");
+		UImanager->ApplyCommand("/process/em/verbose 0");
+		UImanager->ApplyCommand("/process/eLoss/verbose 0");
+
+
     ui->SessionStart();
     delete ui;
 #endif
 /*
-		G4String command  = "/control/execute ";
-		G4String fileName = argv[1];
-		UImanager->ApplyCommand(command + fileName);
+	G4String command  = "/control/execute ";
+	G4String fileName = argv[1];
+	UImanager->ApplyCommand(command + fileName);
 */
   }
   else{
     G4String command = "/control/execute ";
-    G4String filename = argv[1];
-    UImanager->ApplyCommand(command+filename);
+    UImanager->ApplyCommand(command+macfile);
   }
 
 ///*
-		if (VisFlag == 1)
-    {
-      if(VisType == "VRMLVIEW")
-			{
-				// commands to open vrmlview file
-				UImanager->ApplyCommand("/vis/scene/create");
-				UImanager->ApplyCommand("/vis/open VRML2FILE");
-				UImanager->ApplyCommand("/tracking/storeTrajectory 1");
-				UImanager->ApplyCommand("/vis/scene/endOfEventAction accumulate");
-				UImanager->ApplyCommand("/vis/scene/add/trajectories");
-			}
-			else if(VisType == "OPENGL")
-			{
-				UImanager->ApplyCommand("/vis/open OGL 900x600-0+0");
-				//UI->ApplyCommand("/vis/open OGLI 900x600-0+0");
-				//UI->ApplyCommand("/vis/open DAWNFILE");
-				UImanager->ApplyCommand("/vis/viewer/set/autoRefresh true");
-				//UI->ApplyCommand("/vis/viewer/set/background red ! ! 0.2");
-				UImanager->ApplyCommand("/vis/viewer/set/background 0.5 0.5 0.5 0.1");
-				UImanager->ApplyCommand("/vis/verbose errors");
-				UImanager->ApplyCommand("/vis/drawVolume");
-				UImanager->ApplyCommand("/vis/viewer/set/viewpointVector -1 0 0");
-				UImanager->ApplyCommand("/vis/viewer/set/lightsVector -1 0 0");
-				UImanager->ApplyCommand("/vis/viewer/set/style wireframe");
-				//UI->ApplyCommand("/vis/viewer/set/style surface");
-				// UI->ApplyCommand("/vis/viewer/set/auxiliaryEdge true");
-				UImanager->ApplyCommand("/vis/viewer/set/lineSegmentsPerCircle 100");
-				UImanager->ApplyCommand("/tracking/storeTrajectory 1");
-				UImanager->ApplyCommand("/vis/scene/endOfEventAction accumulate");
-				UImanager->ApplyCommand("/vis/scent/endOfEventAction accumulate 2000"); // view more events!
-				UImanager->ApplyCommand("/vis/scene/add/trajectories");
-				UImanager->ApplyCommand("/vis/modeling/trajectories/create/drawByCharge");
-				UImanager->ApplyCommand("/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true");
-				UImanager->ApplyCommand("/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2");
-				//UI->ApplyCommand("/vis/scene/add/hits");
-				UImanager->ApplyCommand("/vis/set/textColour green");
-				UImanager->ApplyCommand("/vis/set/textLayout right");
-				UImanager->ApplyCommand("/vis/scene/add/text2D 0.9 -.9 24 ! ! Demon Simulation"); 
-				UImanager->ApplyCommand("/vis/scene/add/text 0 10 35 cm 18 10 10 Det Module");
-				UImanager->ApplyCommand("/vis/scene/add/scale 25 cm");   //Simple scale line
-				//UI->ApplyCommand("/vis/scene/add/axes");    //Simple axes: x=red, y=green, z=blue.
-				UImanager->ApplyCommand("/vis/scene/add/logo2D");  //Simple logo
-				//UI->ApplyCommand("/vis/geometry/set/visibility Envelope 0 true");	
-				//UI->ApplyCommand("/vis/viewer/set/hiddenMarker true");
+	if (VisFlag == 1)
+	{
+		if(VisType == "VRMLVIEW")
+		{
+			// commands to open vrmlview file
+			UImanager->ApplyCommand("/vis/scene/create");
+			UImanager->ApplyCommand("/vis/open VRML2FILE");
+			UImanager->ApplyCommand("/tracking/storeTrajectory 1");
+			UImanager->ApplyCommand("/vis/scene/endOfEventAction accumulate");
+			UImanager->ApplyCommand("/vis/scene/add/trajectories");
+		}
+		else if(VisType == "OPENGL")
+		{
+			UImanager->ApplyCommand("/vis/open OGL 900x600-0+0");
+			//UI->ApplyCommand("/vis/open OGLI 900x600-0+0");
+			//UI->ApplyCommand("/vis/open DAWNFILE");
+			UImanager->ApplyCommand("/vis/viewer/set/autoRefresh true");
+			//UI->ApplyCommand("/vis/viewer/set/background red ! ! 0.2");
+			UImanager->ApplyCommand("/vis/viewer/set/background 0.5 0.5 0.5 0.1");
+			UImanager->ApplyCommand("/vis/verbose errors");
+			UImanager->ApplyCommand("/vis/drawVolume");
+			UImanager->ApplyCommand("/vis/viewer/set/viewpointVector -1 0 0");
+			UImanager->ApplyCommand("/vis/viewer/set/lightsVector -1 0 0");
+			UImanager->ApplyCommand("/vis/viewer/set/style wireframe");
+			//UI->ApplyCommand("/vis/viewer/set/style surface");
+			// UI->ApplyCommand("/vis/viewer/set/auxiliaryEdge true");
+			UImanager->ApplyCommand("/vis/viewer/set/lineSegmentsPerCircle 100");
+			UImanager->ApplyCommand("/tracking/storeTrajectory 1");
+			UImanager->ApplyCommand("/vis/scene/endOfEventAction accumulate");
+			UImanager->ApplyCommand("/vis/scent/endOfEventAction accumulate 2000"); // view more events!
+			UImanager->ApplyCommand("/vis/scene/add/trajectories");
+			UImanager->ApplyCommand("/vis/modeling/trajectories/create/drawByCharge");
+			UImanager->ApplyCommand("/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true");
+			UImanager->ApplyCommand("/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2");
+			//UI->ApplyCommand("/vis/scene/add/hits");
+			UImanager->ApplyCommand("/vis/set/textColour green");
+			UImanager->ApplyCommand("/vis/set/textLayout right");
+			UImanager->ApplyCommand("/vis/scene/add/text2D 0.9 -.9 24 ! ! Demon Simulation"); 
+			UImanager->ApplyCommand("/vis/scene/add/text 0 10 35 cm 18 10 10 Det Module");
+			UImanager->ApplyCommand("/vis/scene/add/scale 25 cm");   //Simple scale line
+			//UI->ApplyCommand("/vis/scene/add/axes");    //Simple axes: x=red, y=green, z=blue.
+			UImanager->ApplyCommand("/vis/scene/add/logo2D");  //Simple logo
+			//UI->ApplyCommand("/vis/geometry/set/visibility Envelope 0 true");	
+			//UI->ApplyCommand("/vis/viewer/set/hiddenMarker true");
 
-				// Set viewing angle!
-				//UI->ApplyCommand("/vis/viewer/set/viewpointThetaPhi 135 150");
-				UImanager->ApplyCommand("/vis/viewer/set/viewpointThetaPhi 90 180");
-				//UI->ApplyCommand("/vis/viewer/set/viewpointThetaPhi 135 135");
+			// Set viewing angle!
+			//UI->ApplyCommand("/vis/viewer/set/viewpointThetaPhi 135 150");
+			UImanager->ApplyCommand("/vis/viewer/set/viewpointThetaPhi 90 180");
+			//UI->ApplyCommand("/vis/viewer/set/viewpointThetaPhi 135 135");
 
 
-				UImanager->ApplyCommand("/vis/viewer/pan -10 0 cm");
+			UImanager->ApplyCommand("/vis/viewer/pan -10 0 cm");
 
-				UImanager->ApplyCommand("/vis/viewer/zoom 0.5");  // Zoom in, > 1, Zoom out < 1	
-			}
-    }
-		else
-    {//No Visualization! }
+			UImanager->ApplyCommand("/vis/viewer/zoom 0.5");  // Zoom in, > 1, Zoom out < 1	
+		}
+	}
+	else
+	{//No Visualization! }
 
 		//runManager->BeamOn(numberOfEvent);
 

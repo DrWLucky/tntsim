@@ -39,6 +39,7 @@
 #include "globals.hh"
 
 #include "TntDataRecordTree.hh"
+#include "TntGlobalParams.hh"
 
 //by Shuya 160510. Just copied from Tntsim.
 // need the below for random theta angle source (from Demon)
@@ -53,9 +54,10 @@ TntPrimaryGeneratorAction::TntPrimaryGeneratorAction(){
 
 //by Shuya 160510
   // Set beamType for Primary Generator action
-  BeamType = "pencil";
+  //BeamType = "pencil";
   //BeamType = "diffuse";
   //BeamType = "conic";
+	BeamType = TntGlobalParams::Instance()->GetBeamType();
 
   G4int n_particle = 1;
   fParticleGun = new G4ParticleGun(n_particle);
@@ -77,7 +79,9 @@ TntPrimaryGeneratorAction::TntPrimaryGeneratorAction(){
   fParticleGun->SetParticleEnergy(15.*MeV);
 //by Shuya 160510
   //fParticleGun->SetParticleEnergy(1.*MeV);
+	fParticleGun->SetParticleEnergy(TntGlobalParams::Instance()->GetNeutronEnergy());
 
+	
 //by Shuya 160510. I incorporated these in below GeneratePrimaries().
 //Comments by Shuya 160427. This is a pencil beam. 
   //fParticleGun->SetParticlePosition(G4ThreeVector(0.0 , 0.0, -100.0*cm));
@@ -185,7 +189,7 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
       momentum_y = 0.;
       momentum_z = 1.;
 
-      G4double theRadius = 8.0*cm;
+      G4double theRadius = 15*cm;
       theRadius *= 22.5;          // correction factor 
     
       // Since diffuse beam is forward focused in small theta,

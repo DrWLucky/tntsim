@@ -110,6 +110,7 @@ void TntSteppingAction::UserSteppingAction(const G4Step * theStep){
 	//if(theStep->GetTrack()->GetParentID()==0)
 	if(theStep->GetTrack()->GetDefinition()->GetParticleName()!="opticalphoton")
 	{
+# if 0
 		G4cout << "!!!!!!!!!!!!!!!!!!!!!!!!! TEST !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << G4endl;
 		//G4cout << "Hit Number: " << i << G4endl;
 		G4cout << "the Particle Name: " << theStep->GetTrack()->GetDefinition()->GetParticleName() << G4endl;
@@ -125,6 +126,7 @@ void TntSteppingAction::UserSteppingAction(const G4Step * theStep){
 		G4cout << "Global Time: " << theStep->GetPreStepPoint()->GetGlobalTime()  << G4endl;
 		G4cout << "Prestep Position (mm): " << theStep->GetPreStepPoint()->GetPosition() << G4endl;
 		G4cout << "Poststep Position (mm): " << theStep->GetPostStepPoint()->GetPosition() << G4endl;
+#endif
 	}
 
 
