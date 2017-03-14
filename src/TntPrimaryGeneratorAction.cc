@@ -29,6 +29,7 @@
 /// \brief Implementation of the TntPrimaryGeneratorAction class
 //
 //
+#include <cassert>
 #include "TntPrimaryGeneratorAction.hh"
 
 #include "G4Event.hh"
@@ -45,6 +46,7 @@
 // need the below for random theta angle source (from Demon)
 #include "Randomize.hh"
 #include "G4UnitsTable.hh"
+extern G4int Counter;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -68,15 +70,15 @@ TntPrimaryGeneratorAction::TntPrimaryGeneratorAction(){
   fParticleGun->SetParticleDefinition(particleTable->
 //by Shuya 160404
                                      //FindParticle(particleName="gamma"));
-                                     FindParticle(particleName="neutron"));
-                                     //FindParticle(particleName="e-"));
-                                     //FindParticle(particleName="proton"));
+																			FindParticle(particleName="neutron"));
+	// 																		FindParticle(particleName="e-"));
+//	 FindParticle(particleName="proton"));
                                      //FindParticle(particleName="deuteron"));
                                      //FindParticle(particleName="alpha"));
   //Default energy,position,momentum
 //by Shuya 160404
   //fParticleGun->SetParticleEnergy(511.*keV);
-  fParticleGun->SetParticleEnergy(15.*MeV);
+//  fParticleGun->SetParticleEnergy(15.*MeV);
 //by Shuya 160510
   //fParticleGun->SetParticleEnergy(1.*MeV);
 	fParticleGun->SetParticleEnergy(TntGlobalParams::Instance()->GetNeutronEnergy());
@@ -177,9 +179,34 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
       momentum_y = 0.;
       momentum_z = 1.;  
     }
+	else if(BeamType == "rectangle")
+	{
+		momentum_x = 0.;
+		momentum_y = 0.;
+		momentum_z = 1.;
+		G4double posx = G4UniformRand() - 0.5; // -0.5 -> 0.5
+		G4double posy = G4UniformRand() - 0.5; // -0.5 -> 0.5
+		posx *= 28; // -14 -> 14
+		posy *= 28; // -14 -> 14
+		fParticleGun->SetParticlePosition(G4ThreeVector(posx*cm, posy*cm, beam_z));									
+	}
+	else if(BeamType == "scan")
+	{
+		momentum_x = 0.;
+		momentum_y = 0.;
+		momentum_z = 1.;
+		G4int ix = Counter/100;
+		G4int iz = Counter%100;
+		assert(ix<280);
+		assert(iz<100);
+		G4double posx = ix*0.1 - 14.; // cm
+		G4double posz = iz*0.1 - 5.; // cm
+		fParticleGun->SetParticlePosition(G4ThreeVector(posx*cm, 0., posz*cm));
+		G4cout << "GENREATED EVENT:: (x,y) position = " << posx << " mm, " << posz << " mm" << G4endl;
+	}
 //COMMENT by Shuya 160510. Diffuse beam is parallel beam to z-axis but have random x-y (on theRadius circle) as a source position.
   else if(BeamType == "diffuse")
-    {
+	{
       // Edited to give a "true" diffuse beam spot - 11/01/08 BTR
       // Follows method of "BeamPosDet" simulation      
       //Straight Pencil Beam with a diffuse beam spot. 

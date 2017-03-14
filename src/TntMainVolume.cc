@@ -228,6 +228,7 @@ void TntMainVolume::PlacePMTs(G4LogicalVolume* pmt_log,
       new G4PVPlacement(rot,G4ThreeVector(x,y,z),pmt_log,"pmt",
                         fHousing_log,false,k);
       fPmtPositions.push_back(G4ThreeVector(x,y,z));
+			G4cout << "PMT POSITIONS:: " << j << " " << k << " " << x << " " << y << " " << z << G4endl;
       k++;
     }
   }

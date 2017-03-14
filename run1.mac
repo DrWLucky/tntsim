@@ -29,8 +29,8 @@
 # output filename
 #
 # /persistence/setFilename run1
-
-/run/beamOn 10000
+/Tnt/detector/scintYieldFactor 100000.
+/run/beamOn 10
 
 ## THIS IS A SECOND RUN I BELIEVE
 # 

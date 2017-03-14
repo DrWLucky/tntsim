@@ -95,8 +95,15 @@ namespace{ void ReadArgs(int argc, char** argv)
 		else if(G4String(argv[i]) == "-rootfile") {
 			TntGlobalParams::Instance()->SetRootFileName(argv[++i]);
 		}
+		else if(G4String(argv[i]) == "-resscale") {
+			TntGlobalParams::Instance()->SetPhotonResolutionScale(atoi(argv[++i]));
+		}
 		else if(i == 1) {
 			macfile = argv[i];
+		}
+		else {
+			G4cerr << "ERROR: Invalid flag " << argv[i] << G4endl;
+			exit(1);
 		}
 	}
 } }

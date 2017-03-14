@@ -8,7 +8,8 @@ TntGlobalParams::TntGlobalParams(): fNeutronEnergy(1.*MeV),
 																		fNumPmtX(4),
 																		fNumPmtY(4),
 																		fBeamType("pencil"),
-																		fRootFileName("TntDataTree.root")
+																		fRootFileName("TntDataTree.root"),
+																		fPhotonResolutionScale(1)
 { }
 
 TntGlobalParams* TntGlobalParams::Instance()

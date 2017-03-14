@@ -24,6 +24,9 @@ public:
 	G4String GetRootFileName() { return fRootFileName; }
 	void SetRootFileName(G4String name) { fRootFileName = name; }
 
+	G4double GetPhotonResolutionScale() { return fPhotonResolutionScale; }
+	void SetPhotonResolutionScale(G4double scale) { fPhotonResolutionScale = scale; }
+
 	
 private:
 	TntGlobalParams();
@@ -34,6 +37,7 @@ private:
 	G4int fNumPmtY;
 	G4String fBeamType;
 	G4String fRootFileName;
+	G4double fPhotonResolutionScale;
 };
 
 

@@ -51,6 +51,9 @@
 //by Shuya 160408
 #include "TntDataRecordTree.hh"
 
+
+
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 TntEventAction::TntEventAction(TntRecorderBase* r)
@@ -162,10 +165,12 @@ void TntEventAction::EndOfEventAction(const G4Event* anEvent){
     }
 
 //by Shuya 160502
-    G4cout << "================OUTPUT SENT FROM TntEventAction Part1====================================" << G4endl;
+		if(fVerbose >0){
+			G4cout << "================OUTPUT SENT FROM TntEventAction Part1====================================" << G4endl;
+		}
 
     if(eventInformation->GetEDep()==0.){
-      if(fVerbose>0)G4cout<<"No hits in the scintillator this event."<<G4endl;
+      if(fVerbose>0) G4cout<<"No hits in the scintillator this event."<<G4endl;
     }
     else{
       //Finish calculation of energy weighted position
@@ -273,7 +278,7 @@ void TntEventAction::EndOfEventAction(const G4Event* anEvent){
 //by Shuya 160407
 		//G4int event_show = 10000;
 		G4int event_show = 1;   
-		if((numberOfEvent) % event_show == 0) 
+		if( ((numberOfEvent) % event_show == 0)  )
 		{
 			// G4cout << "====================================================" << G4endl;
       G4cout << "================OUTPUT SENT FROM TntEventAction Part2====================================" << G4endl;
@@ -320,6 +325,10 @@ void TntEventAction::EndOfEventAction(const G4Event* anEvent){
 		G4cout << G4endl;
 		G4cout << G4endl;
 		G4cout << G4endl;
+
+		if(Counter%1000 == 0) {
+			G4cerr << "Event " << Counter << G4endl;
+		}
   }
 
 //by Shuya 160502

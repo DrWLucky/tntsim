@@ -47,6 +47,7 @@
 #include "TntDetectorMessenger.hh"
 #include "TntMainVolume.hh"
 #include "TntWLSSlab.hh"
+#include "TntGlobalParams.hh"
 
 #include "G4SDManager.hh"
 #include "G4RunManager.hh"
@@ -276,11 +277,17 @@ void TntDetectorConstruction::DefineMaterials(){
   //fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(12000.*0.2)/MeV);
 //Comment By Shuya 160512. Scintillation Yield: BC505=12000, BC519:9500, BC404=10400, EJ309=11500 (From Ejen catalogue). Anthracene~15000.
   //fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(9500.*0.2)/MeV);
-  fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(10400.*0.2)/MeV);
+	G4double nphot = 10400.*0.2;
+	fTnt_mt->AddConstProperty("SCINTILLATIONYIELD", nphot/MeV);
+	G4cout << "NPHOT:: " << nphot << G4endl;
+  // fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(10400.*0.2)/MeV);
+
   //fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(11500.*0.2)/MeV);
   //fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(11500.)/MeV);
 
-  fTnt_mt->AddConstProperty("RESOLUTIONSCALE",1.0);
+	G4double resScale = TntGlobalParams::Instance()->GetPhotonResolutionScale();
+	G4cout << "RES SCALE:: " << resScale << G4endl;
+  fTnt_mt->AddConstProperty("RESOLUTIONSCALE", resScale);
 
 
 //////////////////////////// Comment By Shuya 160525. THIS IS TO CHANGE FOR SCINTILLATION MATERIALS (7/8) /////////////////////////////////
@@ -632,7 +639,10 @@ void TntDetectorConstruction::SetDefaults() {
 //Comment By Shuya 160512. Scintillation Yield: BC505=12000, BC519:9500, BC404=10400, EJ309=11500 (From Ejen catalogue). Anthracene~15000.
   //if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(12000.*0.2)/MeV);
   //if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(9500.*0.2)/MeV);
-  if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(10400.*0.2)/MeV);
+  if(fTnt_mt) {
+		G4double nphot = 10400.*0.2;
+		fTnt_mt->AddConstProperty("SCINTILLATIONYIELD", nphot/MeV);
+	}
 //  if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(11500.*0.2)/MeV);
   //if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(11500.)/MeV);
 
