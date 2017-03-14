@@ -29,6 +29,7 @@
 /// \brief Implementation of the TntScintSD class
 //
 //
+#include <vector>
 #include "TntScintSD.hh"
 #include "TntScintHit.hh"
 #include "G4VPhysicalVolume.hh"
@@ -212,6 +213,10 @@ void TntScintSD::EndOfEvent(G4HCofThisEvent* hitsCE)
  G4double PulseTime = 0.;  // Time after first hit
  G4ThreeVector FirstHitPos(0.,0.,0.);
 
+ std::vector<G4double> AllHitTime(0);
+ std::vector<G4ThreeVector> AllHitPos(0);
+ 
+ 
  G4int number_of_gammahits = 0;
  G4int NumberOfTracks = 0;
  G4int theLastTrackID = 0;
@@ -249,25 +254,26 @@ void TntScintSD::EndOfEvent(G4HCofThisEvent* hitsCE)
       
 //COMMENT BY SHUYA 160502. Note this may not correctly give the first hit's information. This is information of one of secondary products created by a first particle (see explanation below). 
       if(i == 0)
-	{
-	  /*   Record Time of "first hit"!  */
-	  GlobalTime = (theCurrentHit->GetTOF())/ns;
-          FirstHitPos = theCurrentHit->GetPos();
+			{
+				/*   Record Time of "first hit"!  */
+				GlobalTime = (theCurrentHit->GetTOF())/ns;
+				FirstHitPos = theCurrentHit->GetPos();
 
-	//by Shuya 160428... This should be something about neutron, and I confrimed it was (menate_neutron).
-	//G4cout << "CHECK FIRST HIT PROCESS!! " << theCurrentProcess << G4endl;
-	//G4cout << "CHECK FIRST HIT POSITION!! " << FirstHitPos << G4endl;
+				//by Shuya 160428... This should be something about neutron, and I confrimed it was (menate_neutron).
+				//G4cout << "CHECK FIRST HIT PROCESS!! " << theCurrentProcess << G4endl;
+				//G4cout << "CHECK FIRST HIT POSITION!! " << FirstHitPos << G4endl;
 	
 //COMMENT BY SHUYA 160502. Note this doesn't necessarily give the first hit energy deposit. This is just an energy deposit by a secondary particles created by a first particle. 
 //For example, n+12C->alpha(1st)+alpha(2nd)+alpha(3rd)+n', then this just gives energy deposit of alpha(1st) in its first hit.
 //Run and check (by comment out) if you want to understand about this...
 
-	//G4cout << "CHECK FIRST HIT ENERGY DEPOSIT!! " << theCurrentHit->GetEdep() << G4endl;
+				//G4cout << "CHECK FIRST HIT ENERGY DEPOSIT!! " << theCurrentHit->GetEdep() << G4endl;
 	
-	}    
+			}    
 
       PulseTime = (theCurrentHit->GetTOF())/ns;
-
+			AllHitTime.push_back(PulseTime);
+			AllHitPos.push_back(theCurrentHit->GetPos());
 
 //by Shuya 160415.
 /*
