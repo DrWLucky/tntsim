@@ -104,6 +104,8 @@ private:
 	std::vector<G4double> HitE;
 	std::vector<G4int>    HitTrackID;
 	G4int NumHits;
+
+	G4double PrimaryX, PrimaryY, PrimaryZ;
 	
 
   G4double FirstHitTime;
@@ -166,9 +168,10 @@ private:
   void createdataPMT(int evid);
 
   void senddataPG(double value1);
+	void senddataPrimary(const G4ThreeVector& posn);
   void senddataEV(int type, double value1);
-  void senddataPosition(G4ThreeVector pos);
-	void senddataHits(const std::vector<Hit_t>& hit);
+  void senddataPosition(const G4ThreeVector& pos);
+	void senddataHits(const std::vector<Hit_t>& hit, bool sortTime);
   void senddataTOF(G4double time);
   void ShowDataFromEvent();
   void FillTree();

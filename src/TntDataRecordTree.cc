@@ -16,7 +16,8 @@
 // 
 // 
 //
-#include <cassert> 
+#include <cassert>
+#include <algorithm>
 #include "TntGlobalParams.hh"
 #include "TntDataRecordTree.hh"
 using namespace std;
@@ -235,6 +236,7 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
   TntEventTree->Branch("Xpos",&Xpos,"Xpos/D");
   TntEventTree->Branch("Ypos",&Ypos,"Ypos/D");
   TntEventTree->Branch("Zpos",&Zpos,"Zpos/D");
+	
 
 	// GAC - Array of PMT intensities (photon counts)
 	// 
@@ -248,6 +250,12 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 	TntEventTree->Branch("HitE", &HitE);
 	TntEventTree->Branch("HitTrackID", &HitTrackID);
 	TntEventTree->Branch("NumHits", &NumHits);
+
+	//
+	// Original x,y,z positions of the fired neutron
+	TntEventTree->Branch("PrimaryX",&PrimaryX,"PrimaryX/D");
+  TntEventTree->Branch("PrimaryY",&PrimaryY,"PrimaryY/D");
+  TntEventTree->Branch("PrimaryZ",&PrimaryZ,"PrimaryZ/D");
 	
 	
 
@@ -305,6 +313,13 @@ void TntDataRecordTree::senddataPG(double value1=0.)
 	eng_int = value1;
 	event_counter++;
 	//  cout << "eng_int = " << eng_int << endl;
+}
+
+void TntDataRecordTree::senddataPrimary(const G4ThreeVector& pos)
+{
+	PrimaryX = pos.x();
+	PrimaryY = pos.y();
+	PrimaryZ = pos.z();
 }
 
 //by Shuya 160408
@@ -501,7 +516,7 @@ void TntDataRecordTree::senddataEV(int type, double value1)
 	// cout << value1 << " <- This was put in the data file!" << endl;
 }
 
-void TntDataRecordTree::senddataPosition(G4ThreeVector pos)
+void TntDataRecordTree::senddataPosition(const G4ThreeVector& pos)
 {
   // const G4double pi = 3.14159265;
   FirstHitMag = 0;
@@ -521,9 +536,9 @@ void TntDataRecordTree::senddataPosition(G4ThreeVector pos)
 }
 
 
-void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>& hits)
+void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>& hits, bool sortTime)
 {
-	if(hits.empty()) 
+	if(hits.empty()) // Nothing to do - reset to zero
 	{
 		HitX.resize(0);
 		HitY.resize(0);
@@ -532,28 +547,51 @@ void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>
 		HitE.resize(0);
 		HitTrackID.resize(0);
 		NumHits = 0;
-	} 
-	else 
+		return;
+	}
+	//
+	// Non-trivial hit vector
+	HitX.reserve(hits.size());
+	HitY.reserve(hits.size());
+	HitZ.reserve(hits.size());
+	HitT.reserve(hits.size());
+	HitE.reserve(hits.size());
+	HitTrackID.reserve(hits.size());
+
+	for(std::vector<Hit_t>::const_iterator it = hits.begin();
+			it != hits.end(); ++it) 
 	{
-		HitX.reserve(hits.size());
-		HitY.reserve(hits.size());
-		HitZ.reserve(hits.size());
-		HitT.reserve(hits.size());
-		HitE.reserve(hits.size());
-		HitTrackID.reserve(hits.size());
-		for(std::vector<Hit_t>::const_iterator it = hits.begin();
-				it != hits.end(); ++it) 
-		{	
+		if(sortTime == false) {
 			HitX.push_back(it->X);
 			HitY.push_back(it->Y);
 			HitZ.push_back(it->Z);
 			HitT.push_back(it->T);
 			HitE.push_back(it->E);
 			HitTrackID.push_back(it->TrackID);
+		}	else {
+			std::vector<G4double>::iterator iT = 
+				std::lower_bound(HitT.begin(), HitT.end(), it->T);
+			std::vector<G4double>::iterator iX = 
+				(iT - HitT.begin()) + HitX.begin();
+			std::vector<G4double>::iterator iY = 
+				(iT - HitT.begin()) + HitY.begin();
+			std::vector<G4double>::iterator iZ = 
+				(iT - HitT.begin()) + HitZ.begin();
+			std::vector<G4double>::iterator iE = 
+				(iT - HitT.begin()) + HitE.begin();
+			std::vector<G4int>::iterator iTrackID = 
+				(iT - HitT.begin()) + HitTrackID.begin();
+
+			HitX.insert(iX, it->X);
+			HitY.insert(iY, it->Y);
+			HitZ.insert(iZ, it->Z);
+			HitT.insert(iT, it->T);
+			HitE.insert(iE, it->E);
+			HitTrackID.insert(iTrackID, it->TrackID);
 		}
-		
-		NumHits = hits.size();
 	}
+
+	NumHits = hits.size();
 }
 
 

@@ -284,4 +284,6 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
   fParticleGun->SetParticleMomentumDirection(v);
 
   fParticleGun->GeneratePrimaryVertex(anEvent);
+
+	TntDataRecordTree::TntPointer->senddataPrimary(fParticleGun->GetParticlePosition());
 }

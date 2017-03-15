@@ -244,6 +244,7 @@ void TntScintSD::EndOfEvent(G4HCofThisEvent* hitsCE)
       G4int theTrackID = theCurrentHit->GetTrackID();
       G4int theParticleA = theCurrentHit->GetParticleA();
 			bool isNewTrack = false;
+
 			
       if(theTrackID != theLastTrackID && theParticleA >=1)
 			{
@@ -454,7 +455,7 @@ void TntScintSD::EndOfEvent(G4HCofThisEvent* hitsCE)
 
 	TntDataOutEV->senddataTOF(GlobalTime);
 	TntDataOutEV->senddataPosition(FirstHitPos);
-	TntDataOutEV->senddataHits(AllHitPosTime);
+	TntDataOutEV->senddataHits(AllHitPosTime, true);
  
 //by Shuya 160427. I restored this function.
 //by Shuya 160426. I removed this and Set FillTree at the end of EventAction, where PMT photons data are collected and sent TntDataRecord. (because in an event, ScintSD->EventAction is the order)
