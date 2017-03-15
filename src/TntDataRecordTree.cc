@@ -335,6 +335,7 @@ void TntDataRecordTree::senddataPMT(int id, int value1, int evid)
 	//by Shuya 160509
 	if(id < (NX*NY))	//Front side
 	{
+#if 0
 		sprintf(brN, "Count_PMT_Front_Event%d",evid);
 		x = id / NX;
 		y = id % NY;
@@ -344,10 +345,12 @@ void TntDataRecordTree::senddataPMT(int id, int value1, int evid)
 		//for(int i = 0;i<value1;i++)	((TH2I*)DataFile->Get(brN))->Fill(x,y);
 
 		PmtFrontHit[x][y] = value1;
+#endif
 	}
 	//else if(id >= 100 && id < 200)	//Back side
 	else if(id >= (NX*NY) && id < (2*NX*NY))	//Back side
 	{
+#if 0
 		sprintf(brN, "Count_PMT_Back_Event%d",evid);
 		//by Shuya 160509
 		//x = (id-100) / 10;
@@ -355,6 +358,7 @@ void TntDataRecordTree::senddataPMT(int id, int value1, int evid)
 		x = (id-NX*NY) / NX;
 		y = (id-NX*NY) % NY;
 		PmtBackHit[x][y] = value1;
+#endif
 		PhotonSum.at(id - NX*NY) = value1;
 	}
 }
@@ -362,6 +366,7 @@ void TntDataRecordTree::senddataPMT(int id, int value1, int evid)
 //by Shuya 160421
 void TntDataRecordTree::createdataPMT(int evid)
 {
+#if 0
 	char brN[300];
 
 	sprintf(brN, "PMT_Front_Hit_Event_%d", evid);
@@ -390,6 +395,7 @@ h_Count_PMT_Front[evid]->GetXaxis()->SetTitle("X (no.)");
 h_Count_PMT_Front[evid]->GetYaxis()->SetTitle("Y (no.)");
 
 */
+#endif 
 
 	PhotonSum.clear();
 }
