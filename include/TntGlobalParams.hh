@@ -27,6 +27,9 @@ public:
 	G4double GetPhotonResolutionScale() { return fPhotonResolutionScale; }
 	void SetPhotonResolutionScale(G4double scale) { fPhotonResolutionScale = scale; }
 
+	G4int GetMenateR_Tracking();
+	void SetMenateR_Tracking(G4int n);
+
 	
 private:
 	TntGlobalParams();
@@ -38,6 +41,7 @@ private:
 	G4String fBeamType;
 	G4String fRootFileName;
 	G4double fPhotonResolutionScale;
+	G4int fMenateR_Tracking;
 };
 
 

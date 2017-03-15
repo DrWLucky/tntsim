@@ -57,6 +57,7 @@
 
  
 #include "menate_R.hh"
+#include "TntGlobalParams.hh"
 #include <cmath>
 #include <iomanip>
 
@@ -66,8 +67,8 @@ menate_R::menate_R(const G4String& processName) : G4VDiscreteProcess(processName
   Two_Pi = 2.*Pi;
 
   //by Shuya 160509; 0: Track all secondary neutrons, 1: Track secondary neutrons only produced by reactions (n'), 2: Not track all secondary neutrons. 
-  N_Tracking = 2;
-
+  N_Tracking = TntGlobalParams::Instance()->GetMenateR_Tracking();
+	
   AMass_Material = 12.; // Atomic Mass of C12 for certain inelastic reactions
                         // If Used with materials other than C12, need to
                         // give atomic Mass here or in PostStepDoIt Method (as for NE213)
@@ -78,6 +79,7 @@ menate_R::menate_R(const G4String& processName) : G4VDiscreteProcess(processName
   G4cout << "A non-relativistic model for n - scattering ";
   G4cout << "on carbon and hydrogen or materials composed of it (e.g. NE213)" << G4endl;
   G4cout << "You are using MENATE_R version 1.5, finished 24 Feb 2016 - BTR" << G4endl;
+	G4cout << "Tracking Method:: " << N_Tracking << G4endl;
   
   const G4MaterialTable* theMaterialList = G4Material::GetMaterialTable();
   G4int NumberOfMaterials = G4Material::GetNumberOfMaterials(); 

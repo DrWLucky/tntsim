@@ -98,6 +98,9 @@ namespace{ void ReadArgs(int argc, char** argv)
 		else if(G4String(argv[i]) == "-resscale") {
 			TntGlobalParams::Instance()->SetPhotonResolutionScale(atoi(argv[++i]));
 		}
+		else if(G4String(argv[i]) == "-ntracking") {
+			TntGlobalParams::Instance()->SetMenateR_Tracking(atoi(argv[++i])); 
+		}
 		else if(i == 1) {
 			macfile = argv[i];
 		}
