@@ -239,7 +239,16 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 	// GAC - Array of PMT intensities (photon counts)
 	// 
 	TntEventTree->Branch("PhotonSum", &PhotonSum);
-
+	//
+	// Array of hit positions and times
+	TntEventTree->Branch("HitX", &HitX);
+	TntEventTree->Branch("HitY", &HitY);
+	TntEventTree->Branch("HitZ", &HitZ);
+	TntEventTree->Branch("HitT", &HitT);
+	TntEventTree->Branch("HitE", &HitE);
+	TntEventTree->Branch("HitTrackID", &HitTrackID);
+	TntEventTree->Branch("NumHits", &NumHits);
+	
 	
 
 //by Shuya 160422. Making tree for photon hits on each pmt.
@@ -510,6 +519,43 @@ void TntDataRecordTree::senddataPosition(G4ThreeVector pos)
 
 	//   G4cout << "Hit Distance s = " << FirstHitMag << G4endl;
 }
+
+
+void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>& hits)
+{
+	if(hits.empty()) 
+	{
+		HitX.resize(0);
+		HitY.resize(0);
+		HitZ.resize(0);
+		HitT.resize(0);
+		HitE.resize(0);
+		HitTrackID.resize(0);
+		NumHits = 0;
+	} 
+	else 
+	{
+		HitX.reserve(hits.size());
+		HitY.reserve(hits.size());
+		HitZ.reserve(hits.size());
+		HitT.reserve(hits.size());
+		HitE.reserve(hits.size());
+		HitTrackID.reserve(hits.size());
+		for(std::vector<Hit_t>::const_iterator it = hits.begin();
+				it != hits.end(); ++it) 
+		{	
+			HitX.push_back(it->X);
+			HitY.push_back(it->Y);
+			HitZ.push_back(it->Z);
+			HitT.push_back(it->T);
+			HitE.push_back(it->E);
+			HitTrackID.push_back(it->TrackID);
+		}
+		
+		NumHits = hits.size();
+	}
+}
+
 
 void TntDataRecordTree::senddataTOF(G4double time)
 {

@@ -42,7 +42,21 @@
 
 class TntDataRecordTree
 {
-
+public:
+	struct Hit_t { 
+		G4double X, Y, Z, T, E;
+		G4int TrackID;
+		bool operator== (const Hit_t& rhs) {
+			if(rhs.X == X && rhs.Y == Y && rhs.Z == Z && 
+				 rhs.T == T && rhs.E == E && rhs.TrackID == TrackID) 
+			{ 	return true;   }
+			else { return false; }
+		}
+		bool operator!= (const Hit_t& rhs) {
+			return !(this->operator==(rhs));
+		}
+};
+	
 private:
 
   // Initialized in class constructor in TntDataRecordTree.cc 
@@ -83,6 +97,13 @@ private:
   //G4int** PmtBackHit;
 
 	std::vector<G4int> PhotonSum;
+	std::vector<G4double> HitX;
+	std::vector<G4double> HitY;
+	std::vector<G4double> HitZ;
+	std::vector<G4double> HitT;
+	std::vector<G4double> HitE;
+	std::vector<G4int>    HitTrackID;
+	G4int NumHits;
 	
 
   G4double FirstHitTime;
@@ -147,6 +168,7 @@ private:
   void senddataPG(double value1);
   void senddataEV(int type, double value1);
   void senddataPosition(G4ThreeVector pos);
+	void senddataHits(const std::vector<Hit_t>& hit);
   void senddataTOF(G4double time);
   void ShowDataFromEvent();
   void FillTree();
