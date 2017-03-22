@@ -233,6 +233,11 @@ void TntEventAction::EndOfEventAction(const G4Event* anEvent){
 			//TntDataOutEV->senddataPMT(pmtnumber,(*pmtHC)[i]->GetPhotonCount(),numberOfEvent);
 			TntDataOutEV->senddataPMT(pmtnumber,(*pmtHC)[i]->GetPhotonCount(),Counter);
 
+			for(std::vector<G4double>::const_iterator iPhot = (*pmtHC)[i]->GetPhotonTime().begin();
+					iPhot != (*pmtHC)[i]->GetPhotonTime().end(); ++iPhot) {
+				TntDataOutEV->senddataPMT_Time(pmtnumber, *iPhot);
+			}
+			
       reconPos+=(*pmtHC)[i]->GetPMTPos()*(*pmtHC)[i]->GetPhotonCount();
 			//G4cout << "CHECKING RECONPOS " << reconPos << " CHECKING PMTPOS " << (*pmtHC)[i]->GetPMTPos() << " " << "CHECKING PHOTONCOUNTS " << (*pmtHC)[i]->GetPhotonCount() << G4endl;
       if((*pmtHC)[i]->GetPhotonCount()>=fPMTThreshold){

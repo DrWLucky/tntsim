@@ -20,6 +20,8 @@
 #include <algorithm>
 #include "TntGlobalParams.hh"
 #include "TntDataRecordTree.hh"
+
+#include <TH2I.h>
 using namespace std;
 
 //by Shuya 160426.
@@ -241,6 +243,10 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 	// GAC - Array of PMT intensities (photon counts)
 	// 
 	TntEventTree->Branch("PhotonSum", &PhotonSum);
+
+	// Digitizer histogram (see createdataPMT for more info)
+	hDigi = 0;
+	TntEventTree->Branch("digi", "TH2I", &hDigi);
 	//
 	// Array of hit positions and times
 	TntEventTree->Branch("HitX", &HitX);
@@ -250,7 +256,6 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 	TntEventTree->Branch("HitE", &HitE);
 	TntEventTree->Branch("HitTrackID", &HitTrackID);
 	TntEventTree->Branch("NumHits", &NumHits);
-
 	//
 	// Original x,y,z positions of the fired neutron
 	TntEventTree->Branch("PrimaryX",&PrimaryX,"PrimaryX/D");
@@ -286,7 +291,9 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 
 TntDataRecordTree::~TntDataRecordTree()
 {/* Destructor, Close root file */
- 
+
+	hDigi->Delete();
+	hDigi = 0;
   DataFile->Write(); 
   DataFile->Close();
   cout << "############################################################" << endl;
@@ -359,6 +366,14 @@ void TntDataRecordTree::senddataPMT(int id, int value1, int evid)
 	}
 }
 
+void TntDataRecordTree::senddataPMT_Time(int id, G4double time)
+{
+	if(id >= (NX*NY) && id < (2*NX*NY)) {	//Back side
+		hDigi->Fill(time, id - NX*NY);
+	}	
+}
+
+
 //by Shuya 160421
 void TntDataRecordTree::createdataPMT(int evid)
 {
@@ -392,7 +407,15 @@ h_Count_PMT_Front[evid]->GetYaxis()->SetTitle("Y (no.)");
 */
 
 	PhotonSum.clear();
+
+	// re-create digitizer histogram
+	// x-axis: signals as recorded by a CAEN V1730 digitizer (bins of 2 ns)
+	// y-axis: PMT ID (0->16)
+	if(hDigi) { hDigi->Delete(); }
+	hDigi = new TH2I("hDigi", "Digitizer Signals", 300, 0, 600, NX*NY, 0, NX*NY);
+	hDigi->SetDirectory(0);
 }
+
 
 void TntDataRecordTree::senddataEV(int type, double value1)
 {
@@ -420,7 +443,7 @@ void TntDataRecordTree::senddataEV(int type, double value1)
 //by Shuya 160426. Removed the histogram to replace with TTree.
 			//((TH1D*)DataFile->Get("Energy_Proton"))->Fill(eng_Tnt_proton);
 			//h_Energy_Proton->Fill(eng_Tnt_proton);
-	  }
+		}
 		break;
 	case 3:
 		eng_Tnt_alpha = value1;
@@ -429,7 +452,7 @@ void TntDataRecordTree::senddataEV(int type, double value1)
 //by Shuya 160426. Removed the histogram to replace with TTree.
 			//((TH1D*)DataFile->Get("Energy_Alpha"))->Fill(eng_Tnt_alpha);
 			//h_Energy_Alpha->Fill(eng_Tnt_alpha);
-	  }
+		}
 		break;
 	case 4:
 		eng_Tnt_C12 = value1; 
@@ -438,7 +461,7 @@ void TntDataRecordTree::senddataEV(int type, double value1)
 //by Shuya 160426. Removed the histogram to replace with TTree.
 			//((TH1D*)DataFile->Get("Energy_C12"))->Fill(eng_Tnt_C12);
 			//h_Energy_C12->Fill(eng_Tnt_C12);
-	  }
+		}
 		break;
 	case 5:
 		eng_Tnt_EG = value1; 
@@ -447,7 +470,7 @@ void TntDataRecordTree::senddataEV(int type, double value1)
 //by Shuya 160426. Removed the histogram to replace with TTree.
 			//((TH1D*)DataFile->Get("Energy_EG"))->Fill(eng_Tnt_EG);
 			//h_Energy_EG->Fill(eng_Tnt_EG);
-	  }
+		}
 		break;
 	case 6:
 		eng_Tnt_Exotic = value1;  
@@ -456,7 +479,7 @@ void TntDataRecordTree::senddataEV(int type, double value1)
 //by Shuya 160426. Removed the histogram to replace with TTree.
 			//((TH1D*)DataFile->Get("Energy_Exotic"))->Fill(eng_Tnt_Exotic);
 			//h_Energy_Exotic->Fill(eng_Tnt_Exotic);
-	  }
+		}
 		break;
 //by Shuya 160407
 	case 7:
@@ -466,21 +489,21 @@ void TntDataRecordTree::senddataEV(int type, double value1)
 //by Shuya 160426. Removed the histogram to replace with TTree.
 			//((TH1D*)DataFile->Get("Energy_Photon"))->Fill(eng_Tnt_Photon);
 			//h_Energy_Photon->Fill(eng_Tnt_Photon);
-	  }
+		}
 		break;
 //by Shuya 160427
 	case 8:
 		eng_Tnt_PhotonBack = (int)value1;  
 		if (eng_Tnt_PhotonBack > Det_Threshold)
 	  {number_Photon++;
-	  }
+		}
 		break;
 //by Shuya 160502
 	case 9:
 		eng_Tnt_PhotonTotal = (int)value1;  
 		if (eng_Tnt_PhotonTotal > Det_Threshold)
 	  {number_Photon++;
-	  }
+		}
 		break;
 //by Shuya 160502
 	case 10:
@@ -518,12 +541,12 @@ void TntDataRecordTree::senddataEV(int type, double value1)
 
 void TntDataRecordTree::senddataPosition(const G4ThreeVector& pos)
 {
-  // const G4double pi = 3.14159265;
-  FirstHitMag = 0;
-  // HitAngle = 360;       // Some value that one would never get! 
-  Xpos = pos(0);
-  Ypos = pos(1);
-  Zpos = pos(2);
+	// const G4double pi = 3.14159265;
+	FirstHitMag = 0;
+	// HitAngle = 360;       // Some value that one would never get! 
+	Xpos = pos(0);
+	Ypos = pos(1);
+	Zpos = pos(2);
 
 	FirstHitMag = sqrt(pow(Xpos,2)+pow(Ypos,2)+pow(Zpos,2))/cm;
 
@@ -559,16 +582,16 @@ void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>
 	HitTrackID.reserve(hits.size());
 
 	for(std::vector<Hit_t>::const_iterator it = hits.begin();
-			it != hits.end(); ++it) 
+			it != hits.end(); ++it)
 	{
-		if(sortTime == false) {
+		if(sortTime == false) { // insert at end of vector
 			HitX.push_back(it->X);
 			HitY.push_back(it->Y);
 			HitZ.push_back(it->Z);
 			HitT.push_back(it->T);
 			HitE.push_back(it->E);
 			HitTrackID.push_back(it->TrackID);
-		}	else {
+		}	else { // insert, sorted by time vector
 			std::vector<G4double>::iterator iT = 
 				std::lower_bound(HitT.begin(), HitT.end(), it->T);
 			std::vector<G4double>::iterator iX = 
@@ -597,8 +620,8 @@ void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>
 
 void TntDataRecordTree::senddataTOF(G4double time)
 {
-  FirstHitTime = time/ns;
-  // G4cout << "The first hit time was : " << FirstHitTime << G4endl;
+	FirstHitTime = time/ns;
+	// G4cout << "The first hit time was : " << FirstHitTime << G4endl;
 }
 
  
@@ -630,7 +653,7 @@ void TntDataRecordTree::ShowDataFromEvent()
 
 void TntDataRecordTree::FillTree()
 {
-  if (eng_Tnt > Det_Threshold)  // Threshold set in main()
+	if (eng_Tnt > Det_Threshold)  // Threshold set in main()
 	{number_at_this_energy++;}
 	TntEventTree->Fill();  
 
@@ -670,10 +693,10 @@ void TntDataRecordTree::FillTree2(int evid)
 	//TntEventTree2->Fill();  
 
 //Initialization.
-  //for(int i=0;i<10;i++)
-  //by Shuya 160509
-  for(int i=0;i<NX;i++)
-  {
+	//for(int i=0;i<10;i++)
+	//by Shuya 160509
+	for(int i=0;i<NX;i++)
+	{
 		//for(int j=0;j<10;j++)
 		for(int j=0;j<NY;j++)
 		{
@@ -681,7 +704,7 @@ void TntDataRecordTree::FillTree2(int evid)
 			PmtFrontHit[i][j] = 0;
 			PmtBackHit[i][j] = 0;
 		}
-  }
+	}
 }
 
 void TntDataRecordTree::GetParticleTotals()
@@ -708,7 +731,7 @@ void TntDataRecordTree::CalculateEff(int ch_eng)
 
 	outfile2 << setiosflags(ios::fixed)
 					 << setprecision(4)
-           << eng_int << "  "
+					 << eng_int << "  "
 					 << efficiency 
 					 << endl;
 	outfile2.close();

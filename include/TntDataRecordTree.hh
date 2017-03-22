@@ -37,7 +37,7 @@
 
 //by Shuya 160407
 #include "TntDataRecordTree.hh"
-#include "TH2.h"
+#include "TH2I.h"
 
 
 class TntDataRecordTree
@@ -95,17 +95,25 @@ private:
 //by Shuya 160509. This is needed since array size is not passed until you get extern G4int in TntDataRecord(), which is originally fixed in Tnt.cc file.
   //G4int** PmtFrontHit;
   //G4int** PmtBackHit;
-
-	std::vector<G4int> PhotonSum;
+	///
+	/// GAC
+	std::vector<G4int> PhotonSum; // Sum of all photons incident on a PMT
+	TH2I* hDigi; // Histogram of digitized time signals for each PMT
+	///
+	/// Vectors of all hit information
+	G4int NumHits;
 	std::vector<G4double> HitX;
 	std::vector<G4double> HitY;
 	std::vector<G4double> HitZ;
 	std::vector<G4double> HitT;
 	std::vector<G4double> HitE;
 	std::vector<G4int>    HitTrackID;
-	G4int NumHits;
 
-	G4double PrimaryX, PrimaryY, PrimaryZ;
+	///
+	/// Positions of original fired neutron
+	G4double PrimaryX;
+	G4double PrimaryY;
+	G4double PrimaryZ;
 	
 
   G4double FirstHitTime;
@@ -164,6 +172,7 @@ private:
 //by Shuya 160408
   //void senddataPMT(int id, double value1);
 //by Shuya 160421
+	void senddataPMT_Time(int id, G4double time);
   void senddataPMT(int id, int value1, int evid);
   void createdataPMT(int evid);
 
