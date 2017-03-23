@@ -977,7 +977,7 @@ if(ReactionName == "N_P_elastic")
     //Track all secondary neutrons
     if(N_Tracking == 0)
     {
-	aParticleChange.SetNumberOfSecondaries(2);
+			aParticleChange.SetNumberOfSecondaries(2);
     	aParticleChange.AddSecondary(theNTrack);
     }
     //Track secondary neutrons unless production by beam neutron
@@ -985,12 +985,12 @@ if(ReactionName == "N_P_elastic")
     {
 	//Produced by NOT beam neutron
     	if(parentID!=0)
-	{
-		aParticleChange.SetNumberOfSecondaries(2);
-		aParticleChange.AddSecondary(theNTrack);
-	}
+			{
+				aParticleChange.SetNumberOfSecondaries(2);
+				aParticleChange.AddSecondary(theNTrack);
+			}
 	//Produced by beam neutrons, so not track neutrons
-	else	aParticleChange.SetNumberOfSecondaries(1);
+			else	aParticleChange.SetNumberOfSecondaries(1);
     }
     //Not track all secondary neutrons.
     else	aParticleChange.SetNumberOfSecondaries(1);
@@ -1012,7 +1012,7 @@ if(ReactionName == "N_P_elastic")
   
   }
  else if(ReactionName == "N_C12_elastic")
-   {
+ {
      G4double theta_N  = 0.;
      G4double phi_N = 0.;
 
@@ -1091,7 +1091,7 @@ if(ReactionName == "N_P_elastic")
     //Track all secondary neutrons
     if(N_Tracking == 0)
     {
-	aParticleChange.SetNumberOfSecondaries(2);
+			aParticleChange.SetNumberOfSecondaries(2);
     	aParticleChange.AddSecondary(theNTrack);
     }
     //Track secondary neutrons unless production by beam neutron
@@ -1099,17 +1099,17 @@ if(ReactionName == "N_P_elastic")
     {
 	//Produced by NOT beam neutron
     	if(parentID!=0)
-	{
-		aParticleChange.SetNumberOfSecondaries(2);
-		aParticleChange.AddSecondary(theNTrack);
-	}
+			{
+				aParticleChange.SetNumberOfSecondaries(2);
+				aParticleChange.AddSecondary(theNTrack);
+			}
 	//Produced by beam neutrons, so not track neutrons
-	else	aParticleChange.SetNumberOfSecondaries(1);
+			else	aParticleChange.SetNumberOfSecondaries(1);
     }
     //Not track all secondary neutrons.
-    //else	aParticleChange.SetNumberOfSecondaries(1);
+   else	aParticleChange.SetNumberOfSecondaries(1);
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-    else	aParticleChange.SetNumberOfSecondaries(0);
+    // else	aParticleChange.SetNumberOfSecondaries(0);
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -1124,7 +1124,7 @@ if(ReactionName == "N_P_elastic")
      //if(parentID!=0)	aParticleChange.AddSecondary(theNTrack);
  
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-     //aParticleChange.AddSecondary(theC12Track);
+		aParticleChange.AddSecondary(theC12Track);
   
     // G4cout << "Made it to the end ! " << G4endl;
    }
@@ -1198,9 +1198,9 @@ if(ReactionName == "N_P_elastic")
      G4int NumberOfSec;
      if(N_Tracking==0)	NumberOfSec = 2+Num_gamma_4439k;
      else if(N_Tracking==1)	NumberOfSec = 2+Num_gamma_4439k;
-    // else	NumberOfSec = 1+Num_gamma_4439k;
+		 else	NumberOfSec = 1+Num_gamma_4439k;
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-     else	NumberOfSec = 0;
+     //else	NumberOfSec = 0;
     
      aParticleChange.SetNumberOfSecondaries(NumberOfSec);
 
@@ -1224,9 +1224,9 @@ if(ReactionName == "N_P_elastic")
 	     //aParticleChange.SetNumberOfSecondaries(2+Num_gamma_4439k);
      	     if(N_Tracking==0)	aParticleChange.SetNumberOfSecondaries(2+Num_gamma_4439k);
      	     else if(N_Tracking==1)	aParticleChange.SetNumberOfSecondaries(2+Num_gamma_4439k);
-     	     //else	aParticleChange.SetNumberOfSecondaries(1+Num_gamma_4439k);
+     	     else	aParticleChange.SetNumberOfSecondaries(1+Num_gamma_4439k);
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-     	     else	aParticleChange.SetNumberOfSecondaries(0);
+     	     //else	aParticleChange.SetNumberOfSecondaries(0);
 
 	     G4Track* theGammaTrack = new G4Track(theSecGamma,GlobalTime,thePosition);
 	     theGammaTrack->SetTouchableHandle(theTouchable);
@@ -1275,7 +1275,7 @@ if(ReactionName == "N_P_elastic")
      //if(parentID!=0)	aParticleChange.AddSecondary(theNTrack);
 
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-     //aParticleChange.AddSecondary(theC12Track);
+     aParticleChange.AddSecondary(theC12Track);
      
     // G4cout << "Made it to the end ! " << G4endl;
  
@@ -1363,11 +1363,11 @@ if(ReactionName == "N_P_elastic")
      G4Track* theBe9Track = new G4Track(theSecBe9,GlobalTime,thePosition);
      theBe9Track->SetTouchableHandle(theTouchable);
 
-     //aParticleChange.SetNumberOfSecondaries(2);
+     aParticleChange.SetNumberOfSecondaries(2);
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-     aParticleChange.SetNumberOfSecondaries(0);
-     //aParticleChange.AddSecondary(theAlphaTrack);
-     //aParticleChange.AddSecondary(theBe9Track);
+     //aParticleChange.SetNumberOfSecondaries(0);
+     aParticleChange.AddSecondary(theAlphaTrack);
+     aParticleChange.AddSecondary(theBe9Track);
   
     // G4cout << "Made it to the end ! " << G4endl;
    }
@@ -1451,11 +1451,11 @@ if(ReactionName == "N_P_elastic")
     //thePTrack->SetParentID(parentID);
     //theB12Track->SetParentID(parentID);
 
-     //aParticleChange.SetNumberOfSecondaries(2);
+     aParticleChange.SetNumberOfSecondaries(2);
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-     aParticleChange.SetNumberOfSecondaries(0);
-    // aParticleChange.AddSecondary(thePTrack);
-     //aParticleChange.AddSecondary(theB12Track);
+     //aParticleChange.SetNumberOfSecondaries(0);
+		 aParticleChange.AddSecondary(thePTrack);
+     aParticleChange.AddSecondary(theB12Track);
   
     // G4cout << "Made it to the end ! " << G4endl;
    }
@@ -1629,9 +1629,9 @@ if(ReactionName == "N_P_elastic")
 	aParticleChange.AddSecondary(theNTrack);
     }
     //Not track all secondary neutrons.
-    //else	aParticleChange.SetNumberOfSecondaries(2);
+    else	aParticleChange.SetNumberOfSecondaries(2);
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-    else	aParticleChange.SetNumberOfSecondaries(0);
+    //else	aParticleChange.SetNumberOfSecondaries(0);
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //by Shuya 160509. Change this too if you want to cut off secondary neutrons in this event.
@@ -1642,8 +1642,8 @@ if(ReactionName == "N_P_elastic")
      //aParticleChange.AddSecondary(theNTrack);
 
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-    // aParticleChange.AddSecondary(thePTrack);
-    // aParticleChange.AddSecondary(theB11Track);
+		aParticleChange.AddSecondary(thePTrack);
+		aParticleChange.AddSecondary(theB11Track);
   
     // G4cout << "Made it to the end ! " << G4endl;
    }
@@ -1807,9 +1807,9 @@ if(ReactionName == "N_P_elastic")
 	aParticleChange.AddSecondary(theN2Track);
     }
     //Not track all secondary neutrons.
-    //else	aParticleChange.SetNumberOfSecondaries(1);
+    else	aParticleChange.SetNumberOfSecondaries(1);
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-    else	aParticleChange.SetNumberOfSecondaries(0);
+    //else	aParticleChange.SetNumberOfSecondaries(0);
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //by Shuya 160509. Change this too if you want to cut off secondary neutrons in this event.
@@ -1820,7 +1820,7 @@ if(ReactionName == "N_P_elastic")
      //aParticleChange.AddSecondary(theN2Track);
 
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-     //aParticleChange.AddSecondary(theC11Track);
+		aParticleChange.AddSecondary(theC11Track);
 
      /*
      G4double T_N_Sum = T_N1+T_N2;
@@ -2064,19 +2064,19 @@ else if(ReactionName == "N_C12_NN3Alpha")
     //Track all secondary neutrons
     if(N_Tracking == 0)
     {
-	aParticleChange.SetNumberOfSecondaries(4);
+			aParticleChange.SetNumberOfSecondaries(4);
     	aParticleChange.AddSecondary(theNTrack);
     }
     //Track secondary neutrons unless production by beam neutron
     else if(N_Tracking == 1)
     {
-	aParticleChange.SetNumberOfSecondaries(4);
-	aParticleChange.AddSecondary(theNTrack);
+			aParticleChange.SetNumberOfSecondaries(4);
+			aParticleChange.AddSecondary(theNTrack);
     }
     //Not track all secondary neutrons.
-    //else	aParticleChange.SetNumberOfSecondaries(3);
+    else	aParticleChange.SetNumberOfSecondaries(3);
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-    else	aParticleChange.SetNumberOfSecondaries(0);
+    //else	aParticleChange.SetNumberOfSecondaries(0);
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //by Shuya 160509. Change this too if you want to cut off secondary neutrons in this event.
@@ -2088,9 +2088,9 @@ else if(ReactionName == "N_C12_NN3Alpha")
      //aParticleChange.AddSecondary(theNTrack);
      
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-    // aParticleChange.AddSecondary(theA1Track);
-     //aParticleChange.AddSecondary(theA2Track);
-     //aParticleChange.AddSecondary(theA3Track);
+		aParticleChange.AddSecondary(theA1Track);
+    aParticleChange.AddSecondary(theA2Track);
+    aParticleChange.AddSecondary(theA3Track);
 
      /*
      G4double T_A_Sum = T_Alpha1+T_Alpha2+T_Alpha3;
@@ -2104,6 +2104,6 @@ else if(ReactionName == "N_C12_NN3Alpha")
    }
 
 
- return pParticleChange;
+return pParticleChange;
 }
 
