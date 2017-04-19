@@ -279,14 +279,14 @@ void TntDetectorConstruction::DefineMaterials(){
   //fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(9500.*0.2)/MeV);
 	G4double nphot = 10400.*0.2;
 	fTnt_mt->AddConstProperty("SCINTILLATIONYIELD", nphot/MeV);
-	G4cout << "NPHOT:: " << nphot << G4endl;
+
   // fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(10400.*0.2)/MeV);
 
   //fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(11500.*0.2)/MeV);
   //fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(11500.)/MeV);
 
 	G4double resScale = TntGlobalParams::Instance()->GetPhotonResolutionScale();
-	G4cout << "RES SCALE:: " << resScale << G4endl;
+
   fTnt_mt->AddConstProperty("RESOLUTIONSCALE", resScale);
 
 
@@ -297,13 +297,19 @@ void TntDetectorConstruction::DefineMaterials(){
 //by Shuya 160421 for BC519
   //fTnt_mt->AddConstProperty("FASTTIMECONSTANT",4.*ns);
 //by Shuya 160512 for BC404 (not sure about slow one)
-  fTnt_mt->AddConstProperty("FASTTIMECONSTANT",1.8*ns);
+	fTnt_mt->AddConstProperty("FASTSCINTILLATIONRISETIME",0.9*ns); // RISE TIME
+  fTnt_mt->AddConstProperty("FASTTIMECONSTANT",2.1*ns); // DECAY TIME
+
 //by Shuya 160523 for EJ309 (not sure about slow one)
   //fTnt_mt->AddConstProperty("FASTTIMECONSTANT",3.5*ns);
 
-//Comment by Shuya 160414. All is Fast component! (Fast/(Fast+Slow) = 1.0), So SLOWTIMECONSTANT is actually not needed. 
-  fTnt_mt->AddConstProperty("SLOWTIMECONSTANT",45.*ns);
-  fTnt_mt->AddConstProperty("YIELDRATIO",1.0);
+//Comment by Shuya 160414. All is Fast component! (Fast/(Fast+Slow) = 1.0),
+//So SLOWTIMECONSTANT is actually not needed.
+//Except it must be defined sice we added the SLOWCOMPONENT property a few lines
+//above. Otherwise the code crashes. But whatever values we set get ignored
+  fTnt_mt->AddConstProperty("SLOWTIMECONSTANT",0.9*ns);
+	fTnt_mt->AddConstProperty("SLOWSCINTILLATIONRISETIME",2.1*ns);
+  fTnt_mt->AddConstProperty("YIELDRATIO",1.0); // Ratio of fast / (fast+slow) ==> 1.0 means all fast
   fTnt->SetMaterialPropertiesTable(fTnt_mt);
 
 
@@ -586,7 +592,7 @@ void TntDetectorConstruction::SetDefaults() {
   fScint_x = 28.0*cm;
   fScint_y = 28.0*cm;
 //by Shuya 160510
-  //fScint_z = 30.0*cm;
+//	fScint_z = 30.0*cm;
   fScint_z = 10.0*cm;
 
 

@@ -170,7 +170,8 @@ int main(int argc, char** argv)
  
   // get the pointer to the UI manager and set verbosities
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
-
+	UImanager->ApplyCommand("/process/optical/defaults/scintillation/setFiniteRiseTime 1");
+	
   if(macfile.empty()) {
 #ifdef G4UI_USE
     G4UIExecutive* ui = new G4UIExecutive(argc, argv);

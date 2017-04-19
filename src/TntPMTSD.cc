@@ -140,7 +140,9 @@ G4bool TntPMTSD::ProcessHits_constStep(const G4Step* aStep,
   }
 
   hit->IncPhotonCount(); //increment hit for the selected pmt
- 
+	G4double PhotonTime = aStep->GetPreStepPoint()->GetGlobalTime();
+	hit->AddPhotonTime(PhotonTime);
+	
   if(!TntDetectorConstruction::GetSphereOn()){
     hit->SetDrawit(true);
     //If the sphere is disabled then this hit is automaticaly drawn

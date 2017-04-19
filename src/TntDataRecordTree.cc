@@ -22,6 +22,7 @@
 #include "TntDataRecordTree.hh"
 
 #include <TH2I.h>
+#include <TVector3.h>
 using namespace std;
 
 //by Shuya 160426.
@@ -257,12 +258,25 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 	TntEventTree->Branch("HitTrackID", &HitTrackID);
 	TntEventTree->Branch("NumHits", &NumHits);
 	//
+	//
+	fHits = new TClonesArray("TLorentzVector");
+	TntEventTree->Branch("HitArray", &fHits, 256000, 0); // splitlevel 0 for custom streamer
+	fHits->BypassStreamer();
+	fHit01 = new TClonesArray("TLorentzVector");
+	TntEventTree->Branch("Hit01", &fHit01, 256000, 0);
+	fHit01->BypassStreamer();
+	//
 	// Original x,y,z positions of the fired neutron
+	PrimaryMomentum = 0;
 	TntEventTree->Branch("PrimaryX",&PrimaryX,"PrimaryX/D");
   TntEventTree->Branch("PrimaryY",&PrimaryY,"PrimaryY/D");
   TntEventTree->Branch("PrimaryZ",&PrimaryZ,"PrimaryZ/D");
-	
-	
+	TntEventTree->Branch("PrimaryMomentum", &PrimaryMomentum);
+	//
+	// Secondary particles involved in the reaction
+	SecondaryMomentum = 0;
+	SecondaryPosition = 0;
+		
 
 //by Shuya 160422. Making tree for photon hits on each pmt.
   TntEventTree2 = new TTree("t2","Tnt Scintillator Simulation Data");
@@ -322,11 +336,35 @@ void TntDataRecordTree::senddataPG(double value1=0.)
 	//  cout << "eng_int = " << eng_int << endl;
 }
 
-void TntDataRecordTree::senddataPrimary(const G4ThreeVector& pos)
+void TntDataRecordTree::senddataPrimary(const G4ThreeVector& pos, const G4ThreeVector& mom)
 {
 	PrimaryX = pos.x();
 	PrimaryY = pos.y();
 	PrimaryZ = pos.z();
+
+	TVector3 v(mom.x(), mom.y(), mom.z());
+	G4double theta = v.Theta(), phi = v.Phi();
+
+	const G4double MNEUT = 939.565378;
+	G4double etot = eng_int + MNEUT;
+	G4double ptot = sqrt(etot*etot - MNEUT*MNEUT);
+	PrimaryMomentum->SetPxPyPzE(ptot*sin(theta)*cos(phi), 
+															ptot*sin(theta)*sin(phi),
+															ptot*cos(theta), 
+															etot);
+}
+
+void TntDataRecordTree::senddataSecondary(const G4ThreeVector& pos, const TLorentzVector& mom)
+{
+	if(SecondaryMomentum == 0) {
+		TntEventTree->Branch("SecondaryMomentum", &SecondaryMomentum);
+	}
+	if(SecondaryPosition == 0) {
+		TntEventTree->Branch("SecondaryPosition", &SecondaryPosition);
+	}
+
+	SecondaryPosition->SetXYZ(pos.x(), pos.y(), pos.z());
+	*SecondaryMomentum = mom;
 }
 
 //by Shuya 160408
@@ -561,17 +599,19 @@ void TntDataRecordTree::senddataPosition(const G4ThreeVector& pos)
 
 void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>& hits, bool sortTime)
 {
-	if(hits.empty()) // Nothing to do - reset to zero
-	{
-		HitX.resize(0);
-		HitY.resize(0);
-		HitZ.resize(0);
-		HitT.resize(0);
-		HitE.resize(0);
-		HitTrackID.resize(0);
-		NumHits = 0;
-		return;
-	}
+	// Reset hit vectors
+	HitX.resize(0);
+	HitY.resize(0);
+	HitZ.resize(0);
+	HitT.resize(0);
+	HitE.resize(0);
+	HitTrackID.resize(0);
+	NumHits = 0;
+	fHits->Clear();
+	fHit01->Clear();
+
+	if(hits.empty()) { return; } // Nothing to do
+
 	//
 	// Non-trivial hit vector
 	HitX.reserve(hits.size());
@@ -580,7 +620,8 @@ void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>
 	HitT.reserve(hits.size());
 	HitE.reserve(hits.size());
 	HitTrackID.reserve(hits.size());
-
+	NumHits = hits.size();
+	
 	for(std::vector<Hit_t>::const_iterator it = hits.begin();
 			it != hits.end(); ++it)
 	{
@@ -614,7 +655,21 @@ void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>
 		}
 	}
 
-	NumHits = hits.size();
+	if(NumHits != HitT.size()) { 
+		G4cerr << "ERROR:: NUM HITS, HitT.size():: " << NumHits << ", " << HitT.size() << G4endl; 
+	}
+
+	// 
+	// Fill TLorrentzVector arrays
+	for(size_t i=0; i< HitT.size(); ++i) {
+		TLorentzVector* hit4Vector = new( (*fHits)[i] ) TLorentzVector();
+		hit4Vector->SetXYZT(HitX.at(i), HitY.at(i), HitZ.at(i), HitT.at(i));
+	}
+	if(fHits->GetEntries() > 1) {
+		TLorentzVector* hit1 = (TLorentzVector*)fHits->At(1);
+		TLorentzVector* hit0 = (TLorentzVector*)fHits->At(0);
+		new( (*fHit01)[0] ) TLorentzVector( *hit1 - *hit0 );
+	}
 }
 
 

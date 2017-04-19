@@ -32,6 +32,7 @@
 #ifndef TntPMTHit_h
 #define TntPMTHit_h 1
 
+#include <vector>
 #include "G4VHit.hh"
 #include "G4THitsCollection.hh"
 #include "G4Allocator.hh"
@@ -68,6 +69,9 @@ class TntPMTHit : public G4VHit
     inline void IncPhotonCount(){fPhotons++;}
     inline G4int GetPhotonCount(){return fPhotons;}
 
+  	inline void AddPhotonTime(G4double t){fPhotonTime.push_back(t);}
+  	inline const std::vector<G4double>& GetPhotonTime(){return fPhotonTime;}
+	
     inline void SetPMTNumber(G4int n) { fPmtNumber = n; }
     inline G4int GetPMTNumber() { return fPmtNumber; }
 
@@ -87,6 +91,7 @@ class TntPMTHit : public G4VHit
     G4ThreeVector fPos;
     G4VPhysicalVolume* fPhysVol;
     G4bool fDrawit;
+	  std::vector<G4double> fPhotonTime;
 
 };
 

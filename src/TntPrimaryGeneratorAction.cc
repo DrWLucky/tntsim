@@ -48,6 +48,57 @@
 #include "G4UnitsTable.hh"
 extern G4int Counter;
 
+
+
+#include <TLorentzVector.h>
+#include <TGenPhaseSpace.h>
+
+namespace{ 
+	void generate_from_7he(const G4double& ebeam,
+												 G4double& px,
+												 G4double& py,
+												 G4double& pz, 
+												 G4double& eneut,
+												 TLorentzVector& p_6he)
+{
+	// Generate neutron from breakup of 7he g.s.
+	// Unbound state at 410 keV, width 150 keV
+
+	// 7He @beam energy, 100% along beam axis
+	const G4double he6mass = 5.60553446318; // GeV/c^2
+	const G4double neutronmass = 9.39565378e-01; // GeV/c^2
+	const G4double he7mass = he6mass + neutronmass + 410e-6; // S_b = -410 keV
+	// \todo Add in width
+
+	const G4double etot = he7mass + 7*ebeam/1e3; // total energy, GeV/c^2
+	const G4double ptot = sqrt(etot*etot - he7mass*he7mass); // GeV/c
+
+	// Decay products
+	const G4double decayProductMasses[2] = { he6mass, neutronmass };
+
+	static TGenPhaseSpace* gen = 0;
+	if(!gen) {
+		gen = new TGenPhaseSpace();
+		TLorentzVector p_7he(0, 0, ptot, etot);
+		gen->SetDecay(p_7he, 2, decayProductMasses);
+	}
+
+	gen->Generate();
+
+	TLorentzVector* p_f = gen->GetDecay(0); // 6he fragment from 7he decay
+	p_6he.SetPxPyPzE(p_f->Px()*1e3, p_f->Py()*1e3, p_f->Pz()*1e3, p_f->E()*1e3);
+
+	TLorentzVector* p_neutron = gen->GetDecay(1); // neutron from 7he decay
+	px = p_neutron->Px() * 1e3;
+	py = p_neutron->Py() * 1e3;
+	pz = p_neutron->Pz() * 1e3;
+	eneut = 1e3*(p_neutron->E() - p_neutron->M());
+
+}	}
+
+
+
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 TntPrimaryGeneratorAction::TntPrimaryGeneratorAction(){
@@ -75,21 +126,26 @@ TntPrimaryGeneratorAction::TntPrimaryGeneratorAction(){
 //	 FindParticle(particleName="proton"));
                                      //FindParticle(particleName="deuteron"));
                                      //FindParticle(particleName="alpha"));
-  //Default energy,position,momentum
+
+	if(BeamType != "he7")
+	{
+		//Default energy,position,momentum
 //by Shuya 160404
-  //fParticleGun->SetParticleEnergy(511.*keV);
+		//fParticleGun->SetParticleEnergy(511.*keV);
 //  fParticleGun->SetParticleEnergy(15.*MeV);
 //by Shuya 160510
-  //fParticleGun->SetParticleEnergy(1.*MeV);
-	fParticleGun->SetParticleEnergy(TntGlobalParams::Instance()->GetNeutronEnergy());
+		//fParticleGun->SetParticleEnergy(1.*MeV);
+		fParticleGun->SetParticleEnergy(TntGlobalParams::Instance()->GetNeutronEnergy());
 
 	
 //by Shuya 160510. I incorporated these in below GeneratePrimaries().
 //Comments by Shuya 160427. This is a pencil beam. 
-  //fParticleGun->SetParticlePosition(G4ThreeVector(0.0 , 0.0, -100.0*cm));
-  //fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.));
+		//fParticleGun->SetParticlePosition(G4ThreeVector(0.0 , 0.0, -100.0*cm));
+		//fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.));
 
-  TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
+		TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
+		G4cout << "TntPrimaryGeneratorAction:: neutron energy " << fParticleGun->GetParticleEnergy() << G4endl;
+	}
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -188,7 +244,12 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 		G4double posy = G4UniformRand() - 0.5; // -0.5 -> 0.5
 		posx *= 28; // -14 -> 14
 		posy *= 28; // -14 -> 14
-		fParticleGun->SetParticlePosition(G4ThreeVector(posx*cm, posy*cm, beam_z));									
+		fParticleGun->SetParticlePosition(G4ThreeVector(0, 0, beam_z));
+		momentum_x = atan(posx/beam_z);
+		momentum_y = atan(posy/beam_z);
+		momentum_z = sqrt(1 - pow(momentum_x, 2) - pow(momentum_y, 2));
+		G4ThreeVector v(momentum_x, momentum_y, momentum_z);
+		fParticleGun->SetParticleMomentumDirection(v);
 	}
 	else if(BeamType == "scan")
 	{
@@ -275,7 +336,26 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
     momentum_y = sin(theta)*sin(phi);
     momentum_z = cos(theta);
    }
-
+	else if(BeamType == "he7")
+	{
+		G4double eneut = 0;
+		TLorentzVector p_6he;
+    fParticleGun->SetParticlePosition(G4ThreeVector(0.0, 0.0, beam_z)); //Default target posn (0,0)
+		::generate_from_7he(TntGlobalParams::Instance()->GetNeutronEnergy(), //< beam energy
+												momentum_x, momentum_y, momentum_z, eneut, p_6he);
+		fParticleGun->SetParticleEnergy(eneut);
+		TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
+		TntDataOutPG->senddataSecondary(G4ThreeVector(0,0,beam_z), p_6he);
+		
+		G4cout << "TntPrimaryGeneratorAction:: neutron energy " <<
+			fParticleGun->GetParticleEnergy() << G4endl;
+	}
+	else 
+	{
+		G4cerr << "ERROR<TntPrimaryGeneratorAction.cc>:: Invalid BeamType: " << BeamType << G4endl;
+		assert( 0 && "Invalid Beam Type" );
+	}
+	
   // Set particle direction
   G4ThreeVector v(momentum_x,momentum_y,momentum_z);
   
@@ -285,5 +365,6 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 
   fParticleGun->GeneratePrimaryVertex(anEvent);
 
-	TntDataRecordTree::TntPointer->senddataPrimary(fParticleGun->GetParticlePosition());
+	TntDataRecordTree::TntPointer->senddataPrimary(fParticleGun->GetParticlePosition(), 
+																								 fParticleGun->GetParticleMomentumDirection());
 }
