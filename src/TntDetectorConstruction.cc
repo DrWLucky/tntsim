@@ -278,7 +278,7 @@ void TntDetectorConstruction::DefineMaterials(){
 //Comment By Shuya 160512. Scintillation Yield: BC505=12000, BC519:9500, BC404=10400, EJ309=11500 (From Ejen catalogue). Anthracene~15000.
   //fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(9500.*0.2)/MeV);
 	G4double nphot = 10400.*0.2;
-	fTnt_mt->AddConstProperty("SCINTILLATIONYIELD", nphot/MeV);
+	fTnt_mt->AddConstProperty("SCINTILLATIONYIELD", 6*nphot/MeV);
 
   // fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(10400.*0.2)/MeV);
 
@@ -647,7 +647,7 @@ void TntDetectorConstruction::SetDefaults() {
   //if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(9500.*0.2)/MeV);
   if(fTnt_mt) {
 		G4double nphot = 10400.*0.2;
-		fTnt_mt->AddConstProperty("SCINTILLATIONYIELD", nphot/MeV);
+		fTnt_mt->AddConstProperty("SCINTILLATIONYIELD", 6*nphot/MeV);
 	}
 //  if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(11500.*0.2)/MeV);
   //if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(11500.)/MeV);
