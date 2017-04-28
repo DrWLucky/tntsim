@@ -17,12 +17,15 @@
 // 
 //
 #include <cassert>
+#include <string>
 #include <algorithm>
 #include "TntGlobalParams.hh"
 #include "TntDataRecordTree.hh"
 
 #include <TH2I.h>
 #include <TVector3.h>
+#include <TROOT.h>
+#include <TSystem.h>
 using namespace std;
 
 //by Shuya 160426.
@@ -32,8 +35,10 @@ using namespace std;
 #endif
 
 //by Shuya 160509
-extern G4int NX;
-extern G4int NY;
+namespace {
+G4int NX = TntGlobalParams::Instance()->GetNumPmtX();
+G4int NY = TntGlobalParams::Instance()->GetNumPmtY();
+}
 
 // Access to Analysis pointer! (see TntSD.cc EndOfEvent() for Example)
 TntDataRecordTree* TntDataRecordTree::TntPointer;
@@ -52,7 +57,13 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
   eng_Tnt_proton(0), edep_Tnt(0), edep_Tnt_proton(0), edep_Tnt_alpha(0), edep_Tnt_C12(0), edep_Tnt_EG(0), edep_Tnt_Exotic(0),
 //by Shuya 160504
   num_Tnt_NonPMT(0), num_Tnt_Abs(0)
-{ /* Constructor */ 
+{ /* Constructor */
+	assert(TntGlobalParams::Instance()->GetNumPmtX() < 64 && TntGlobalParams::Instance()->GetNumPmtY() < 64);
+	// ^^ This is just a quick and dirty way to make sure we don't overflow the static arrays
+	// PmtFromtHit and PmtBackHit... eventually we can get rid of them entirely, because I
+	// changed how to record the PMT hits to be more efficient...
+	// (GAC)
+	
   TntPointer = this;  // When Pointer is constructed, assigns address of this class to it.
   //
   // Create new data storage text file
@@ -207,7 +218,21 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
-
+	TntInputTree = new TTree("tInput", "tntsim input params w.r.t. detector");
+	TntInputTree->Branch("NX", &npmtX, "NX/I");
+	TntInputTree->Branch("NY", &npmtY, "NY/I");
+	TntInputTree->Branch("ENEUT", &eNeut, "eNeut/D");
+	TntInputTree->Branch("DX", &detector_x, "DX/D");
+	TntInputTree->Branch("DY", &detector_y, "DY/D");
+	TntInputTree->Branch("DZ", &detector_z, "DZ/D");
+	npmtX = TntGlobalParams::Instance()->GetNumPmtX();
+	npmtY = TntGlobalParams::Instance()->GetNumPmtY();
+	eNeut = TntGlobalParams::Instance()->GetNeutronEnergy();
+	detector_x = TntGlobalParams::Instance()->GetDetectorX();
+	detector_y = TntGlobalParams::Instance()->GetDetectorY();
+	detector_z = TntGlobalParams::Instance()->GetDetectorZ();
+	TntInputTree->Fill();
+	
   TntEventTree = new TTree("t","Tnt Scintillator Simulation Data");
   TntEventTree->Branch("Energy_Initial",&eng_int,"eng_int/D");
   TntEventTree->Branch("LightOutput_Tnt",&eng_Tnt,"eng_Tnt/D");
@@ -306,6 +331,7 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 TntDataRecordTree::~TntDataRecordTree()
 {/* Destructor, Close root file */
 
+	std::string fname = DataFile->GetName();
 	hDigi->Delete();
 	hDigi = 0;
   DataFile->Write(); 
@@ -314,6 +340,14 @@ TntDataRecordTree::~TntDataRecordTree()
   cout << "Created Root Tree File = \"TntDataTree.root\"" << endl;
   cout << "Got the ROOT Tree File from Data Record Routine!" << endl; 
   delete DataFile;
+
+	// Analyze Data if Asked To //
+	std::string angerFile = TntGlobalParams::Instance()->GetAngerAnalysis();
+	if(!angerFile.empty()) {
+		gROOT->ProcessLine(Form(".L %s+", angerFile.c_str()));
+		gROOT->ProcessLine(Form("anger(\"%s\");", fname.c_str()));
+		gSystem->Exec(Form("rm -f %s", fname.c_str()));
+	}
 
 /*
 //by Shuya 160509

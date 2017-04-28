@@ -69,6 +69,7 @@ private:
   TTree* TntEventTree;
 //by Shuya 160422.
   TTree* TntEventTree2;
+	TTree* TntInputTree;
   G4double eng_int;
   G4double eng_Tnt;
   G4double eng_Tnt_proton;
@@ -92,8 +93,8 @@ private:
   G4double num_Tnt_NonPMT;
   G4double num_Tnt_Abs;
 //by Shuya 160422
-  G4int PmtFrontHit[4][4];
-  G4int PmtBackHit[4][4];
+  G4int PmtFrontHit[64][64];
+  G4int PmtBackHit[64][64];
   // std::vector<std::vector<int> > PmtFront;
   // std::vector<std::vector<int> > PmtBack;
 //by Shuya 160509. This is needed since array size is not passed until you get extern G4int in TntDataRecord(), which is originally fixed in Tnt.cc file.
@@ -152,6 +153,10 @@ private:
   int number_at_this_energy;
   double efficiency;
 
+	// INPUT PARAMETERS //
+	G4int npmtX, npmtY;
+	G4double eNeut;
+	G4double detector_x, detector_y, detector_z;
 
   
  public:

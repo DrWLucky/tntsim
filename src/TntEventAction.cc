@@ -35,6 +35,7 @@
 #include "TntUserEventInformation.hh"
 #include "TntTrajectory.hh"
 #include "TntRecorderBase.hh"
+#include "TntGlobalParams.hh"
 
 #include "G4EventManager.hh"
 #include "G4SDManager.hh"
@@ -102,8 +103,8 @@ void TntEventAction::EndOfEventAction(const G4Event* anEvent){
 //by Shuya 160502
 	extern G4int NumOfCreatedPhotons;
 //by Shuya 160509
-	extern G4int NX;
-	extern G4int NY;
+	G4int npmtX = TntGlobalParams::Instance()->GetNumPmtX();
+	G4int npmtY = TntGlobalParams::Instance()->GetNumPmtY();
 	
 
 //by Shuya 160421
@@ -222,8 +223,8 @@ void TntEventAction::EndOfEventAction(const G4Event* anEvent){
 			//if(pmtnumber<100)	pmtphotonfrontsum += (*pmtHC)[i]->GetPhotonCount();
 			//else if(pmtnumber>=100 && pmtnumber<200)	pmtphotonbacksum += (*pmtHC)[i]->GetPhotonCount();
 			//by Shuya 160509
-			if(pmtnumber<(NX*NY))	pmtphotonfrontsum += (*pmtHC)[i]->GetPhotonCount();
-			else if(pmtnumber>=(NX*NY) && pmtnumber<(2*NX*NY))	pmtphotonbacksum += (*pmtHC)[i]->GetPhotonCount();
+			if(pmtnumber<(npmtX*npmtY))	pmtphotonfrontsum += (*pmtHC)[i]->GetPhotonCount();
+			else if(pmtnumber>=(npmtX*npmtY) && pmtnumber<(2*npmtX*npmtY))	pmtphotonbacksum += (*pmtHC)[i]->GetPhotonCount();
 			//Comment by Shuya 160428. If you want to check the pmt count, remove the comment out below.
 			//G4cout << pmtnumber << " " << (*pmtHC)[i]->GetPhotonCount() << G4endl;
 

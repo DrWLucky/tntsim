@@ -242,12 +242,12 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 		momentum_z = 1.;
 		G4double posx = G4UniformRand() - 0.5; // -0.5 -> 0.5
 		G4double posy = G4UniformRand() - 0.5; // -0.5 -> 0.5
-		posx *= 28; // -14 -> 14
-		posy *= 28; // -14 -> 14
-		fParticleGun->SetParticlePosition(G4ThreeVector(0, 0, beam_z));
-		momentum_x = atan(posx/beam_z);
-		momentum_y = atan(posy/beam_z);
-		momentum_z = sqrt(1 - pow(momentum_x, 2) - pow(momentum_y, 2));
+		posx *= (TntGlobalParams::Instance()->GetDetectorX()*cm);
+		posy *= (TntGlobalParams::Instance()->GetDetectorX()*cm);
+		fParticleGun->SetParticlePosition(G4ThreeVector(posx, posy, beam_z));
+		// momentum_x = atan(posx/beam_z);
+		// momentum_y = atan(posy/beam_z);
+		// momentum_z = sqrt(1 - pow(momentum_x, 2) - pow(momentum_y, 2));
 		G4ThreeVector v(momentum_x, momentum_y, momentum_z);
 		fParticleGun->SetParticleMomentumDirection(v);
 	}

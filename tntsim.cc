@@ -63,6 +63,8 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
+#include "TntInputFileParser.hh"
+
 
 using namespace std;
 
@@ -77,45 +79,71 @@ G4int NumOfCreatedPhotons = 0;
 
 //by Shuya 160509. 
 //NOTE!!!! You have to change the parameters for PmtBackHit,PmtFronHit arrays in TntDataRecord.hh
-G4int NX = 4;
-G4int NY = 4;
+// G4int NX = 4
+// G4int NY = 4;
 
-G4String macfile = "";
+G4String macfile = "", inputfile = "";
 
-namespace{ void ReadArgs(int argc, char** argv)
-{
-	for(int i=1; i< argc; ++i) {
-		if(false) { }
-		else if(G4String(argv[i]) == "-energy") {
-			TntGlobalParams::Instance()->SetNeutronEnergy(atof(argv[++i]) * MeV);
-		}
-		else if(G4String(argv[i]) == "-beamtype") {
-			TntGlobalParams::Instance()->SetBeamType(argv[++i]);
-		}
-		else if(G4String(argv[i]) == "-rootfile") {
-			TntGlobalParams::Instance()->SetRootFileName(argv[++i]);
-		}
-		else if(G4String(argv[i]) == "-resscale") {
-			TntGlobalParams::Instance()->SetPhotonResolutionScale(atoi(argv[++i]));
-		}
-		else if(G4String(argv[i]) == "-ntracking") {
-			TntGlobalParams::Instance()->SetMenateR_Tracking(atoi(argv[++i])); 
-		}
-		else if(i == 1) {
-			macfile = argv[i];
-		}
-		else {
-			G4cerr << "ERROR: Invalid flag " << argv[i] << G4endl;
-			exit(1);
-		}
-	}
-} }
+// namespace{ void ReadArgs(int argc, char** argv)
+// {
+// 	for(int i=1; i< argc; ++i) {
+// 		if(false) { }
+// # if 0
+// 		else if(G4String(argv[i]) == "-energy") {
+// 			TntGlobalParams::Instance()->SetNeutronEnergy(atof(argv[++i]) * MeV);
+// 		}
+// 		else if(G4String(argv[i]) == "-beamtype") {
+// 			TntGlobalParams::Instance()->SetBeamType(argv[++i]);
+// 		}
+// 		else if(G4String(argv[i]) == "-rootfile") {
+// 			TntGlobalParams::Instance()->SetRootFileName(argv[++i]);
+// 		}
+// 		else if(G4String(argv[i]) == "-resscale") {
+// 			TntGlobalParams::Instance()->SetPhotonResolutionScale(atoi(argv[++i]));
+// 		}
+// 		else if(G4String(argv[i]) == "-ntracking") {
+// 			TntGlobalParams::Instance()->SetMenateR_Tracking(atoi(argv[++i])); 
+// 		}
+// #endifaa
+// 		else if(i == 1) {
+// 			macfile = argv[i];
+// 		}
+// 		else {
+// 			G4cerr << "ERROR: Invalid flag " << argv[i] << G4endl;
+// 			exit(1);
+// 		}
+// 	}
+// } }
 
 int main(int argc, char** argv)
 {
+	for(int i=1; i< argc; ++i) {
+		std::string arg = argv[i];
+		if(false) { }
+		else if(arg.substr(arg.size() - 4) == ".mac") {
+			macfile = argv[i];
+		}
+		else inputfile = argv[i];
+	}
 
-	ReadArgs(argc, argv);
+	TntInputFileParser parser;
+	parser.AddInput("energy",      &TntGlobalParams::SetNeutronEnergy);
+	parser.AddInput("beamtype",    &TntGlobalParams::SetBeamType);
+	parser.AddInput("rootfile",    &TntGlobalParams::SetRootFileName);
+	parser.AddInput("resscale",    &TntGlobalParams::SetPhotonResolutionScale);
+	parser.AddInput("ntracking",   &TntGlobalParams::SetMenateR_Tracking);
+	parser.AddInput("nx",          &TntGlobalParams::SetNumPmtX);
+	parser.AddInput("ny",          &TntGlobalParams::SetNumPmtY);
+	parser.AddInput("dx",          &TntGlobalParams::SetDetectorX);
+	parser.AddInput("dy",          &TntGlobalParams::SetDetectorY);
+	parser.AddInput("dz",          &TntGlobalParams::SetDetectorZ);
+	parser.AddInput("nphot",       &TntGlobalParams::SetLightOutput);
+	parser.AddInput("qe",          &TntGlobalParams::SetQuantumEfficiency);
+	parser.AddInput("anger",       &TntGlobalParams::SetAngerAnalysis);
+	
+	parser.Parse(inputfile);
 
+	
 //by Shuya 160421. All copied from tntsim.cc
 //  G4int numberOfEvent = 10;
   // Set VerboseFlag to "1" to run in verbose mode

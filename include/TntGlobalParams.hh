@@ -30,7 +30,24 @@ public:
 	G4int GetMenateR_Tracking();
 	void SetMenateR_Tracking(G4int n);
 
+	G4double GetDetectorX() { return fDetectorX; }
+	void SetDetectorX(G4double x) { fDetectorX = x; }
+
+	G4double GetDetectorY() { return fDetectorY; }
+	void SetDetectorY(G4double y) { fDetectorY = y; }
+
+	G4double GetDetectorZ() { return fDetectorZ; }
+	void SetDetectorZ(G4double z) { fDetectorZ = z; }
+
+	G4int GetLightOutput() { return fLightOutput; }
+	void SetLightOutput(G4int n) { fLightOutput = n; }
 	
+	G4double GetQuantumEfficiency() { return fQuantumEfficiency; }
+	void SetQuantumEfficiency(G4double e) { fQuantumEfficiency = e; }
+
+	G4String GetAngerAnalysis() { return fAngerAnalysis; }
+	void SetAngerAnalysis(G4String name) { fAngerAnalysis = name; }
+
 private:
 	TntGlobalParams();
 	
@@ -42,6 +59,10 @@ private:
 	G4String fRootFileName;
 	G4double fPhotonResolutionScale;
 	G4int fMenateR_Tracking;
+	G4double fDetectorX, fDetectorY, fDetectorZ;
+	G4int fLightOutput;
+	G4double fQuantumEfficiency;
+	G4String fAngerAnalysis;
 };
 
 

@@ -277,8 +277,9 @@ void TntDetectorConstruction::DefineMaterials(){
   //fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(12000.*0.2)/MeV);
 //Comment By Shuya 160512. Scintillation Yield: BC505=12000, BC519:9500, BC404=10400, EJ309=11500 (From Ejen catalogue). Anthracene~15000.
   //fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(9500.*0.2)/MeV);
-	G4double nphot = 10400.*0.2;
-	fTnt_mt->AddConstProperty("SCINTILLATIONYIELD", 6*nphot/MeV);
+	G4double nphot = TntGlobalParams::Instance()->GetLightOutput() *
+		TntGlobalParams::Instance()->GetQuantumEfficiency(); // 10400.*0.2;
+	fTnt_mt->AddConstProperty("SCINTILLATIONYIELD", nphot/MeV);
 
   // fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(10400.*0.2)/MeV);
 
@@ -589,12 +590,17 @@ void TntDetectorConstruction::SetDefaults() {
   //fScint_x = 200.0*cm;
   //fScint_y = 200.0*cm;
 //by Shuya 160510
-  fScint_x = 28.0*cm;
-  fScint_y = 28.0*cm;
-//by Shuya 160510
-//	fScint_z = 30.0*cm;
-  fScint_z = 10.0*cm;
+//   fScint_x = 5.0*cm;
+//   fScint_y = 5.0*cm;
+// //by Shuya 160510
+// //	fScint_z = 30.0*cm;
+//   fScint_z = 5.0*cm;
 
+// GAC replaced by global value
+	fScint_x = TntGlobalParams::Instance()->GetDetectorX()*cm;
+	fScint_y = TntGlobalParams::Instance()->GetDetectorY()*cm;
+	fScint_z = TntGlobalParams::Instance()->GetDetectorZ()*cm;
+	
 
 //by Shuya 160404
 //  fNx = 2;
@@ -603,11 +609,11 @@ void TntDetectorConstruction::SetDefaults() {
 //  by Shuya 160509
   //fNx = 10;
   //fNy = 10;
-  extern G4int NX;
-  extern G4int NY;
+  // extern G4int NX;
+  // extern G4int NY;
 
-  fNx = NX;
-  fNy = NY;
+  fNx = TntGlobalParams::Instance()->GetNumPmtX();
+  fNy = TntGlobalParams::Instance()->GetNumPmtY();
   fNz = 1;
 
 
@@ -646,8 +652,9 @@ void TntDetectorConstruction::SetDefaults() {
   //if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(12000.*0.2)/MeV);
   //if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(9500.*0.2)/MeV);
   if(fTnt_mt) {
-		G4double nphot = 10400.*0.2;
-		fTnt_mt->AddConstProperty("SCINTILLATIONYIELD", 6*nphot/MeV);
+		G4double nphot =  TntGlobalParams::Instance()->GetLightOutput() *
+			TntGlobalParams::Instance()->GetQuantumEfficiency(); // 10400.*0.2;
+		fTnt_mt->AddConstProperty("SCINTILLATIONYIELD", nphot/MeV);
 	}
 //  if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(11500.*0.2)/MeV);
   //if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(11500.)/MeV);
