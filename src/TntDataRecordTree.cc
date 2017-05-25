@@ -26,6 +26,7 @@
 #include <TVector3.h>
 #include <TROOT.h>
 #include <TSystem.h>
+#include <TObjString.h>
 using namespace std;
 
 //by Shuya 160426.
@@ -38,6 +39,19 @@ using namespace std;
 namespace {
 G4int NX = TntGlobalParams::Instance()->GetNumPmtX();
 G4int NY = TntGlobalParams::Instance()->GetNumPmtY();
+G4int HitCounter_MenateR = 0;
+const std::string ParticleNames[] = { "proton", "deuteron", "triton", "He3", "alpha", "C12", "C13", "e-" };
+const std::string ReactionNames[] = {
+ "N_P_elastic",
+ "N_C12_elastic",
+ "N_C12_NGamma",
+ "N_C12_A_Be9",
+ "N_C12_P_B12",
+ "N_C12_NNP_B11",
+ "N_C12_N2N_C11",
+ "N_C12_NN3Alpha"
+};
+
 }
 
 // Access to Analysis pointer! (see TntSD.cc EndOfEvent() for Example)
@@ -269,6 +283,7 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 	// GAC - Array of PMT intensities (photon counts)
 	// 
 	TntEventTree->Branch("PhotonSum", &PhotonSum);
+	TntEventTree->Branch("PhotonSumFront", &PhotonSumFront);
 
 	// Digitizer histogram (see createdataPMT for more info)
 	hDigi = 0;
@@ -281,6 +296,7 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 	TntEventTree->Branch("HitT", &HitT);
 	TntEventTree->Branch("HitE", &HitE);
 	TntEventTree->Branch("HitTrackID", &HitTrackID);
+	TntEventTree->Branch("HitType", &HitType);
 	TntEventTree->Branch("NumHits", &NumHits);
 	//
 	//
@@ -290,6 +306,17 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 	fHit01 = new TClonesArray("TLorentzVector");
 	TntEventTree->Branch("Hit01", &fHit01, 256000, 0);
 	fHit01->BypassStreamer();
+	TntEventTree->Branch("iHit0", &iHit0, "iHit0/I");
+	TntEventTree->Branch("iHit1", &iHit1, "iHit1/I");
+
+	fMenateHitsPos = new TClonesArray("TLorentzVector");
+	TntEventTree->Branch("MenateHitsPos", &fMenateHitsPos, 256000, 0); // splitlevel 0 for custom streamer
+	fMenateHitsPos->BypassStreamer();
+	TntEventTree->Branch("MenateHitsE", &fMenateHitsE);
+	TntEventTree->Branch("MenateHitsType", &fMenateHitsType);
+
+
+	
 	//
 	// Original x,y,z positions of the fired neutron
 	PrimaryMomentum = 0;
@@ -334,6 +361,28 @@ TntDataRecordTree::~TntDataRecordTree()
 	std::string fname = DataFile->GetName();
 	hDigi->Delete();
 	hDigi = 0;
+
+	std::string particleCodes = "PARTICLE CODES:: ";
+	for(int i=0; i< sizeof(ParticleNames) / sizeof(ParticleNames[0]); ++i) {
+		particleCodes += std::string(Form("%s = %i", ParticleNames[i].c_str(), i+1));
+		if(i != -1 + sizeof(ParticleNames) / sizeof(ParticleNames[0])) {
+			particleCodes += ", ";
+		}
+	}
+	TObjString objParticleCodes(particleCodes.c_str());
+	objParticleCodes.Write("ParticleCodes");
+
+	std::string reactionCodes = "REACTION CODES:: ";
+	for(int i=0; i< sizeof(ReactionNames) / sizeof(ReactionNames[0]); ++i) {
+		reactionCodes += std::string(Form("%s = %i", ReactionNames[i].c_str(), i+1));
+		if(i != -1 + sizeof(ReactionNames) / sizeof(ReactionNames[0])) {
+			reactionCodes += ", ";
+		}
+	}
+	
+	TObjString objReactionCodes(reactionCodes.c_str());
+	objReactionCodes.Write("ReactionCodes");
+	
   DataFile->Write(); 
   DataFile->Close();
   cout << "############################################################" << endl;
@@ -388,7 +437,7 @@ void TntDataRecordTree::senddataPrimary(const G4ThreeVector& pos, const G4ThreeV
 															etot);
 }
 
-void TntDataRecordTree::senddataSecondary(const G4ThreeVector& pos, const TLorentzVector& mom)
+void TntDataRecordTree::senddataSecondary(const G4ThreeVector& pos, const G4LorentzVector& mom)
 {
 	if(SecondaryMomentum == 0) {
 		TntEventTree->Branch("SecondaryMomentum", &SecondaryMomentum);
@@ -398,7 +447,7 @@ void TntDataRecordTree::senddataSecondary(const G4ThreeVector& pos, const TLoren
 	}
 
 	SecondaryPosition->SetXYZ(pos.x(), pos.y(), pos.z());
-	*SecondaryMomentum = mom;
+	SecondaryMomentum->SetPxPyPzE(mom.px(), mom.py(), mom.pz(), mom.e());
 }
 
 //by Shuya 160408
@@ -409,6 +458,7 @@ void TntDataRecordTree::senddataPMT(int id, int value1, int evid)
 	int x, y;
 	char brN[300];
 	PhotonSum.resize(NX*NY);
+	PhotonSumFront.resize(NX*NY);
 	
 	//if(id < 100)	//Front side
 	//by Shuya 160509
@@ -423,6 +473,7 @@ void TntDataRecordTree::senddataPMT(int id, int value1, int evid)
 		//for(int i = 0;i<value1;i++)	((TH2I*)DataFile->Get(brN))->Fill(x,y);
 
 		PmtFrontHit[x][y] = value1;
+		PhotonSumFront.at(id) = value1;
 	}
 	//else if(id >= 100 && id < 200)	//Back side
 	else if(id >= (NX*NY) && id < (2*NX*NY))	//Back side
@@ -479,6 +530,7 @@ h_Count_PMT_Front[evid]->GetYaxis()->SetTitle("Y (no.)");
 */
 
 	PhotonSum.clear();
+	PhotonSumFront.clear();
 
 	// re-create digitizer histogram
 	// x-axis: signals as recorded by a CAEN V1730 digitizer (bins of 2 ns)
@@ -640,6 +692,7 @@ void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>
 	HitT.resize(0);
 	HitE.resize(0);
 	HitTrackID.resize(0);
+	HitType.resize(0);
 	NumHits = 0;
 	fHits->Clear();
 	fHit01->Clear();
@@ -654,6 +707,7 @@ void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>
 	HitT.reserve(hits.size());
 	HitE.reserve(hits.size());
 	HitTrackID.reserve(hits.size());
+	HitType.reserve(hits.size());
 	NumHits = hits.size();
 	
 	for(std::vector<Hit_t>::const_iterator it = hits.begin();
@@ -666,6 +720,7 @@ void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>
 			HitT.push_back(it->T);
 			HitE.push_back(it->E);
 			HitTrackID.push_back(it->TrackID);
+			HitType.push_back(it->TrackID);
 		}	else { // insert, sorted by time vector
 			std::vector<G4double>::iterator iT = 
 				std::lower_bound(HitT.begin(), HitT.end(), it->T);
@@ -679,6 +734,8 @@ void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>
 				(iT - HitT.begin()) + HitE.begin();
 			std::vector<G4int>::iterator iTrackID = 
 				(iT - HitT.begin()) + HitTrackID.begin();
+			std::vector<G4int>::iterator iType = 
+				(iT - HitT.begin()) + HitType.begin();
 
 			HitX.insert(iX, it->X);
 			HitY.insert(iY, it->Y);
@@ -686,6 +743,8 @@ void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>
 			HitT.insert(iT, it->T);
 			HitE.insert(iE, it->E);
 			HitTrackID.insert(iTrackID, it->TrackID);
+			HitType.insert(iType, it->Type);
+
 		}
 	}
 
@@ -695,14 +754,31 @@ void TntDataRecordTree::senddataHits(const std::vector<TntDataRecordTree::Hit_t>
 
 	// 
 	// Fill TLorrentzVector arrays
+	iHit0 = iHit1 = -1;
 	for(size_t i=0; i< HitT.size(); ++i) {
 		TLorentzVector* hit4Vector = new( (*fHits)[i] ) TLorentzVector();
 		hit4Vector->SetXYZT(HitX.at(i), HitY.at(i), HitZ.at(i), HitT.at(i));
 	}
 	if(fHits->GetEntries() > 1) {
-		TLorentzVector* hit1 = (TLorentzVector*)fHits->At(1);
-		TLorentzVector* hit0 = (TLorentzVector*)fHits->At(0);
-		new( (*fHit01)[0] ) TLorentzVector( *hit1 - *hit0 );
+		TLorentzVector* hit1 = 0; //(TLorentzVector*)fHits->At(1);
+		TLorentzVector* hit0 = 0; //(TLorentzVector*)fHits->At(0);
+		for(size_t i=0; (hit1 && hit0) == 0 && i< HitE.size(); ++i) {
+			if(HitE.at(i) > 0.5 || hit0) {
+				if(hit0) {
+					if ( ((TLorentzVector*)fHits->At(i))->T() != hit0->T() ) {
+						hit1 = (TLorentzVector*)fHits->At(i);
+						iHit1 = i;
+					}
+				}
+				else {
+					hit0 = (TLorentzVector*)fHits->At(i);
+					iHit0 = i;
+				}
+			}
+		}
+		if(hit0 && hit1) {
+			new( (*fHit01)[0] ) TLorentzVector( *hit1 - *hit0 );
+		}
 	}
 }
 
@@ -745,6 +821,11 @@ void TntDataRecordTree::FillTree()
 	if (eng_Tnt > Det_Threshold)  // Threshold set in main()
 	{number_at_this_energy++;}
 	TntEventTree->Fill();  
+	HitCounter_MenateR = 0;
+
+	fMenateHitsPos->Clear();
+	fMenateHitsE.clear();
+	fMenateHitsType.clear();
 
 	//G4cout << "FillTree1!" << G4endl;
 }
@@ -828,3 +909,60 @@ void TntDataRecordTree::CalculateEff(int ch_eng)
 	number_at_this_energy = 0;
 }
  
+void TntDataRecordTree::senddataMenateR(G4double ekin, 
+																				const G4ThreeVector& posn, 
+																				G4double t,
+																				G4int type)
+{
+	if(HitCounter_MenateR == 0) {
+		fMenateHitsPos->Clear();
+		fMenateHitsE.clear();
+		fMenateHitsType.clear();
+	}
+
+	G4double zOffset = 	
+		TntGlobalParams::Instance()->GetSourceZ()*cm + 0.5*TntGlobalParams::Instance()->GetDetectorZ()*cm;
+	
+	TLorentzVector* hitPos = 
+		new( (*fMenateHitsPos)[HitCounter_MenateR] ) TLorentzVector();
+	hitPos->SetXYZT(posn.x(), posn.y(), posn.z() + zOffset, t);
+
+	fMenateHitsE.push_back(ekin);
+	fMenateHitsType.push_back(type);
+
+	++HitCounter_MenateR;
+}
+
+
+G4int TntDataRecordTree::GetParticleCode(const G4String& theParticleName) 
+{
+	std::string name = (theParticleName == "e+" || theParticleName == "gamma") ?
+		"e-" : theParticleName;
+	for(int i=0; i< sizeof(ParticleNames) / sizeof(ParticleNames[0]); ++i) {
+		if(ParticleNames[i] == name) { return i+1; }
+	}
+	return 0;
+}
+
+G4String TntDataRecordTree::GetParticleName(G4int  code)
+{
+	const int NCODES = sizeof(ParticleNames) / sizeof(ParticleNames[0]);
+	return ((code-1) >= 0 && (code-1) < NCODES) ?
+		G4String(ParticleNames[code-1].c_str()) : G4String("INVALID");
+}
+
+G4int TntDataRecordTree::GetReactionCode(const G4String& type) 
+{
+	std::string name = type;
+	for(int i=0; i< sizeof(ReactionNames) / sizeof(ReactionNames[0]); ++i) {
+		if(ReactionNames[i] == name) { return i+1; }
+	}
+	return 0;
+}
+
+G4String TntDataRecordTree::GetReactionName(G4int  code)
+{
+	const int NCODES = sizeof(ReactionNames) / sizeof(ReactionNames[0]);
+	return ((code-1) >= 0 && (code-1) < NCODES) ?
+		G4String(ReactionNames[code-1].c_str()) : G4String("INVALID");
+}
