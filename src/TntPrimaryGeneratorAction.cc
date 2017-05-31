@@ -39,8 +39,11 @@
 #include "G4SystemOfUnits.hh"
 #include "globals.hh"
 
+#include "G4GenPhaseSpace.hh"
 #include "TntDataRecordTree.hh"
 #include "TntGlobalParams.hh"
+#include "TntNeutronDecay.hh"
+#include "TntNuclearMasses.hh"
 
 //by Shuya 160510. Just copied from Tntsim.
 // need the below for random theta angle source (from Demon)
@@ -50,16 +53,13 @@ extern G4int Counter;
 
 
 
-#include <TLorentzVector.h>
-#include <TGenPhaseSpace.h>
-
-namespace{ 
-	void generate_from_7he(const G4double& ebeam,
-												 G4double& px,
-												 G4double& py,
-												 G4double& pz, 
-												 G4double& eneut,
-												 TLorentzVector& p_6he)
+namespace { 
+void generate_from_7he(const G4double& ebeam,
+											 G4double& px,
+											 G4double& py,
+											 G4double& pz, 
+											 G4double& eneut,
+											 G4LorentzVector& p_6he)
 {
 	// Generate neutron from breakup of 7he g.s.
 	// Unbound state at 410 keV, width 150 keV
@@ -76,25 +76,83 @@ namespace{
 	// Decay products
 	const G4double decayProductMasses[2] = { he6mass, neutronmass };
 
-	static TGenPhaseSpace* gen = 0;
+	static G4GenPhaseSpace* gen = 0;
 	if(!gen) {
-		gen = new TGenPhaseSpace();
-		TLorentzVector p_7he(0, 0, ptot, etot);
+		gen = new G4GenPhaseSpace();
+		G4LorentzVector p_7he(0, 0, ptot, etot);
 		gen->SetDecay(p_7he, 2, decayProductMasses);
 	}
 
 	gen->Generate();
 
-	TLorentzVector* p_f = gen->GetDecay(0); // 6he fragment from 7he decay
-	p_6he.SetPxPyPzE(p_f->Px()*1e3, p_f->Py()*1e3, p_f->Pz()*1e3, p_f->E()*1e3);
+	G4LorentzVector* p_f = gen->GetDecay(0); // 6he fragment from 7he decay
+	p_6he.set(p_f->px()*1e3, p_f->py()*1e3, p_f->pz()*1e3, p_f->e()*1e3);
 
-	TLorentzVector* p_neutron = gen->GetDecay(1); // neutron from 7he decay
-	px = p_neutron->Px() * 1e3;
-	py = p_neutron->Py() * 1e3;
-	pz = p_neutron->Pz() * 1e3;
-	eneut = 1e3*(p_neutron->E() - p_neutron->M());
+	G4LorentzVector* p_neutron = gen->GetDecay(1); // neutron from 7he decay
+	px = p_neutron->px() * 1e3;
+	py = p_neutron->py() * 1e3;
+	pz = p_neutron->pz() * 1e3;
+	eneut = 1e3*(p_neutron->e() - p_neutron->m());
 
-}	}
+}
+
+#if 0
+void generate_from_6he(const G4double& ebeam,
+											 G4double& px1,
+											 G4double& py1,
+											 G4double& pz1, 
+											 G4double& eneut1,
+											 G4double& px2,
+											 G4double& py2,
+											 G4double& pz2, 
+											 G4double& eneut2,
+											 G4LorentzVector& p_6he)
+{
+	// Generate neutron from breakup of 6he first excited state @ 1797 keV
+
+	// 7He @beam energy, 100% along beam axis
+	const G4double he6mass = 5.60553446318 + 1797e-6; // GeV/c^2
+	const G4double he4mass = 3.72737916179; // GeV/c^2
+	const G4double neutronmass = 0.939565378; // GeV/c^2
+	// \todo Add in width
+
+	const G4double etot = he6mass + 6*ebeam/1e3; // total energy, GeV/c^2
+	const G4double ptot = sqrt(etot*etot - he6mass*he6mass); // GeV/c
+
+	// Decay products
+	const G4double decayProductMasses[3] = { he4mass, neutronmass, neutronmass };
+
+	static G4GenPhaseSpace* gen = 0;
+	if(!gen) {
+		gen = new G4GenPhaseSpace();
+		G4LorentzVector p_6he1(0, 0, ptot, etot);
+		bool okay = gen->SetDecay(p_6he1, 3, decayProductMasses);
+		assert(okay);
+	}
+
+	while(1) {
+		G4double w = gen->Generate();
+		G4double r = G4UniformRand();
+		if(r < w) { break; }
+	}
+
+	G4LorentzVector* p_f = gen->GetDecay(0); // 6he fragment from 7he decay
+	p_6he.set(p_f->px()*1e3, p_f->py()*1e3, p_f->pz()*1e3, p_f->e()*1e3);
+
+	G4LorentzVector* p_neutron1 = gen->GetDecay(1); // neutron from 6he decay
+	px1 = p_neutron1->px() * 1e3;
+	py1 = p_neutron1->py() * 1e3;
+	pz1 = p_neutron1->pz() * 1e3;
+	eneut1 = 1e3*(p_neutron1->e() - p_neutron1->m());
+
+	G4LorentzVector* p_neutron2 = gen->GetDecay(2); // neutron from 6he decay
+	px2 = p_neutron2->px() * 1e3;
+	py2 = p_neutron2->py() * 1e3;
+	pz2 = p_neutron2->pz() * 1e3;
+	eneut2 = 1e3*(p_neutron2->e() - p_neutron2->m());
+}
+#endif		
+}
 
 
 
@@ -118,14 +176,7 @@ TntPrimaryGeneratorAction::TntPrimaryGeneratorAction(){
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
  
   G4String particleName;
-  fParticleGun->SetParticleDefinition(particleTable->
-//by Shuya 160404
-                                     //FindParticle(particleName="gamma"));
-																			FindParticle(particleName="neutron"));
-	// 																		FindParticle(particleName="e-"));
-//	 FindParticle(particleName="proton"));
-                                     //FindParticle(particleName="deuteron"));
-                                     //FindParticle(particleName="alpha"));
+  fParticleGun->SetParticleDefinition(particleTable->FindParticle(particleName="neutron"));
 
 	if(BeamType != "he7")
 	{
@@ -217,8 +268,9 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
   const G4double Pi = CLHEP::pi;
 
 //by Shuya 160510.
-  G4double beam_z = -100.0*cm;
-  
+	G4double detector_thickness = TntGlobalParams::Instance()->GetDetectorZ();
+  G4double beam_z = (-1*TntGlobalParams::Instance()->GetSourceZ() - (detector_thickness/2))*cm;
+	
 //by Shuya 160510
   //fparticleGun->SetParticlePosition(G4ThreeVector(0.0, 0.0, -5.0*cm));
   fParticleGun->SetParticlePosition(G4ThreeVector(0.0 , 0.0, beam_z));
@@ -339,7 +391,7 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 	else if(BeamType == "he7")
 	{
 		G4double eneut = 0;
-		TLorentzVector p_6he;
+		G4LorentzVector p_6he;
     fParticleGun->SetParticlePosition(G4ThreeVector(0.0, 0.0, beam_z)); //Default target posn (0,0)
 		::generate_from_7he(TntGlobalParams::Instance()->GetNeutronEnergy(), //< beam energy
 												momentum_x, momentum_y, momentum_z, eneut, p_6he);
@@ -349,6 +401,76 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 		
 		G4cout << "TntPrimaryGeneratorAction:: neutron energy " <<
 			fParticleGun->GetParticleEnergy() << G4endl;
+	}
+	else if(BeamType == "he6")
+	{
+		static TntNeutronDecay* decay = 0;
+		if(!decay) {
+			G4double m_6He = TntNuclearMasses::GetNuclearMass(2, 6)*MeV;
+			decay = new TntTwoNeutronDecayPhaseSpace();
+			G4double beamEnergy = TntGlobalParams::Instance()->GetNeutronEnergy() * 6; // MeV
+			G4double beamMomentum = sqrt(pow(beamEnergy + m_6He, 2) - pow(m_6He, 2));
+			decay->SetBeam(2, 6, G4ThreeVector(0, 0, beamMomentum));
+			decay->SetDecayParameter("energy", 1797*keV);
+			decay->SetDecayParameter("width", 0*keV); // actually 113 keV
+		}
+	
+		static int whichNeutron = 0;
+
+		fParticleGun->SetParticlePosition(G4ThreeVector(0.0, 0.0, beam_z)); //Default target posn (0,0)
+		if(whichNeutron == 0) {
+			decay->Generate(true);
+
+			G4double en1 = decay->GetFinal(2).e() - decay->GetFinal(2).m();
+			G4LorentzVector p_4he = decay->GetFinal(1);
+			
+			fParticleGun->SetParticleEnergy(en1);
+			TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
+			TntDataOutPG->senddataSecondary(G4ThreeVector(0,0,beam_z), p_4he);
+			
+			momentum_x = decay->GetFinal(2).px();
+			momentum_y = decay->GetFinal(2).py();
+			momentum_z = decay->GetFinal(2).pz();
+ 
+			whichNeutron = 1;
+		} else {
+			G4double en2 = decay->GetFinal(3).e() - decay->GetFinal(3).m();
+			G4LorentzVector p_4he = decay->GetFinal(1);
+			
+			fParticleGun->SetParticleEnergy(en2);
+			TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
+			TntDataOutPG->senddataSecondary(G4ThreeVector(0,0,beam_z), p_4he);
+			
+			momentum_x = decay->GetFinal(3).px();
+			momentum_y = decay->GetFinal(3).py();
+			momentum_z = decay->GetFinal(3).pz();
+ 
+			whichNeutron = 0;
+		}
+		
+		
+		// if(whichNeutron == 0) {
+		// 	generate_from_6he(TntGlobalParams::Instance()->GetNeutronEnergy(),
+		// 										px1, py1, pz1, e1, px2,	py2, pz2, e2,
+		// 										p_6he);
+		// 	fParticleGun->SetParticleEnergy(e1);
+		// 	TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
+		// 	TntDataOutPG->senddataSecondary(G4ThreeVector(0,0,beam_z), p_6he);
+		// 	momentum_x = px1;
+		// 	momentum_y = py1;
+		// 	momentum_z = pz1;
+ 
+		// 	whichNeutron = 1;
+		// } else {
+		// 	fParticleGun->SetParticleEnergy(e2);
+		// 	TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
+		// 	TntDataOutPG->senddataSecondary(G4ThreeVector(0,0,beam_z), p_6he);
+		// 	momentum_x = px2;
+		// 	momentum_y = py2;
+		// 	momentum_z = pz2;
+ 
+		// 	whichNeutron = 0;
+		// }
 	}
 	else 
 	{

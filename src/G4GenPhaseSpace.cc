@@ -1,10 +1,13 @@
 // Porting of ROOT's TGenPhaseSpace code to the GEANT4 architecture
 // Motivations are twofold: 1) Allow phase space calcs. w/o ROOT
 //                          2) Use GEANT4 RNGs for phase space calcs, for consistency
-// Note that Momentum, Energy units are Gev/C, GeV
+// NOTE:: Uses the GEANT4 system of units (default: MeV).
+// Calculations are performed in GeV, but everything should be specified in MeV. You
+// can (AND SHOULD) use the G4SystemOfUnits prefixes to handle units transparently.
 //
 
 #include <cstdlib>
+#include <G4SystemOfUnits.hh>
 #include "G4GenPhaseSpace.hh"
 #include "Randomize.hh"
 
@@ -145,6 +148,15 @@ G4double G4GenPhaseSpace::Generate()
 	//
 	for (n=0;n<fNt;n++) fDecPro[n].boost(fBeta[0],fBeta[1],fBeta[2]);
 
+	// Convert Outputs Back into MeV (default G4 units)
+	//
+	for (n=0;n<fNt;n++) {
+		G4double xyzt[4] = 
+			{ fDecPro[n].x()*GeV, fDecPro[n].y()*GeV, fDecPro[n].z()*GeV, fDecPro[n].t()*GeV };
+		fDecPro[n].set(xyzt[0], xyzt[1], xyzt[2], xyzt[3]);
+	}
+	
+	
 	//
 	//---> return the weight of event
 	//
@@ -176,6 +188,11 @@ G4LorentzVector *G4GenPhaseSpace::GetDecay(G4int n)
 bool G4GenPhaseSpace::SetDecay(G4LorentzVector &P, G4int nt,
 															 const G4double *mass, const char *opt)
 {
+	// Put things into GeV for internal calculations
+	//
+	G4double xyzt[4] = {P.x()/GeV, P.y()/GeV, P.z()/GeV, P.t()/GeV};
+	P.set(xyzt[0], xyzt[1], xyzt[2], xyzt[3]);
+	
 	G4int n;
 	fNt = nt;
 	if (fNt<2 || fNt>18) return false;  // no more then 18 particle
@@ -185,8 +202,8 @@ bool G4GenPhaseSpace::SetDecay(G4LorentzVector &P, G4int nt,
 	//
 	fTeCmTm = P.mag();           // total energy in C.M. minus the sum of the masses
 	for (n=0;n<fNt;n++) {
-		fMass[n]  = mass[n];
-		fTeCmTm  -= mass[n];
+		fMass[n]  = mass[n]/GeV; // NOTE:: Put into GeV
+		fTeCmTm  -= mass[n]/GeV; // NOTE:: Put into GeV
 	}
 
 	if (fTeCmTm<=0) return false;    // not enough energy for this decay

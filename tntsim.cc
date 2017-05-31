@@ -41,6 +41,8 @@
 #include "G4UImanager.hh"
 #include "G4String.hh"
 
+#include "Randomize.hh"
+
 #include "TntPhysicsList.hh"
 #include "TntDetectorConstruction.hh"
 
@@ -55,6 +57,8 @@
 #ifdef G4UI_USE
 #include "G4UIExecutive.hh"
 #endif
+
+#include "TntNeutronDecay.hh"
 
 //by Shuya 160406
 #include "TntDataRecordTree.hh"
@@ -115,13 +119,53 @@ G4String macfile = "", inputfile = "";
 // 	}
 // } }
 
+// #include "TLorentzVector.h"
 int main(int argc, char** argv)
 {
+# if 0
+// TEST //
+	TntNeutronDecay* decay = new TntTwoNeutronDecayPhaseSpace;
+	decay->SetBeam(2, 6, G4ThreeVector(0, 0, 0.841*GeV));
+	decay->SetDecayParameter("energy", 1797*keV);
+	decay->SetDecayParameter("width", 113*keV);
+
+	
+	TFile* f = new TFile("test123.root", "recreate");
+	TTree* t = new TTree("t", "");
+	TLorentzVector *v0=0, *v1=0, *v2=0, *vi=0;
+	double edecay = 0;
+	t->Branch("vi", &vi);
+	t->Branch("v0", &v0);
+	t->Branch("v1", &v1);
+	t->Branch("v2", &v2);
+	t->Branch("edecay", &edecay, "edecay/D");
+	for(int i=0; i< 100000; ++i) {
+		decay->Generate(true);
+		vi->SetXYZT(decay->GetFinal(0).x(), decay->GetFinal(0).y(), decay->GetFinal(0).z(), decay->GetFinal(0).t());
+		v0->SetXYZT(decay->GetFinal(1).x(), decay->GetFinal(1).y(), decay->GetFinal(1).z(), decay->GetFinal(1).t());
+		v1->SetXYZT(decay->GetFinal(2).x(), decay->GetFinal(2).y(), decay->GetFinal(2).z(), decay->GetFinal(2).t());
+		v2->SetXYZT(decay->GetFinal(3).x(), decay->GetFinal(3).y(), decay->GetFinal(3).z(), decay->GetFinal(3).t());
+		edecay = (*v0+*v1+*v2).M() - v0->M() - v1->M() - v2->M();
+		t->Fill();
+	}
+	t->Write();
+	f->Close();
+	return 0;
+#endif
+	
+	G4String FILEOUT_ = "";
 	for(int i=1; i< argc; ++i) {
 		std::string arg = argv[i];
 		if(false) { }
 		else if(arg.substr(arg.size() - 4) == ".mac") {
 			macfile = argv[i];
+		}
+		else if(arg == "-seed") {
+			G4int theSeed = atoi(argv[++i]);
+			CLHEP::HepRandom::setTheSeed( theSeed );
+		}
+		else if(arg == "-fout") {
+			FILEOUT_ = argv[++i];
 		}
 		else inputfile = argv[i];
 	}
@@ -137,12 +181,16 @@ int main(int argc, char** argv)
 	parser.AddInput("dx",          &TntGlobalParams::SetDetectorX);
 	parser.AddInput("dy",          &TntGlobalParams::SetDetectorY);
 	parser.AddInput("dz",          &TntGlobalParams::SetDetectorZ);
+	parser.AddInput("beamz",       &TntGlobalParams::SetSourceZ);
 	parser.AddInput("nphot",       &TntGlobalParams::SetLightOutput);
 	parser.AddInput("qe",          &TntGlobalParams::SetQuantumEfficiency);
 	parser.AddInput("anger",       &TntGlobalParams::SetAngerAnalysis);
 	
 	parser.Parse(inputfile);
 
+	if(FILEOUT_ != "") TntGlobalParams::Instance()->SetRootFileName(FILEOUT_);
+	G4cerr << "Running with RNG seed:: " << CLHEP::HepRandom::getTheSeed() << G4endl;
+	
 	
 //by Shuya 160421. All copied from tntsim.cc
 //  G4int numberOfEvent = 10;
