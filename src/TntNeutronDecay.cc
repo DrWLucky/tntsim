@@ -157,6 +157,26 @@ G4double TntTwoNeutronDecayPhaseSpace::Generate(G4bool uniformWeight)
 
 
 
+/////////////////////////////////////////////////////////////////
+// TntTwoNeutronDecayDiNeutron
+//
+
+TntTwoNeutronDecayDiNeutron::TntTwoNeutronDecayDiNeutron():
+	TntNeutronDecayIntermediate(2)
+{ }
+
+TntTwoNeutronDecayDiNeutron::~TntTwoNeutronDecayDiNeutron()
+{ }
+
+
+G4double TntTwoNeutronDecayDiNeutron::Generate(G4bool uniformWeight)
+{
+	
+}
+
+
+
+
 
 
 
@@ -174,7 +194,7 @@ TntNeutronDecay* TntNeutronDecayFactory::Create()
 	if(false) { }
 	else if(GetDecayType() == "1n") { return new TntOneNeutronDecay(); }
 	else if(GetDecayType() == "2nPhaseSpace") { return new TntTwoNeutronDecayPhaseSpace(); }
-//	else if(GetDecayType() == "2nDiNeutron")  { return new TntTwoNeutronDecayDiNeutron();  }
+	else if(GetDecayType() == "2nDiNeutron")  { return new TntTwoNeutronDecayDiNeutron();  }
 	else {
 		G4cerr << "TntNeutronDecayFactory::Create:: Invalid GetDecayType():: " << GetDecayType()
 					 << G4endl;

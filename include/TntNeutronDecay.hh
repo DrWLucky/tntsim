@@ -62,15 +62,22 @@ public:
 	virtual G4double Generate(G4bool uniformWeight);
 };
 
-// Concrete class for two neutron decay, Breit Wigner resonance energy,
+// Concrete class for two neutron
 // phase space decay.
-// Parameters to set are "energy" and "width"
-// Setting "width" to zero returns a uniform (spike) decay energy
-//
 class TntTwoNeutronDecayPhaseSpace : public TntNeutronDecayIntermediate {
 public:
 	TntTwoNeutronDecayPhaseSpace();
 	virtual ~TntTwoNeutronDecayPhaseSpace();
+	virtual G4double Generate(G4bool uniformWeight);
+};
+
+
+// Concrete class for two neutron 'dineutron' decay
+//
+class TntTwoNeutronDecayDiNeutron : public TntNeutronDecayIntermediate {
+public:
+	TntTwoNeutronDecayDiNeutron();
+	virtual ~TntTwoNeutronDecayDiNeutron();
 	virtual G4double Generate(G4bool uniformWeight);
 };
 
