@@ -44,6 +44,8 @@
 #include "TntGlobalParams.hh"
 #include "TntNeutronDecay.hh"
 #include "TntNuclearMasses.hh"
+#include "TntInputFileParser.hh"
+#include "TntReaction.hh"
 
 //by Shuya 160510. Just copied from Tntsim.
 // need the below for random theta angle source (from Demon)
@@ -406,13 +408,13 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 	{
 		static TntNeutronDecay* decay = 0;
 		if(!decay) {
-			G4double m_6He = TntNuclearMasses::GetNuclearMass(2, 6)*MeV;
+			G4double m_6He = TntNuclearMasses::GetNuclearMass(2, 6)*MeV + 1.797*MeV; // EXCITED MASS
 			decay = new TntTwoNeutronDecayPhaseSpace();
 			G4double beamEnergy = TntGlobalParams::Instance()->GetNeutronEnergy() * 6; // MeV
 			G4double beamMomentum = sqrt(pow(beamEnergy + m_6He, 2) - pow(m_6He, 2));
-			decay->SetBeam(2, 6, G4ThreeVector(0, 0, beamMomentum));
-			decay->SetDecayParameter("energy", 1797*keV);
-			decay->SetDecayParameter("width", 0*keV); // actually 113 keV
+			decay->SetInitial(2, 6, G4LorentzVector(0, 0, beamMomentum, beamEnergy+m_6He));
+			// decay->SetDecayParameter("energy", 1797*keV);
+			// decay->SetDecayParameter("width", 0*keV); // actually 113 keV
 		}
 	
 		static int whichNeutron = 0;
@@ -474,8 +476,131 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 	}
 	else 
 	{
-		G4cerr << "ERROR<TntPrimaryGeneratorAction.cc>:: Invalid BeamType: " << BeamType << G4endl;
-		assert( 0 && "Invalid Beam Type" );
+		// Attempt to reac from reaction file //
+		static TntReaction* reac = 0;
+		static TntNeutronDecay* decay = 0;
+		if(!reac) {
+			TntReactionFactory factory;
+			TntInputFileParser<TntReactionFactory> reacParser(&factory);
+			reacParser.AddInput("beam",     &TntReactionFactory::SetBeam);
+			reacParser.AddInput("target",   &TntReactionFactory::SetTarget);
+			reacParser.AddInput("ejectile", &TntReactionFactory::SetEjectile);
+			reacParser.AddInput("ebeam",    &TntReactionFactory::SetEbeamPerA);
+			reacParser.AddInput("ex",       &TntReactionFactory::SetEx);
+			reacParser.AddInput("width",    &TntReactionFactory::SetWidth);
+			reacParser.AddInput("angdist",  &TntReactionFactory::SetAngDistFile);
+			try 
+			{ 
+				reacParser.Parse(BeamType); 
+			}
+			catch (std::string s)  // NOT A VALID FILE
+			{
+				G4cerr << "ERROR<TntPrimaryGeneratorAction.cc>:: Invalid BeamType: " << BeamType << G4endl;
+				assert( 0 && "Invalid Beam Type" );
+			}
+
+			reac = factory.CreateReaction();
+
+			TntNeutronDecayFactory decayFactory;
+			TntInputFileParser<TntNeutronDecayFactory> decayParser(&decayFactory);
+			decayParser.AddInput("decaytype", &TntNeutronDecayFactory::SetDecayType);
+			decayParser.Parse(BeamType);
+
+			decay = decayFactory.Create();
+		}
+		
+		// Set up done, now generate event-by-event reaction
+		fParticleGun->SetParticlePosition(G4ThreeVector(0.0, 0.0, beam_z)); //Default target posn (0,0)
+		int nNeut = decay->GetNumberOfNeutrons();
+
+		static G4int whichNeutron = 0;
+		if(whichNeutron == 0) {
+			// Now Generate reaction
+			reac->Generate();
+
+			// Neutron Decay
+			decay->SetInitial(reac->GetZ4(), reac->GetA4(), reac->GetRecoil());
+			decay->Generate(true);
+		}
+
+		// Set neutron energy+momentum
+		G4double eNeut = decay->GetFinal(whichNeutron+2).e() - decay->GetFinal(whichNeutron+2).m();
+		momentum_x = decay->GetFinal(whichNeutron+2).px();
+		momentum_y = decay->GetFinal(whichNeutron+2).py();
+		momentum_z = decay->GetFinal(whichNeutron+2).pz();
+
+		// Recoil momentum (4-vector)
+		G4LorentzVector p_recoil = decay->GetFinal(whichNeutron+1);
+
+		// Send to data record class
+		fParticleGun->SetParticleEnergy(eNeut);
+		TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
+		TntDataOutPG->senddataSecondary(G4ThreeVector(0,0,beam_z), p_recoil);
+		TntDataOutPG->senddataEjectile(G4ThreeVector(0,0,beam_z), reac->GetEjectile(), reac->GetThetaCM());
+
+		if(whichNeutron == nNeut-1) { whichNeutron = 0; }
+		else                        { ++whichNeutron;		}
+		
+		#if 0
+		if(nNeut == 1) // ONE NEUTRON
+		{
+			// Now Generate reaction
+			reac->Generate();
+
+			// Neutron Decay
+			decay->SetInitial(reac->GetZ4(), reac->GetA4(), reac->GetRecoil());
+			decay->Generate(true);
+
+			G4double eNeut = decay->GetFinal(2).e() - decay->GetFinal(2).m();
+			G4LorentzVector p_recoil = decay->GetFinal(1);
+			
+			fParticleGun->SetParticleEnergy(eNeut);
+			TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
+			TntDataOutPG->senddataSecondary(G4ThreeVector(0,0,beam_z), p_recoil);
+			
+			momentum_x = decay->GetFinal(2).px();
+			momentum_y = decay->GetFinal(2).py();
+			momentum_z = decay->GetFinal(2).pz();
+		}
+		else // TWO NEUTRON
+		{		
+			static int whichNeutron = 0;
+			if(whichNeutron == 0) {
+				// Now Generate reaction
+				reac->Generate();
+
+				// Neutron Decay
+				decay->SetInitial(reac->GetZ4(), reac->GetA4(), reac->GetRecoil());
+				decay->Generate(true);
+
+				G4double en1 = decay->GetFinal(2).e() - decay->GetFinal(2).m();
+				G4LorentzVector p_recoil = decay->GetFinal(1);
+			
+				fParticleGun->SetParticleEnergy(en1);
+				TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
+				TntDataOutPG->senddataSecondary(G4ThreeVector(0,0,beam_z), p_recoil);
+			
+				momentum_x = decay->GetFinal(2).px();
+				momentum_y = decay->GetFinal(2).py();
+				momentum_z = decay->GetFinal(2).pz();
+ 
+				whichNeutron = 1;
+			} else {
+				G4double en2 = decay->GetFinal(3).e() - decay->GetFinal(3).m();
+				G4LorentzVector p_recoil = decay->GetFinal(1);
+			
+				fParticleGun->SetParticleEnergy(en2);
+				TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
+				TntDataOutPG->senddataSecondary(G4ThreeVector(0,0,beam_z), p_recoil);
+			
+				momentum_x = decay->GetFinal(3).px();
+				momentum_y = decay->GetFinal(3).py();
+				momentum_z = decay->GetFinal(3).pz();
+ 
+				whichNeutron = 0;
+			}
+		}
+		#endif
 	}
 	
   // Set particle direction

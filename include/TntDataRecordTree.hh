@@ -37,6 +37,7 @@
 #include "G4ThreeVector.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4LorentzVector.hh"
 
 //by Shuya 160407
 #include "TntDataRecordTree.hh"
@@ -49,10 +50,12 @@ class TntDataRecordTree
 public:
 	struct Hit_t { 
 		G4double X, Y, Z, T, E;
-		G4int TrackID;
+		G4int TrackID, ParentTrackID, Type;
 		bool operator== (const Hit_t& rhs) {
 			if(rhs.X == X && rhs.Y == Y && rhs.Z == Z && 
-				 rhs.T == T && rhs.E == E && rhs.TrackID == TrackID) 
+				 rhs.T == T && rhs.E == E && 
+				 rhs.TrackID == TrackID && rhs.ParentTrackID &&
+				 rhs.Type == Type) 
 			{ 	return true;   }
 			else { return false; }
 		}
@@ -103,6 +106,7 @@ private:
 	///
 	/// GAC
 	std::vector<G4int> PhotonSum; // Sum of all photons incident on a PMT
+	std::vector<G4int> PhotonSumFront;
 	TH2I* hDigi; // Histogram of digitized time signals for each PMT
 	///
 	/// Vectors of all hit information
@@ -113,8 +117,16 @@ private:
 	std::vector<G4double> HitT;
 	std::vector<G4double> HitE;
 	std::vector<G4int>    HitTrackID;
+	std::vector<G4int>    HitType;
 	TClonesArray* fHits;
 	TClonesArray* fHit01;
+	Int_t iHit0, iHit1;
+
+	///
+	/// MENATA_R hits
+	TClonesArray* fMenateHitsPos;
+	std::vector<G4double> fMenateHitsE;	
+	std::vector<G4int> fMenateHitsType;	
 	
 	///
 	/// Positions of original fired neutron
@@ -122,8 +134,12 @@ private:
 	G4double PrimaryY;
 	G4double PrimaryZ;
 	TLorentzVector* PrimaryMomentum;
-	TLorentzVector* SecondaryMomentum; // other particles involved in reaction
+	TLorentzVector* SecondaryMomentum; // recoil momentum if neutron decay
+	TLorentzVector* EjectileMomentum;  // ejectile from population reaction [e.g. (d,3He)]
+	G4double ReacThetaCM; // COM angle of reaction
+	
 	TVector3* SecondaryPosition; // other particles involved in reaction
+	TVector3* EjectilePosition; // other particles involved in reaction
 	
 
   G4double FirstHitTime;
@@ -192,11 +208,13 @@ private:
 
   void senddataPG(double value1);
 	void senddataPrimary(const G4ThreeVector& posn, const G4ThreeVector& momentum);
-	void senddataSecondary(const G4ThreeVector& posn, const TLorentzVector& momentum);
+	void senddataSecondary(const G4ThreeVector& posn, const G4LorentzVector& momentum);
+	void senddataEjectile(const G4ThreeVector& posn, const G4LorentzVector& momentum, const G4double& ThetaCM);
   void senddataEV(int type, double value1);
   void senddataPosition(const G4ThreeVector& pos);
 	void senddataHits(const std::vector<Hit_t>& hit, bool sortTime);
   void senddataTOF(G4double time);
+	void senddataMenateR(G4double ekin, const G4ThreeVector& posn, G4double t, G4int type);
   void ShowDataFromEvent();
   void FillTree();
 //by Shuya 160422.
@@ -204,6 +222,11 @@ private:
   void GetParticleTotals();
   void CalculateEff(int ch_eng);
 
+	G4int GetParticleCode(const G4String& name);
+	G4int GetReactionCode(const G4String& name);
+	G4String GetParticleName(G4int  code);
+	G4String GetReactionName(G4int  code);
+	
 private:
   TntDataRecordTree() {;}   // Hide Default Constructor
 }; 

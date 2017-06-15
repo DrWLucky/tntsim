@@ -15,6 +15,7 @@ TntGlobalParams::TntGlobalParams(): fNeutronEnergy(1.*MeV),
 																		fDetectorX(28.),
 																		fDetectorY(28.),
 																		fDetectorZ(10.),
+																		fSourceZ(100.),
 																		fLightOutput(10400),
 																		fQuantumEfficiency(0.2),
 																		fAngerAnalysis("")

@@ -30,6 +30,7 @@
 //
 //
 #include <vector>
+#include <algorithm>
 #include "TntScintSD.hh"
 #include "TntScintHit.hh"
 #include "G4VPhysicalVolume.hh"
@@ -43,6 +44,27 @@
 #include "G4VProcess.hh"
 //by Shuya 160407
 #include "G4SDManager.hh"
+
+namespace {
+
+class check_hit_equality {
+public:
+	check_hit_equality(const TntDataRecordTree::Hit_t& lhs_):
+		lhs(lhs_) {}
+	bool operator() (const TntDataRecordTree::Hit_t& rhs) {
+		TVector3 posDiff(rhs.X-lhs.X, rhs.Y-lhs.Y, rhs.Z-lhs.Z);
+
+		if(rhs.ParentTrackID == lhs.ParentTrackID) {
+			return true;
+		}
+		return false;
+  //return (rhs.X == lhs.X && rhs.Y == lhs.Y && rhs.Z == lhs.Z && rhs.T == lhs.T);
+	}
+private:
+	TntDataRecordTree::Hit_t lhs;
+};
+
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -278,18 +300,32 @@ void TntScintSD::EndOfEvent(G4HCofThisEvent* hitsCE)
 
 			if(theParticleName != "opticalphoton") {
 
+				G4int HitType = TntDataOutEV->GetParticleCode(theParticleName);
 				TntDataRecordTree::Hit_t thisHit = {
 					theCurrentHit->GetPos()[0],
 					theCurrentHit->GetPos()[1],
 					theCurrentHit->GetPos()[2],
 					PulseTime,
 					edep,
-					theTrackID
+					theTrackID,
+					theParentTrackID,				
+					HitType
 				};
 
 				if(isNewTrack) {
-					AllHitPosTime.push_back( thisHit );
-				}
+#if 1
+					AllHitPosTime.push_back( thisHit );       
+#else
+					std::vector<TntDataRecordTree::Hit_t>::iterator iFind = 
+						std::find_if(AllHitPosTime.begin(), AllHitPosTime.end(), check_hit_equality(thisHit));
+					if(iFind == AllHitPosTime.end()) { // NEW HIT ????????????? //
+						AllHitPosTime.push_back( thisHit );
+					}
+					else { // SAME HIT ????????????? //
+						iFind->E += thisHit.E;
+					}
+#endif
+ 				}
 			}
 
 			

@@ -58,8 +58,10 @@
  
 #include "menate_R.hh"
 #include "TntGlobalParams.hh"
+#include "TntDataRecordTree.hh"
 #include <cmath>
 #include <iomanip>
+
 
 menate_R::menate_R(const G4String& processName) : G4VDiscreteProcess(processName)
 {
@@ -826,6 +828,8 @@ G4double menate_R::GetMeanFreePath(const G4Track& aTrack, G4double previousStepS
 
 G4VParticleChange* menate_R::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
+	TntDataRecordTree* ttnt = TntDataRecordTree::TntPointer;
+
   // Now we tell GEANT what to do if MeanFreePath condition is satisfied!
   // Overrides PostStepDoIt function in G4VDiscreteProcess
 
@@ -937,7 +941,9 @@ if(ReactionName == "N_P_elastic")
     T_N = KinEng_Int - T_P;    
 
     MomDir_N = GenMomDir(MomDir_Int,theta_N,phi_N);
-  
+
+		static int ntimes = 0;
+		
     // Generate a Secondary Neutron
     G4DynamicParticle* theSecNeutron = new G4DynamicParticle;
     G4ParticleDefinition* theSecNeutronDefinition = G4Neutron::Neutron();
@@ -1004,6 +1010,8 @@ if(ReactionName == "N_P_elastic")
 
     aParticleChange.AddSecondary(thePTrack);
 
+		ttnt->senddataMenateR(T_P, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+		
 //by Shuya 160420
 //G4cout << "TESTING!!! " << theNTrack->GetTrackID() << G4endl;
 //G4cout << "TESTING2!!! " << thePTrack->GetTrackID() << G4endl;
@@ -1125,7 +1133,9 @@ if(ReactionName == "N_P_elastic")
  
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
 		aParticleChange.AddSecondary(theC12Track);
-  
+
+		ttnt->senddataMenateR(T_C12el, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+		
     // G4cout << "Made it to the end ! " << G4endl;
    }
  else if(ReactionName == "N_C12_NGamma")
@@ -1276,7 +1286,9 @@ if(ReactionName == "N_P_elastic")
 
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
      aParticleChange.AddSecondary(theC12Track);
-     
+
+		 ttnt->senddataMenateR(T_C12, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+
     // G4cout << "Made it to the end ! " << G4endl;
  
    }
@@ -1368,7 +1380,10 @@ if(ReactionName == "N_P_elastic")
      //aParticleChange.SetNumberOfSecondaries(0);
      aParticleChange.AddSecondary(theAlphaTrack);
      aParticleChange.AddSecondary(theBe9Track);
-  
+
+		 ttnt->senddataMenateR(T_Be9 + T_Alpha, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+
+		 
     // G4cout << "Made it to the end ! " << G4endl;
    }
  else if(ReactionName == "N_C12_P_B12")
@@ -1456,6 +1471,9 @@ if(ReactionName == "N_P_elastic")
      //aParticleChange.SetNumberOfSecondaries(0);
 		 aParticleChange.AddSecondary(thePTrack);
      aParticleChange.AddSecondary(theB12Track);
+
+		 ttnt->senddataMenateR(T_P + T_B12, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+
   
     // G4cout << "Made it to the end ! " << G4endl;
    }
@@ -1644,7 +1662,10 @@ if(ReactionName == "N_P_elastic")
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
 		aParticleChange.AddSecondary(thePTrack);
 		aParticleChange.AddSecondary(theB11Track);
-  
+
+		ttnt->senddataMenateR(T_P + T_B11, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+
+		
     // G4cout << "Made it to the end ! " << G4endl;
    }
  else if(ReactionName == "N_C12_N2N_C11")
@@ -1822,6 +1843,9 @@ if(ReactionName == "N_P_elastic")
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
 		aParticleChange.AddSecondary(theC11Track);
 
+		ttnt->senddataMenateR(T_C11, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+
+		
      /*
      G4double T_N_Sum = T_N1+T_N2;
      G4cout << "n, 2n C11 event! " << G4endl;
@@ -2092,6 +2116,10 @@ else if(ReactionName == "N_C12_NN3Alpha")
     aParticleChange.AddSecondary(theA2Track);
     aParticleChange.AddSecondary(theA3Track);
 
+		ttnt->senddataMenateR(
+			T_Alpha1 + T_Alpha2 + T_Alpha3, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+
+		
      /*
      G4double T_A_Sum = T_Alpha1+T_Alpha2+T_Alpha3;
 

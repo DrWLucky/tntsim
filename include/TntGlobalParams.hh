@@ -39,6 +39,9 @@ public:
 	G4double GetDetectorZ() { return fDetectorZ; }
 	void SetDetectorZ(G4double z) { fDetectorZ = z; }
 
+	G4double GetSourceZ() { return fSourceZ; }
+	void SetSourceZ(G4double z) { fSourceZ = z; }
+
 	G4int GetLightOutput() { return fLightOutput; }
 	void SetLightOutput(G4int n) { fLightOutput = n; }
 	
@@ -48,6 +51,7 @@ public:
 	G4String GetAngerAnalysis() { return fAngerAnalysis; }
 	void SetAngerAnalysis(G4String name) { fAngerAnalysis = name; }
 
+	
 private:
 	TntGlobalParams();
 	
@@ -59,7 +63,7 @@ private:
 	G4String fRootFileName;
 	G4double fPhotonResolutionScale;
 	G4int fMenateR_Tracking;
-	G4double fDetectorX, fDetectorY, fDetectorZ;
+	G4double fDetectorX, fDetectorY, fDetectorZ, fSourceZ;
 	G4int fLightOutput;
 	G4double fQuantumEfficiency;
 	G4String fAngerAnalysis;

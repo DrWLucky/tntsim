@@ -94,7 +94,7 @@ void TntPhysicsList::SetCuts(){
 
 //by Shuya 160406.
 //Comment by Shuya 160513. Here em_cuts means produce only particles having a larger range than it (=1mm this case).
-  G4double em_cuts = 1.0*mm;
+  G4double em_cuts = 1*mm;
   SetCutValue(em_cuts,"gamma");
   SetCutValue(em_cuts,"e-");
   SetCutValue(em_cuts,"e+");

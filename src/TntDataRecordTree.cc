@@ -315,7 +315,6 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 	TntEventTree->Branch("MenateHitsE", &fMenateHitsE);
 	TntEventTree->Branch("MenateHitsType", &fMenateHitsType);
 
-
 	
 	//
 	// Original x,y,z positions of the fired neutron
@@ -328,7 +327,12 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 	// Secondary particles involved in the reaction
 	SecondaryMomentum = 0;
 	SecondaryPosition = 0;
-		
+
+	// Ejectile from population reaction
+	EjectileMomentum = 0;
+	EjectilePosition = 0;
+	ReacThetaCM = 0;
+	TntEventTree->Branch("ReacThetaCM", &ReacThetaCM, "ReacThetaCM/D");
 
 //by Shuya 160422. Making tree for photon hits on each pmt.
   TntEventTree2 = new TTree("t2","Tnt Scintillator Simulation Data");
@@ -448,6 +452,20 @@ void TntDataRecordTree::senddataSecondary(const G4ThreeVector& pos, const G4Lore
 
 	SecondaryPosition->SetXYZ(pos.x(), pos.y(), pos.z());
 	SecondaryMomentum->SetPxPyPzE(mom.px(), mom.py(), mom.pz(), mom.e());
+}
+
+void TntDataRecordTree::senddataEjectile(const G4ThreeVector& pos, const G4LorentzVector& mom, const G4double& ThetaCM)
+{
+	if(EjectileMomentum == 0) {
+		TntEventTree->Branch("EjectileMomentum", &EjectileMomentum);
+	}
+	if(EjectilePosition == 0) {
+		TntEventTree->Branch("EjectilePosition", &EjectilePosition);
+	}
+
+	EjectilePosition->SetXYZ(pos.x(), pos.y(), pos.z());
+	EjectileMomentum->SetPxPyPzE(mom.px(), mom.py(), mom.pz(), mom.e());
+	ReacThetaCM = ThetaCM;
 }
 
 //by Shuya 160408

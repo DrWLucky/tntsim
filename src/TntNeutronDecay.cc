@@ -21,34 +21,18 @@ const G4double kNeutronMass =
 TntNeutronDecayIntermediate::TntNeutronDecayIntermediate(G4int number_of_neutrons_emitted):
 	mNumberOfNeutronsEmitted(number_of_neutrons_emitted),
 	mFinal(number_of_neutrons_emitted + 2),
-	mBeamMass(0), 
 	mFragMass(0),
-	mInitialMomentum(0,0,0)
+	mInitial(0,0,0,0)
 { }
 
 TntNeutronDecayIntermediate::~TntNeutronDecayIntermediate()
 { }
 
-void TntNeutronDecayIntermediate::SetBeam(G4int Z, G4int A, const G4ThreeVector& momentum)
+void TntNeutronDecayIntermediate::SetInitial(G4int Z, G4int A, const G4LorentzVector& momentum)
 {
 	mBeamMass = TntNuclearMasses::GetNuclearMass(Z, A)*MeV;
 	mFragMass = TntNuclearMasses::GetNuclearMass(Z, A - mNumberOfNeutronsEmitted)*MeV;
-	mInitialMomentum.set(momentum.x(), momentum.y(), momentum.z());
-}
-
-void TntNeutronDecayIntermediate::SetDecayParameter(const G4String& parname, G4double value)
-{
-	mParams[parname] = value;
-}
-
-G4double TntNeutronDecayIntermediate::GetDecayParameter(const G4String& parname)
-{
-	std::map<G4String, G4double>::iterator it = mParams.find(parname);
-	if(it == mParams.end()) {
-		G4cerr << "ERROR:: Invalid parameter name: " << parname << G4endl;
-		throw parname;
-	}
-	return it->second;
+	mInitial = momentum;
 }
 
 void TntNeutronDecayIntermediate::SetFinal(G4int indx, const G4LorentzVector& v)
@@ -101,32 +85,21 @@ TntOneNeutronDecay::~TntOneNeutronDecay()
 
 G4double TntOneNeutronDecay::Generate(G4bool uniformWeight)
 {
-	G4double e0 = GetDecayParameter("energy");
-	G4double ex = e0;
 	G4double mOut[2] = { mFragMass, kNeutronMass };
 
-	if(ex+mBeamMass < mFragMass + kNeutronMass) {
+	if(mInitial.m() < mFragMass + kNeutronMass) {
 		G4cerr << "ERROR:: TntTwoNeutronDecayPhaseSpace:: Not enough energy for decay!" << G4endl;
-		G4cerr << "MASSES (MBeam, ex, MF, MN):: " << mBeamMass << ", " << ex  << ", "
+		G4cerr << "MASSES (MBeam+ex, MF, MN):: " << mInitial.m() << ", "
 					 << mOut[0] << ", " << mOut[1] << G4endl;
 		throw false;
 	}
-if(GetDecayParameter("width") > 1e-6) {
-		do {
-			ex = CLHEP::RandBreitWigner::shoot(e0, GetDecayParameter("width"));
-		} while(ex+mBeamMass < mFragMass+kNeutronMass);
-	}
-	
-	G4double M0 = mBeamMass + ex;
-	G4double Etot = sqrt(mInitialMomentum.mag2() + M0*M0);
-	G4LorentzVector vBeam(mInitialMomentum, Etot);
-	SetFinal(0, vBeam); // Beam
+	SetFinal(0, mInitial); // Initial excited nucleus
 
 	G4GenPhaseSpace gen;
-	G4bool possible = gen.SetDecay(vBeam, 2, mOut);
+	G4bool possible = gen.SetDecay(mInitial, 2, mOut);
 	if(!possible) {
 		G4cerr << "ERROR:: TntOneNeutronDecay:: Not enough energy for decay!" << G4endl;
-		G4cerr << "MASSES (MBeam, ex, MF, MN):: " << mBeamMass << ", " << ex  << ", "
+		G4cerr << "MASSES (MBeam+ex, MF, MN):: " << mInitial.m() << ", "
 					 << mOut[0] << ", " << mOut[1] << G4endl;
 		throw possible;
 	}
@@ -134,6 +107,7 @@ if(GetDecayParameter("width") > 1e-6) {
 	G4double weight = do_weighted_generation(uniformWeight, gen);
 	SetFinal(1, *(gen.GetDecay(0))); // fragment
 	SetFinal(2, *(gen.GetDecay(1))); // neutron
+	
 	return weight;
 }
 
@@ -153,31 +127,20 @@ TntTwoNeutronDecayPhaseSpace::~TntTwoNeutronDecayPhaseSpace()
 
 G4double TntTwoNeutronDecayPhaseSpace::Generate(G4bool uniformWeight)
 {
-	G4double e0 = GetDecayParameter("energy");
-	G4double ex = e0;
 	G4double mOut[3] = { mFragMass, kNeutronMass, kNeutronMass };
-	if(ex+mBeamMass < mFragMass + 2*kNeutronMass) {
+	if(mInitial.m() < mFragMass + 2*kNeutronMass) {
 		G4cerr << "ERROR:: TntTwoNeutronDecayPhaseSpace:: Not enough energy for decay!" << G4endl;
-		G4cerr << "MASSES (MBeam, ex, MF, 2*MN):: " << mBeamMass << ", " << ex  << ", "
+		G4cerr << "MASSES (MBeam+ex, MF, 2*MN):: " << mInitial.m() << ", "
 					 << mOut[0] << ", " << 2*mOut[1] << G4endl;
 		throw false;
 	}
-	if(GetDecayParameter("width") > 1e-6) {
-		do {
-			ex = CLHEP::RandBreitWigner::shoot(e0, GetDecayParameter("width"));
-		} while(ex+mBeamMass < mFragMass + 2*kNeutronMass);
-	}
-	
-	G4double M0 = mBeamMass + ex;
-	G4double Etot = sqrt(mInitialMomentum.mag2() + M0*M0);
-	G4LorentzVector vBeam(mInitialMomentum, Etot);
-	SetFinal(0, vBeam); // Beam
+	SetFinal(0, mInitial);
 
 	G4GenPhaseSpace gen;
-	G4bool possible = gen.SetDecay(vBeam, 3, mOut);
+	G4bool possible = gen.SetDecay(mInitial, 3, mOut);
 	if(!possible) {
 		G4cerr << "ERROR:: TntTwoNeutronDecayPhaseSpace:: Not enough energy for decay!" << G4endl;
-		G4cerr << "MASSES (MBeam, ex, MF, 2*MN):: " << mBeamMass << ", " << ex  << ", "
+		G4cerr << "MASSES (MBeam+ex, MF, 2*MN):: " << mInitial.m() << ", "
 					 << mOut[0] << ", " << 2*mOut[1] << G4endl;
 		throw possible;
 	}
@@ -186,5 +149,35 @@ G4double TntTwoNeutronDecayPhaseSpace::Generate(G4bool uniformWeight)
 	SetFinal(1, *(gen.GetDecay(0))); // fragment
 	SetFinal(2, *(gen.GetDecay(1))); // neutron 1
 	SetFinal(3, *(gen.GetDecay(2))); // neutron 1
+
 	return weight;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TntNeutronDecay* TntNeutronDecayFactory::Create()
+{
+	if(false) { }
+	else if(GetDecayType() == "1n") { return new TntOneNeutronDecay(); }
+	else if(GetDecayType() == "2nPhaseSpace") { return new TntTwoNeutronDecayPhaseSpace(); }
+//	else if(GetDecayType() == "2nDiNeutron")  { return new TntTwoNeutronDecayDiNeutron();  }
+	else {
+		G4cerr << "TntNeutronDecayFactory::Create:: Invalid GetDecayType():: " << GetDecayType()
+					 << G4endl;
+		throw GetDecayType();
+	}
 }

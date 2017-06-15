@@ -11,11 +11,20 @@ class TntNeutronDecay {
 public:
 	TntNeutronDecay() { }
 	virtual ~TntNeutronDecay() { }
-	virtual void SetBeam(G4int Z, G4int A, const G4ThreeVector& momentum) = 0;
-	virtual void SetDecayParameter(const G4String& parname, G4double value) = 0;	
-	virtual G4double GetDecayParameter(const G4String& parname) = 0;
+	virtual void SetInitial(G4int Z, G4int A, const G4LorentzVector& momentum) = 0;
+	virtual G4int GetNumberOfNeutrons() const = 0;
 	virtual G4double Generate(G4bool uniformWeight) = 0;
 	virtual const G4LorentzVector& GetFinal(G4int indx) const = 0;
+};
+
+// Factory class
+class TntNeutronDecayFactory {
+public:
+	void SetDecayType(G4String type) { fDecayType = type; }
+	const G4String& GetDecayType() const { return fDecayType; }
+	TntNeutronDecay* Create();
+private:
+	G4String fDecayType;
 };
 
 
@@ -26,13 +35,12 @@ class TntNeutronDecayIntermediate : public TntNeutronDecay {
 public:
 	TntNeutronDecayIntermediate(G4int number_of_neutrons_emitted);
 	virtual ~TntNeutronDecayIntermediate();
-	virtual void SetBeam(G4int Z, G4int A, const G4ThreeVector& momentum);
-	virtual void SetDecayParameter(const G4String& parname, G4double value);
-	virtual G4double GetDecayParameter(const G4String& parname);
+	virtual void SetInitial(G4int Z, G4int A, const G4LorentzVector& momentum);
+	virtual G4int GetNumberOfNeutrons() const { return mNumberOfNeutronsEmitted; }
 	virtual G4double Generate(G4bool uniformWeight) = 0;
-	virtual const G4LorentzVector& GetFinal(G4int indx) const;
 protected:
 	void SetFinal(G4int indx, const G4LorentzVector& v);
+	virtual const G4LorentzVector& GetFinal(G4int indx) const;
 private:
 	G4int mNumberOfNeutronsEmitted;
 	std::map<G4String, G4double> mParams;
@@ -40,7 +48,7 @@ private:
 protected:
 	G4double mBeamMass; // Ground State Mass of initial nucleus
 	G4double mFragMass; // Rest mass of decay fragment
-	G4ThreeVector mInitialMomentum;
+	G4LorentzVector mInitial;
 };
 
 // Concrete class for single neutron decay, Breit Wigner

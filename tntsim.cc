@@ -68,7 +68,7 @@
 #include "G4PhysicalConstants.hh"
 
 #include "TntInputFileParser.hh"
-
+#include "TntReaction.hh"
 
 using namespace std;
 
@@ -151,6 +151,24 @@ int main(int argc, char** argv)
 	t->Write();
 	f->Close();
 	return 0;
+
+//////////
+	
+	TntRngCustom c("zero.dat");
+	TFile*f = new TFile("test123.root","recreate");
+	TTree*t = new TTree("t","");
+	TLorentzVector *v3=0,*v4=0;
+	t->Branch("v3",&v3);	t->Branch("v4",&v4);
+	TntReaction r(3,7,1,2,2,6,15,1.7,"");
+	for(int i=0;i<100000;++i){
+		r.Generate();
+		v3->SetXYZT(r.GetEjectile().x(), r.GetEjectile().y(), r.GetEjectile().z(), r.GetEjectile().t());
+		v4->SetXYZT(r.GetRecoil().x(), r.GetRecoil().y(), r.GetRecoil().z(), r.GetRecoil().t());
+		t->Fill();}
+	t->Write();
+	f->Close();
+	delete f;
+	return 0;
 #endif
 	
 	G4String FILEOUT_ = "";
@@ -169,8 +187,8 @@ int main(int argc, char** argv)
 		}
 		else inputfile = argv[i];
 	}
-
-	TntInputFileParser parser;
+	
+	TntInputFileParser<TntGlobalParams> parser(TntGlobalParams::Instance());
 	parser.AddInput("energy",      &TntGlobalParams::SetNeutronEnergy);
 	parser.AddInput("beamtype",    &TntGlobalParams::SetBeamType);
 	parser.AddInput("rootfile",    &TntGlobalParams::SetRootFileName);
@@ -190,6 +208,39 @@ int main(int argc, char** argv)
 
 	if(FILEOUT_ != "") TntGlobalParams::Instance()->SetRootFileName(FILEOUT_);
 	G4cerr << "Running with RNG seed:: " << CLHEP::HepRandom::getTheSeed() << G4endl;
+
+	// G4cerr << TntGlobalParams::Instance()->GetDetectorZ() << "\t"
+	// 			 << TntGlobalParams::Instance()->GetNeutronEnergy() << G4endl;
+
+
+	// TntReactionFactory factory;
+	// TntInputFileParser<TntReactionFactory> reacParser(&factory);
+	// reacParser.AddInput("beam", &TntReactionFactory::SetBeam);
+	// reacParser.AddInput("target", &TntReactionFactory::SetTarget);
+	// reacParser.AddInput("ejectile", &TntReactionFactory::SetEjectile);
+	// reacParser.AddInput("ebeam", &TntReactionFactory::SetEbeamPerA);
+	// reacParser.AddInput("ex", &TntReactionFactory::SetEx);
+	// reacParser.AddInput("width", &TntReactionFactory::SetWidth);
+	// reacParser.AddInput("angdist", &TntReactionFactory::SetAngDistFile);
+
+	// reacParser.Parse("reaction.dat");
+	// std::auto_ptr<TntReaction> r(factory.CreateReaction());
+
+	// TFile*f = new TFile("test123.root","recreate");
+	// TTree*t = new TTree("t","");
+	// TLorentzVector *v3=0,*v4=0;
+	// t->Branch("v3",&v3);	t->Branch("v4",&v4);
+	// for(int i=0;i<100000;++i){
+	// 	r->Generate();
+	// 	v3->SetXYZT(r->GetEjectile().x(), r->GetEjectile().y(), r->GetEjectile().z(), r->GetEjectile().t());
+	// 	v4->SetXYZT(r->GetRecoil().x(), r->GetRecoil().y(), r->GetRecoil().z(), r->GetRecoil().t());
+	// 	t->Fill();}
+	// t->Write();
+	// f->Close();
+	// delete f;
+
+	
+	// return 1;
 	
 	
 //by Shuya 160421. All copied from tntsim.cc
