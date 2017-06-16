@@ -82,7 +82,7 @@ G4bool TntReaction::Generate()
 	G4LorentzVector v1cm = v1.boost(-bv);
 	G4LorentzVector v2cm = v1.boost(-bv);
 
-	G4double ex = fEx->Generate();
+	G4double ex = fEx->GenerateAbove(0);
 	
 	if(fM1+fM2+fEbeam < fM3+fM4+ex) {
 		G4cerr << "ERROR:: TntReaction::SetInputs:: Not enough energy for reaction!" << G4endl;

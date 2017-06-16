@@ -8,6 +8,9 @@ public:
 	TntRng() { }
 	virtual ~TntRng() { }
 	virtual G4double Generate() = 0;
+	G4double GenerateAbove(G4double low);
+	G4double GenerateBelow(G4double high);
+	G4double GenerateBetween(G4double low, G4double high);
 };
 
 class TntRngGaus : public TntRng {

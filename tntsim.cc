@@ -246,7 +246,7 @@ int main(int argc, char** argv)
 //by Shuya 160421. All copied from tntsim.cc
 //  G4int numberOfEvent = 10;
   // Set VerboseFlag to "1" to run in verbose mode
-  G4int VerboseFlag = 1;
+//  G4int VerboseFlag = 1;
   // Set VisFlag to "1" to run in visualization mode
   G4int VisFlag = 0;
   //**** Note! You should run fewer events (such as < 1000) when using the viewer!

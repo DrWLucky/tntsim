@@ -6,7 +6,28 @@
 #include "TntRng.hh"
 
 
+// TNT RNG (BASE CLASS) //
 
+G4double TntRng::GenerateAbove(G4double low)
+{
+	G4double value;
+	do { value = Generate(); } while (value < low);
+	return value;
+}
+
+G4double TntRng::GenerateBelow(G4double high)
+{
+	G4double value;
+	do { value = Generate(); } while (value >= high);
+	return value;
+}
+
+G4double TntRng::GenerateBetween(G4double low, G4double high)
+{
+	G4double value;
+	do { value = Generate(); } while (value < low || value >= high);
+	return value;
+}
 
 
 // TNT RNG UNIFORM //

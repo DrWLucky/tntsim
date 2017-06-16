@@ -105,9 +105,9 @@ public:
 	
 	
 private:
-	void tab_to_space(std::string& s)
+	void tab_to_space(std::string& str)
 		{
-			for(std::string::iterator it = s.begin(); it != s.end(); ++it) {
+			for(std::string::iterator it = str.begin(); it != str.end(); ++it) {
 				if(*it == '\t') *it = ' ';
 			}
 		}
