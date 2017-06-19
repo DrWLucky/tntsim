@@ -28,8 +28,10 @@ public:
 								 const G4String& angDistFile);
 	
 	G4bool Generate();
+	const G4LorentzVector& GetBeam()     const { return fBeam;     }
+	const G4LorentzVector& GetTarget()   const { return fTarget;   }
 	const G4LorentzVector& GetEjectile() const { return fEjectile; }
-	const G4LorentzVector& GetRecoil() const { return fRecoil; }
+	const G4LorentzVector& GetRecoil()   const { return fRecoil;   }
 	G4double GetThetaCM() const { return fThetaCM; }
 	
 	G4int GetZ1() const {return fZ1;}
@@ -45,7 +47,7 @@ public:
 private:
 	G4int fZ1, fZ2, fA1, fA2, fZ3, fA3, fZ4, fA4;
 	G4double fM1, fM2, fM3, fM4, fEbeam, fThetaCM;
-	G4LorentzVector fEjectile, fRecoil;							
+	G4LorentzVector fBeam, fTarget, fEjectile, fRecoil;							
 	std::auto_ptr<TntRng> fAngdist, fEx;
 };
 

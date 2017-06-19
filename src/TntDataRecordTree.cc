@@ -324,7 +324,7 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
   TntEventTree->Branch("PrimaryZ",&PrimaryZ,"PrimaryZ/D");
 	TntEventTree->Branch("PrimaryMomentum", &PrimaryMomentum);
 	//
-	// Secondary particles involved in the reaction
+	// Secondary particles involved in the reaction (heavy fragment!!)
 	SecondaryMomentum = 0;
 	SecondaryPosition = 0;
 
@@ -333,6 +333,12 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 	EjectilePosition = 0;
 	ReacThetaCM = 0;
 	TntEventTree->Branch("ReacThetaCM", &ReacThetaCM, "ReacThetaCM/D");
+
+	// beam & target from population reaction
+	BeamMomentum = 0;
+	BeamPosition = 0;
+	mTrgt = 0;
+	TntEventTree->Branch("targetMass", &mTrgt, "targetMass/D");
 
 //by Shuya 160422. Making tree for photon hits on each pmt.
   TntEventTree2 = new TTree("t2","Tnt Scintillator Simulation Data");
@@ -454,7 +460,9 @@ void TntDataRecordTree::senddataSecondary(const G4ThreeVector& pos, const G4Lore
 	SecondaryMomentum->SetPxPyPzE(mom.px(), mom.py(), mom.pz(), mom.e());
 }
 
-void TntDataRecordTree::senddataEjectile(const G4ThreeVector& pos, const G4LorentzVector& mom, const G4double& ThetaCM)
+void TntDataRecordTree::senddataEjectile(const G4ThreeVector& pos,
+																				 const G4LorentzVector& mom,
+																				 const G4double& ThetaCM)
 {
 	if(EjectileMomentum == 0) {
 		TntEventTree->Branch("EjectileMomentum", &EjectileMomentum);
@@ -466,6 +474,22 @@ void TntDataRecordTree::senddataEjectile(const G4ThreeVector& pos, const G4Loren
 	EjectilePosition->SetXYZ(pos.x(), pos.y(), pos.z());
 	EjectileMomentum->SetPxPyPzE(mom.px(), mom.py(), mom.pz(), mom.e());
 	ReacThetaCM = ThetaCM;
+}
+
+void TntDataRecordTree::senddataReaction(const G4ThreeVector& pos,
+																				 const G4LorentzVector& mom,
+																				 const G4double& targetMass)
+{
+	if(BeamMomentum == 0) {
+		TntEventTree->Branch("BeamMomentum", &BeamMomentum);
+	}
+	if(BeamPosition == 0) {
+		TntEventTree->Branch("BeamPosition", &BeamPosition);
+	}
+
+	BeamPosition->SetXYZ(pos.x(), pos.y(), pos.z());
+	BeamMomentum->SetPxPyPzE(mom.px(), mom.py(), mom.pz(), mom.e());
+	mTrgt = targetMass;
 }
 
 //by Shuya 160408

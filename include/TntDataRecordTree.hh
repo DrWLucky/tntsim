@@ -136,10 +136,13 @@ private:
 	TLorentzVector* PrimaryMomentum;
 	TLorentzVector* SecondaryMomentum; // recoil momentum if neutron decay
 	TLorentzVector* EjectileMomentum;  // ejectile from population reaction [e.g. (d,3He)]
+	TLorentzVector* BeamMomentum;      // beam from population reaction
+	G4double mTrgt;                    // mass of target in population reaction
 	G4double ReacThetaCM; // COM angle of reaction
 	
 	TVector3* SecondaryPosition; // other particles involved in reaction
-	TVector3* EjectilePosition; // other particles involved in reaction
+	TVector3* EjectilePosition;  // other particles involved in reaction
+	TVector3* BeamPosition;      //
 	
 
   G4double FirstHitTime;
@@ -209,7 +212,10 @@ private:
   void senddataPG(double value1);
 	void senddataPrimary(const G4ThreeVector& posn, const G4ThreeVector& momentum);
 	void senddataSecondary(const G4ThreeVector& posn, const G4LorentzVector& momentum);
-	void senddataEjectile(const G4ThreeVector& posn, const G4LorentzVector& momentum, const G4double& ThetaCM);
+	void senddataEjectile(const G4ThreeVector& posn, const G4LorentzVector& momentum,
+												const G4double& ThetaCM);
+	void senddataReaction(const G4ThreeVector& beamPosn, const G4LorentzVector& beamMomentum,
+												const G4double& targetMass);
   void senddataEV(int type, double value1);
   void senddataPosition(const G4ThreeVector& pos);
 	void senddataHits(const std::vector<Hit_t>& hit, bool sortTime);

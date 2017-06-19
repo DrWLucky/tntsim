@@ -104,6 +104,9 @@ G4bool TntReaction::Generate()
 	fEjectile.boost(bv);
 	fRecoil.boost(bv);
 
+	fBeam = v1;
+	fTarget = v2;
+	
 	return true;
 }																	
 

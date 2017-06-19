@@ -537,7 +537,13 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 		fParticleGun->SetParticleEnergy(eNeut);
 		TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
 		TntDataOutPG->senddataSecondary(G4ThreeVector(0,0,beam_z), p_recoil);
-		TntDataOutPG->senddataEjectile(G4ThreeVector(0,0,beam_z), reac->GetEjectile(), reac->GetThetaCM());
+		TntDataOutPG->senddataEjectile(G4ThreeVector(0,0,beam_z), 
+																	 reac->GetEjectile(), 
+																	 reac->GetThetaCM());
+		TntDataOutPG->senddataReaction(G4ThreeVector(0,0,beam_z), 
+																	 reac->GetBeam(),
+																	 reac->GetTarget().m());
+																	 
 
 		if(whichNeutron == nNeut-1) { whichNeutron = 0; }
 		else                        { ++whichNeutron;		}
