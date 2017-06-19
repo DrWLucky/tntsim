@@ -76,6 +76,9 @@ G4bool TntReaction::Generate()
 {
 	G4LorentzVector v1 = ::createLorentzVector(fM1, fEbeam, 0, 0);
 	G4LorentzVector v2 = ::createLorentzVector(fM2, 0, 0, 0);
+	fBeam = v1;
+	fTarget = v2;
+
 	G4LorentzVector vinv = v1+v2;
 	G4ThreeVector bv = vinv.boostVector();
 
@@ -103,9 +106,6 @@ G4bool TntReaction::Generate()
 																	fThetaCM, CLHEP::pi - phiCM);
 	fEjectile.boost(bv);
 	fRecoil.boost(bv);
-
-	fBeam = v1;
-	fTarget = v2;
 	
 	return true;
 }																	

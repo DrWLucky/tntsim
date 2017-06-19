@@ -473,6 +473,7 @@ void TntDataRecordTree::senddataEjectile(const G4ThreeVector& pos,
 
 	EjectilePosition->SetXYZ(pos.x(), pos.y(), pos.z());
 	EjectileMomentum->SetPxPyPzE(mom.px(), mom.py(), mom.pz(), mom.e());
+
 	ReacThetaCM = ThetaCM;
 }
 
