@@ -2,63 +2,114 @@
 #define TNT_INPUT_FILE_PARSER_HEADER_FILE_12345
 #include <map>
 #include <string>
+#include <vector>
 #include <cstring>
 #include <sstream>
 #include <cstring>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include <vector>
+#include <stdexcept>
 #include "globals.hh"
 
 
 class TntKeyConverterBase {
 public:
-	virtual void Convert(const std::string&) = 0;
+	virtual void Convert(const std::vector<std::string>&) = 0;
 	virtual ~TntKeyConverterBase() { }
 };
 
-template<class T, class ParameterSetter_t> 
-class TntKeyConverter : public TntKeyConverterBase {
-public:
-	TntKeyConverter(ParameterSetter_t* SetterClassInstance,
-									void (ParameterSetter_t::*setter)(T) ):
-		mInstance(SetterClassInstance),
-		mGlobalSetter(setter) { }
 
-	virtual ~TntKeyConverter() 
+namespace {
+struct cout_par { 
+	void operator()(const std::string& par) { G4cerr << "\t" << par << "\n"; } 
+}; }
+	
+
+template<class T, class ParameterSetter_t> 
+class TntKeyConverter_1 : public TntKeyConverterBase {
+public:
+	TntKeyConverter_1(ParameterSetter_t* SetterClassInstance,
+										void (ParameterSetter_t::*setter)(T) ):
+		mInstance(SetterClassInstance),
+		mSetter(setter) { }
+
+	virtual ~TntKeyConverter_1() 
 		{  }
 
-	void Convert(const std::string& str)
+	void Convert(const std::vector<std::string>& args)
 		{
-			std::stringstream sstr(str);
-			T t; sstr >> t;
-			mGlobalSetter(mInstance, t);
+			try {
+				std::stringstream sstr(args.at(0));
+				T t; sstr >> t;
+				mSetter(mInstance, t);
+			} catch (const std::out_of_range& oor) {
+				G4cerr << "ERROR:: TntKeyConverter_1:: " 
+							 << "Less than one parameters supplied.\n";
+				G4cerr << "Skipping setting these parameters!" << G4endl;
+			}		
 		}
 	
 private:
 	ParameterSetter_t *mInstance;
-	std::mem_fun1_t<void, ParameterSetter_t, T> mGlobalSetter;
+	std::mem_fun1_t<void, ParameterSetter_t, T> mSetter;
 };
 
 
-template<class ParameterSetter_t>
+template<class T, class T1, class ParameterSetter_t> 
+class TntKeyConverter_2 : public TntKeyConverterBase {
+public:
+	TntKeyConverter_2(ParameterSetter_t* SetterClassInstance,
+										void (ParameterSetter_t::*setter)(T, T1) ):
+		mInstance(SetterClassInstance),
+		mSetter(setter) { }
+
+	virtual ~TntKeyConverter_2() 
+		{  }
+
+	void Convert(const std::vector<std::string>& args)
+		{
+			try {
+				std::stringstream sstr(args.at(0));
+				T t; sstr >> t;
+
+				std::stringstream sstr1(args.at(1));
+				T1 t1; sstr1 >> t1;
+				
+				(mInstance->*mSetter)(t, t1);
+			} catch (const std::out_of_range& oor) {
+				G4cerr << "ERROR:: TntKeyConverter_2:: " 
+							 << "Less than two parameters supplied.\n"
+							 << "Valid parameters are:\n";
+				std::for_each(args.begin(), args.end(), cout_par());
+				G4cerr << "Skipping setting these parameters!" << G4endl;
+			}
+		}
+	
+private:
+	ParameterSetter_t *mInstance;
+	void (ParameterSetter_t::*mSetter)(T, T1);
+};
+
+#if 0
+template<class ParameterSetter_t, class MemFun_t>
 class TntKeyConverter<std::string, ParameterSetter_t> : public TntKeyConverterBase {
 public:
 	TntKeyConverter( ParameterSetter_t* SetterClassInstance,
 									 void (ParameterSetter_t::*setter)(G4String) ):
 		mInstance(SetterClassInstance),
-		mGlobalSetter(setter) { }
+		mSetter(setter) { }
 	virtual ~TntKeyConverter() { }
 	void Convert(const std::string& str)
 	{
-		mGlobalSetter(mInstance, str.c_str());
+		mSetter(mInstance, str.c_str()); 
 	}
 	
 private:
 	ParameterSetter_t *mInstance;
-	std::mem_fun1_t<void, ParameterSetter_t, G4String> mGlobalSetter;
+	MemFun_t mSetter;
 };
+#endif
 
 template<class ParameterSetter_t> class TntInputFileParser {
 public:
@@ -87,9 +138,11 @@ public:
 				std::vector<std::string> tokens = tokenize(line);
 				std::vector<std::string>::iterator itTokens = tokens.begin();
 				if(tokens.size() > 1) {
-					irange_t range = mInputs.equal_range(*itTokens++);
-					for(imap_t::iterator it = range.first; it != range.second; ++it) {
-						it->second->Convert(*itTokens++);
+					imap_t::iterator it = mInputs.find(*itTokens++);
+					if(it != mInputs.end()) {
+						std::vector<std::string> parameters;
+						while(itTokens != tokens.end()) { parameters.push_back(*itTokens++); }
+						it->second->Convert(parameters);
 					}
 				}
 			}
@@ -98,11 +151,19 @@ public:
 	template<class T>
 	void AddInput(const std::string& key, void (ParameterSetter_t::*setter) (T))
 		{
-			TntKeyConverter<T, ParameterSetter_t> *keyConverter = 
-				new TntKeyConverter<T, ParameterSetter_t> (mSetter, setter);
+			TntKeyConverterBase *keyConverter = 
+				new TntKeyConverter_1<T, ParameterSetter_t>	(mSetter, setter);
 			mInputs.insert(std::make_pair(key, keyConverter));
 		}
-	
+
+	template<class T, class T1>
+	void AddInput(const std::string& key, void (ParameterSetter_t::*setter) (T, T1))
+		{
+			TntKeyConverterBase *keyConverter = 
+				new TntKeyConverter_2<T, T1, ParameterSetter_t> (mSetter, setter);
+			mInputs.insert(std::make_pair(key, keyConverter));
+		}
+
 	
 private:
 	void tab_to_space(std::string& str)

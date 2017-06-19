@@ -119,6 +119,12 @@ G4String macfile = "", inputfile = "";
 // 	}
 // } }
 
+struct Test {
+	void Set(int p1, G4String p2) { p1_ = p1; p2_ = p2; }
+	int p1_;
+	G4String p2_;
+} test123;
+
 // #include "TLorentzVector.h"
 int main(int argc, char** argv)
 {
@@ -209,6 +215,14 @@ int main(int argc, char** argv)
 	if(FILEOUT_ != "") TntGlobalParams::Instance()->SetRootFileName(FILEOUT_);
 	G4cerr << "Running with RNG seed:: " << CLHEP::HepRandom::getTheSeed() << G4endl;
 
+	// G4cerr << TntGlobalParams::Instance()->GetRootFileName() << " <<<< FNAME:: " << G4endl;
+
+	// TntInputFileParser<Test> testParser(&test123);
+	// testParser.AddInput("test", &Test::Set);
+	// testParser.Parse(inputfile);
+	// G4cerr << test123.p1_<<"\t"<<test123.p2_<<G4endl;
+	// return 0;
+	
 	// G4cerr << TntGlobalParams::Instance()->GetDetectorZ() << "\t"
 	// 			 << TntGlobalParams::Instance()->GetNeutronEnergy() << G4endl;
 

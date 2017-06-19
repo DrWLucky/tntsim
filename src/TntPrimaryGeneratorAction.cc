@@ -504,6 +504,7 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 			TntNeutronDecayFactory decayFactory;
 			TntInputFileParser<TntNeutronDecayFactory> decayParser(&decayFactory);
 			decayParser.AddInput("decaytype", &TntNeutronDecayFactory::SetDecayType);
+			decayParser.AddInput("decayoption", &TntNeutronDecayFactory::SetDecayOption);
 			decayParser.Parse(BeamType);
 
 			decay = decayFactory.Create();
