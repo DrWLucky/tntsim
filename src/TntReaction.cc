@@ -24,7 +24,7 @@ TntReaction::TntReaction(G4int beamZ,   G4int beamA,
 												 G4double exciteRecoil,
 												 G4double widthRecoil,
 												 const G4String& angDistFile):
-	fAngdist(0), fEx(0)
+	fAngdist(0), fEx(0), fEmX(0), fEmY(0)
 {
 	fThetaCM = 0;
 	SetInputs(beamZ, beamA, targetZ, targetA, recoilZ, recoilA,
@@ -80,9 +80,36 @@ G4bool TntReaction::Generate()
 {
 	TntRngGaus rng_beam(fEbeam, fEbeamSpread);
 	G4double ebeam = rng_beam.GenerateAbove(0);
-	
-	G4LorentzVector v1 = ::createLorentzVector(fM1, ebeam, 0, 0);
-	G4LorentzVector v2 = ::createLorentzVector(fM2, 0, 0, 0);
+
+	G4double x=0,tx=0,y=0,ty=0;
+	if(fEmX.get()) {
+		TntRngGaus2d rng_xtx(fEmX->GetSigmaX(), 
+												 fEmX->GetSigmaTX(),
+												 fEmX->GetRho());
+		std::pair<G4double, G4double> xtx = 
+			TntRngGaus2d(fEmX->GetSigmaX(), fEmX->GetSigmaTX(), fEmX->GetRho()).Generate();
+		x  = xtx.first * mm + fEmX->GetX0() * mm;
+		tx = xtx.second * mrad;
+	}
+	if(fEmY.get()) {
+		TntRngGaus2d rng_yty(fEmY->GetSigmaX(), 
+												 fEmY->GetSigmaTX(),
+												 fEmY->GetRho());
+		std::pair<G4double, G4double> yty = 
+			TntRngGaus2d(fEmY->GetSigmaX(), fEmY->GetSigmaTX(), fEmY->GetRho()).Generate();
+		y  = yty.first * mm + fEmY->GetX0() * mm;
+		ty = yty.second * mrad;
+	}
+
+	fBeamPos.set(x, y, 0);
+
+	G4double p1 = sqrt(pow(fM1+ebeam, 2) - fM1*fM1);
+	G4double p1x = p1*sin(tx/rad);
+	G4double p1y = p1*sin(ty/rad);
+	G4double p1z = sqrt(p1*p1 - p1x*p1x - p1y*p1y);
+		
+	G4LorentzVector v1(p1x, p1y, p1z, fM1+ebeam);
+	G4LorentzVector v2(0,0,0,fM2);
 	fBeam = v1;
 	fTarget = v2;
 

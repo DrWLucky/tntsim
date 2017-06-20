@@ -1,16 +1,24 @@
 #ifndef TNT_RNG_HH
 #define TNT_RNG_HH
 #include <vector>
+#include <utility>
 #include <globals.hh>
 
 class TntRng {
 public:
 	TntRng() { }
 	virtual ~TntRng() { }
-	virtual G4double Generate() = 0;
+	virtual G4double Generate() = 0;	
 	G4double GenerateAbove(G4double low);
 	G4double GenerateBelow(G4double high);
 	G4double GenerateBetween(G4double low, G4double high);
+};
+
+class TntRng2d {
+public:
+	TntRng2d() { }
+	virtual ~TntRng2d() { }
+	virtual std::pair<G4double, G4double> Generate() = 0;
 };
 
 class TntRngGaus : public TntRng {
@@ -53,6 +61,14 @@ class TntRngCustomAngDist : public TntRngCustom {
 public:
 	TntRngCustomAngDist(const G4String& filename);
 	~TntRngCustomAngDist();
+};
+
+class TntRngGaus2d : public TntRng2d {
+public:
+	TntRngGaus2d(G4double sigma_x, G4double sigma_y, G4double rho);
+	std::pair<G4double, G4double> Generate();
+private:
+	G4double mSigmaX, mSigmaY, mRho;
 };
 
 #endif

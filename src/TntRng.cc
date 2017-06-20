@@ -224,12 +224,44 @@ TntRngCustomAngDist::TntRngCustomAngDist(const G4String& filename):
   }
 }
 
-//      // multiply CStemp by sin(theta)
-//       TF1* fsin = new TF1("sin",Form("1/(sin(x*%f/180.))",M_PI),0,180);
-//       CStemp->Divide(fsin,1);
-//       SetCrossSectionHist(CStemp);
-//       delete fsin;
-//     }
-
 TntRngCustomAngDist::~TntRngCustomAngDist()
 { }
+
+
+
+// TNT RNG GAUS 2D //
+
+TntRngGaus2d::TntRngGaus2d(G4double sigma_x, G4double sigma_y, G4double rho):
+	mSigmaX(sigma_x),
+	mSigmaY(sigma_y),
+	mRho(rho)
+{  }
+
+std::pair<G4double, G4double> TntRngGaus2d::Generate()
+{
+	// Routine taken from GSL source code (GPL licensed)
+	// Available online at:
+	// https://github.com/LuaDist/gsl/blob/master/randist/bigauss.c
+	//
+	double u, v, r2, scale;
+	TntRngUniform rng;
+	
+  do
+    {
+      /* choose x,y in uniform square (-1,-1) to (+1,+1) */
+
+      u = -1 + 2 * rng.Generate();
+      v = -1 + 2 * rng.Generate();
+
+      /* see if it is in the unit circle */
+      r2 = u * u + v * v;
+    }
+  while (r2 > 1.0 || r2 == 0);
+
+  scale = sqrt (-2.0 * log (r2) / r2);
+
+  double x = mSigmaX * u * scale;
+  double y = mSigmaY * (mRho * u + sqrt(1 - mRho*mRho) * v) * scale;
+
+	return std::make_pair(x, y);
+}

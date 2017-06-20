@@ -155,13 +155,6 @@ void generate_from_6he(const G4double& ebeam,
 }
 #endif
 
-
-struct BeamPos_t {
-	double x, dx, y, dy;
-	void set_x(G4double x_, G4double dx_) { x=x_;dx=dx_;}
-	void set_y(G4double y_, G4double dy_) { y=y_;dy=dy_;}
-};
-
 }
 
 
@@ -485,10 +478,12 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 	else 
 	{
 		// Attempt to reac from reaction file //
+		G4String reacFile = BeamType;
 		static TntReaction* reac = 0;
 		static TntNeutronDecay* decay = 0;
-		static BeamPos_t beamXY;
 		if(!reac) {
+			// Set reaction parameters
+			//
 			TntReactionFactory factory;
 			TntInputFileParser<TntReactionFactory> reacParser(&factory);
 			reacParser.AddInput("beam",     &TntReactionFactory::SetBeam);
@@ -500,7 +495,7 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 			reacParser.AddInput("angdist",  &TntReactionFactory::SetAngDistFile);
 			try 
 			{ 
-				reacParser.Parse(BeamType); 
+				reacParser.Parse(reacFile); 
 			}
 			catch (std::string s)  // NOT A VALID FILE
 			{
@@ -510,28 +505,42 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 
 			reac = factory.CreateReaction();
 
+
+			// Neutron decay parameters
+			//
 			TntNeutronDecayFactory decayFactory;
 			TntInputFileParser<TntNeutronDecayFactory> decayParser(&decayFactory);
 			decayParser.AddInput("decaytype", &TntNeutronDecayFactory::SetDecayType);
 			decayParser.AddInput("decayoption", &TntNeutronDecayFactory::SetDecayOption);
-			decayParser.Parse(BeamType);
+			decayParser.Parse(reacFile);
 
 			decay = decayFactory.Create();
 
-			TntInputFileParser<BeamPos_t> posParser(&beamXY);
-			posParser.AddInput("xbeam", &BeamPos_t::set_x);
-			posParser.AddInput("ybeam", &BeamPos_t::set_y);
-			posParser.Parse(BeamType);
+			// Beam Parameters
+			//
+			{ // X //
+				TntBeamEmittance *emX = new TntBeamEmittance();
+				TntInputFileParser<TntBeamEmittance> parseEmX(emX);
+				parseEmX.AddInput("embeamx", &TntBeamEmittance::SetTwist);
+				parseEmX.AddInput("beamx", &TntBeamEmittance::SetX0);
+				parseEmX.Parse(reacFile);
+				if(emX->GetEpsilon()) { reac->SetEmittanceX(emX); } // takes ownership!
+				else { delete emX; }
+			}
+			{ // Y //
+				TntBeamEmittance *emY = new TntBeamEmittance();
+				TntInputFileParser<TntBeamEmittance> parseEmY(emY);
+				parseEmY.AddInput("embeamy", &TntBeamEmittance::SetTwist);
+				parseEmY.AddInput("beamy", &TntBeamEmittance::SetX0);
+				parseEmY.Parse(reacFile);
+				if(emY->GetEpsilon()) { reac->SetEmittanceY(emY); } // takes ownership!
+				else { delete emY; }
+			}	
 		}
 
-		G4double beam_x = TntRngGaus(beamXY.x, beamXY.dx).Generate();
-		G4double beam_y = TntRngGaus(beamXY.y, beamXY.dy).Generate();
-		G4ThreeVector beamPos(beam_x, beam_y, beam_z);
-		
 		// Set up done, now generate event-by-event reaction
-		fParticleGun->SetParticlePosition(beamPos);
+		//
 		int nNeut = decay->GetNumberOfNeutrons();
-
 		static G4int whichNeutron = 0;
 		if(whichNeutron == 0) {
 			// Now Generate reaction
@@ -541,6 +550,10 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 			decay->SetInitial(reac->GetZ4(), reac->GetA4(), reac->GetRecoil());
 			decay->Generate(true);
 		}
+		
+		// Save beam position
+		G4ThreeVector beamPos(reac->GetBeamPosition().x(), reac->GetBeamPosition().y(), beam_z);
+		fParticleGun->SetParticlePosition(beamPos);	
 
 		// Set neutron energy+momentum
 		G4double eNeut = decay->GetFinal(whichNeutron+2).e() - decay->GetFinal(whichNeutron+2).m();

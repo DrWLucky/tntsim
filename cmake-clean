@@ -1,3 +1,5 @@
 #!/bin/bash
 
+mkdir -p build-backup
+for i in py mac dat; do cp build/*.$i build-backup/; done
 rm -fr build

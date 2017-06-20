@@ -3,8 +3,12 @@
 #include <memory>
 #include <vector>
 #include "globals.hh"
+#include "G4ThreeVector.hh"
 #include "G4LorentzVector.hh"
 #include "TntRng.hh"
+#include "TntBeamEmittance.hh"
+
+
 
 // class to calculate nuclear reaction kinematics
 class TntReaction {
@@ -28,13 +32,17 @@ public:
 								 G4double exciteRecoil, 
 								 G4double widthRecoil,
 								 const G4String& angDistFile);
+
+	void SetEmittanceX(TntBeamEmittance* em) { fEmX.reset(em); }
+	void SetEmittanceY(TntBeamEmittance* em) { fEmY.reset(em); }
 	
 	G4bool Generate();
-	const G4LorentzVector& GetBeam()     const { return fBeam;     }
-	const G4LorentzVector& GetTarget()   const { return fTarget;   }
-	const G4LorentzVector& GetEjectile() const { return fEjectile; }
-	const G4LorentzVector& GetRecoil()   const { return fRecoil;   }
-	G4double GetThetaCM() const { return fThetaCM; }
+	const G4LorentzVector& GetBeam()       const { return fBeam;     }
+	const G4LorentzVector& GetTarget()     const { return fTarget;   }
+	const G4LorentzVector& GetEjectile()   const { return fEjectile; }
+	const G4LorentzVector& GetRecoil()     const { return fRecoil;   }
+	G4double GetThetaCM()                  const { return fThetaCM; }
+	const G4ThreeVector& GetBeamPosition() const { return fBeamPos;  }
 	
 	G4int GetZ1() const {return fZ1;}
 	G4int GetZ2() const {return fZ2;}
@@ -49,8 +57,10 @@ public:
 private:
 	G4int fZ1, fZ2, fA1, fA2, fZ3, fA3, fZ4, fA4;
 	G4double fM1, fM2, fM3, fM4, fEbeam, fEbeamSpread, fThetaCM;
-	G4LorentzVector fBeam, fTarget, fEjectile, fRecoil;							
+	G4LorentzVector fBeam, fTarget, fEjectile, fRecoil;
+	G4ThreeVector fBeamPos;
 	std::auto_ptr<TntRng> fAngdist, fEx;
+	std::auto_ptr<TntBeamEmittance> fEmX, fEmY;
 };
 
 

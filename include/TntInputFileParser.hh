@@ -91,6 +91,46 @@ private:
 	void (ParameterSetter_t::*mSetter)(T, T1);
 };
 
+
+template<class T, class T1, class T2, class ParameterSetter_t> 
+class TntKeyConverter_3 : public TntKeyConverterBase {
+public:
+	TntKeyConverter_3(ParameterSetter_t* SetterClassInstance,
+										void (ParameterSetter_t::*setter)(T, T1, T2) ):
+		mInstance(SetterClassInstance),
+		mSetter(setter) { }
+
+	virtual ~TntKeyConverter_3() 
+		{  }
+
+	void Convert(const std::vector<std::string>& args)
+		{
+			try {
+				std::stringstream sstr(args.at(0));
+				T t; sstr >> t;
+
+				std::stringstream sstr1(args.at(1));
+				T1 t1; sstr1 >> t1;
+
+				std::stringstream sstr2(args.at(2));
+				T2 t2; sstr2 >> t2;
+
+				(mInstance->*mSetter)(t, t1, t2);
+			} catch (const std::out_of_range& oor) {
+				G4cerr << "ERROR:: TntKeyConverter_3:: " 
+							 << "Less than three parameters supplied.\n"
+							 << "Valid parameters are:\n";
+				std::for_each(args.begin(), args.end(), cout_par());
+				G4cerr << "Skipping setting these parameters!" << G4endl;
+			}
+		}
+	
+private:
+	ParameterSetter_t *mInstance;
+	void (ParameterSetter_t::*mSetter)(T, T1, T2);
+};
+
+
 #if 0
 template<class ParameterSetter_t, class MemFun_t>
 class TntKeyConverter<std::string, ParameterSetter_t> : public TntKeyConverterBase {
@@ -161,6 +201,14 @@ public:
 		{
 			TntKeyConverterBase *keyConverter = 
 				new TntKeyConverter_2<T, T1, ParameterSetter_t> (mSetter, setter);
+			mInputs.insert(std::make_pair(key, keyConverter));
+		}
+
+	template<class T, class T1, class T2>
+	void AddInput(const std::string& key, void (ParameterSetter_t::*setter) (T, T1, T2))
+		{
+			TntKeyConverterBase *keyConverter = 
+				new TntKeyConverter_3<T, T1, T2, ParameterSetter_t> (mSetter, setter);
 			mInputs.insert(std::make_pair(key, keyConverter));
 		}
 
