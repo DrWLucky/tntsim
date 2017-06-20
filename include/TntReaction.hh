@@ -14,6 +14,7 @@ public:
 							G4int targetZ, G4int targetA,
 							G4int recoilZ, G4int recoilA,
 							G4double ebeamPerA,
+							G4double ebeamPerASpread,
 							G4double exciteRecoil,
 							G4double widthRecoil,
 							const G4String& angDistFile);
@@ -23,6 +24,7 @@ public:
 								 G4int targetZ, G4int targetA,
 								 G4int recoilZ, G4int recoilA,
 								 G4double ebeamPerA,
+								 G4double ebeamPerASpread,
 								 G4double exciteRecoil, 
 								 G4double widthRecoil,
 								 const G4String& angDistFile);
@@ -46,7 +48,7 @@ public:
 	
 private:
 	G4int fZ1, fZ2, fA1, fA2, fZ3, fA3, fZ4, fA4;
-	G4double fM1, fM2, fM3, fM4, fEbeam, fThetaCM;
+	G4double fM1, fM2, fM3, fM4, fEbeam, fEbeamSpread, fThetaCM;
 	G4LorentzVector fBeam, fTarget, fEjectile, fRecoil;							
 	std::auto_ptr<TntRng> fAngdist, fEx;
 };
@@ -71,7 +73,11 @@ public:
 	void SetRecoil(G4String recoil);
 	void SetEjectile(G4String ejectile);
 	
-	void SetEbeamPerA(G4double e) { fEbeamPerA = e; fIsSet[6] = true; }
+	void SetEbeamPerA(G4double e, G4double de) {
+		fEbeamPerA = e;
+		fEbeamPerASpread = de;
+		fIsSet[6] = true;
+	}
 
 	void SetEx(G4double ex) 
 		{ fEx = ex; 
@@ -91,7 +97,7 @@ public:
 private:
 	G4bool fIsSet[10];
 	G4int fZ1, fZ2, fA1, fA2, fZ4, fA4;
-	G4double fEbeamPerA, fEx, fWidth;
+	G4double fEbeamPerA, fEbeamPerASpread, fEx, fWidth;
 	G4String fAngDistFile;
 };
 

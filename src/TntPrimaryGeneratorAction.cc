@@ -153,7 +153,15 @@ void generate_from_6he(const G4double& ebeam,
 	pz2 = p_neutron2->pz() * 1e3;
 	eneut2 = 1e3*(p_neutron2->e() - p_neutron2->m());
 }
-#endif		
+#endif
+
+
+struct BeamPos_t {
+	double x, dx, y, dy;
+	void set_x(G4double x_, G4double dx_) { x=x_;dx=dx_;}
+	void set_y(G4double y_, G4double dy_) { y=y_;dy=dy_;}
+};
+
 }
 
 
@@ -479,6 +487,7 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 		// Attempt to reac from reaction file //
 		static TntReaction* reac = 0;
 		static TntNeutronDecay* decay = 0;
+		static BeamPos_t beamXY;
 		if(!reac) {
 			TntReactionFactory factory;
 			TntInputFileParser<TntReactionFactory> reacParser(&factory);
@@ -508,10 +517,19 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 			decayParser.Parse(BeamType);
 
 			decay = decayFactory.Create();
+
+			TntInputFileParser<BeamPos_t> posParser(&beamXY);
+			posParser.AddInput("xbeam", &BeamPos_t::set_x);
+			posParser.AddInput("ybeam", &BeamPos_t::set_y);
+			posParser.Parse(BeamType);
 		}
+
+		G4double beam_x = TntRngGaus(beamXY.x, beamXY.dx).Generate();
+		G4double beam_y = TntRngGaus(beamXY.y, beamXY.dy).Generate();
+		G4ThreeVector beamPos(beam_x, beam_y, beam_z);
 		
 		// Set up done, now generate event-by-event reaction
-		fParticleGun->SetParticlePosition(G4ThreeVector(0.0, 0.0, beam_z)); //Default target posn (0,0)
+		fParticleGun->SetParticlePosition(beamPos);
 		int nNeut = decay->GetNumberOfNeutrons();
 
 		static G4int whichNeutron = 0;
@@ -536,11 +554,11 @@ void TntPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent){
 		// Send to data record class
 		fParticleGun->SetParticleEnergy(eNeut);
 		TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
-		TntDataOutPG->senddataSecondary(G4ThreeVector(0,0,beam_z), p_recoil);
-		TntDataOutPG->senddataEjectile(G4ThreeVector(0,0,beam_z), 
+		TntDataOutPG->senddataSecondary(beamPos, p_recoil);
+		TntDataOutPG->senddataEjectile(beamPos,
 																	 reac->GetEjectile(), 
 																	 reac->GetThetaCM());
-		TntDataOutPG->senddataReaction(G4ThreeVector(0,0,beam_z), 
+		TntDataOutPG->senddataReaction(beamPos,
 																	 reac->GetBeam(),
 																	 reac->GetTarget().m());
 																	 

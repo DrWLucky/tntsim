@@ -11,7 +11,7 @@ TntReaction::TntReaction():
 	fThetaCM = 0;
 	fZ1 = fZ2 = fZ3 = fZ4 = 0;
 	fA1 = fA2 = fA3 = fA4 = 0;
-	fM1 = fM2 = fM3 = fM4 = fEbeam = 0;
+	fM1 = fM2 = fM3 = fM4 = fEbeam = fEbeamSpread = 0;
 	fEjectile.set(0,0,0,0);
 	fRecoil.set(0,0,0,0);
 }
@@ -20,6 +20,7 @@ TntReaction::TntReaction(G4int beamZ,   G4int beamA,
 												 G4int targetZ, G4int targetA,
 												 G4int recoilZ, G4int recoilA,
 												 G4double ebeamPerA,
+												 G4double ebeamPerASpread,
 												 G4double exciteRecoil,
 												 G4double widthRecoil,
 												 const G4String& angDistFile):
@@ -27,7 +28,8 @@ TntReaction::TntReaction(G4int beamZ,   G4int beamA,
 {
 	fThetaCM = 0;
 	SetInputs(beamZ, beamA, targetZ, targetA, recoilZ, recoilA,
-						ebeamPerA, exciteRecoil, widthRecoil, angDistFile);
+						ebeamPerA, ebeamPerASpread,
+						exciteRecoil, widthRecoil, angDistFile);
 }
 
 TntReaction::~TntReaction()
@@ -37,6 +39,7 @@ void TntReaction::SetInputs(G4int beamZ,   G4int beamA,
 														G4int targetZ, G4int targetA,
 														G4int recoilZ, G4int recoilA,
 														G4double ebeamPerA,
+														G4double ebeamPerASpread,
 														G4double exciteRecoil,
 														G4double widthRecoil,
 														const G4String& angDistFile)
@@ -52,6 +55,7 @@ void TntReaction::SetInputs(G4int beamZ,   G4int beamA,
 	fM3 = TntNuclearMasses::GetNuclearMass(beamZ+targetZ-recoilZ, beamA+targetA-recoilA) * MeV;
 	fM4 = TntNuclearMasses::GetNuclearMass(recoilZ, recoilA) * MeV;
 	fEbeam = ebeamPerA*beamA;
+	fEbeamSpread = ebeamPerASpread*beamA;
 	fEjectile.set(0,0,0,0);
 	fRecoil.set(0,0,0,0);
 
@@ -74,7 +78,10 @@ inline G4LorentzVector createLorentzVector(G4double mass, G4double ekin,
 
 G4bool TntReaction::Generate() 
 {
-	G4LorentzVector v1 = ::createLorentzVector(fM1, fEbeam, 0, 0);
+	TntRngGaus rng_beam(fEbeam, fEbeamSpread);
+	G4double ebeam = rng_beam.GenerateAbove(0);
+	
+	G4LorentzVector v1 = ::createLorentzVector(fM1, ebeam, 0, 0);
 	G4LorentzVector v2 = ::createLorentzVector(fM2, 0, 0, 0);
 	fBeam = v1;
 	fTarget = v2;
@@ -87,7 +94,7 @@ G4bool TntReaction::Generate()
 
 	G4double ex = fEx->GenerateAbove(0);
 	
-	if(fM1+fM2+fEbeam < fM3+fM4+ex) {
+	if(fM1+fM2+ebeam < fM3+fM4+ex) {
 		G4cerr << "ERROR:: TntReaction::SetInputs:: Not enough energy for reaction!" << G4endl;
 		fEjectile.set(0,0,0,0);
 		fRecoil.set(0,0,0,0);
@@ -123,7 +130,8 @@ TntReaction* TntReactionFactory::CreateReaction()
 		return 0;
 	}
 	TntReaction* r = 	new TntReaction(fZ1, fA1, fZ2, fA2, fZ4, fA4, 
-																		fEbeamPerA, fEx, fWidth,
+																		fEbeamPerA, fEbeamPerASpread,
+																		fEx, fWidth,
 																		fAngDistFile);	
 	return r;
 }
