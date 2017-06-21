@@ -35,6 +35,7 @@ public:
 
 	void SetEmittanceX(TntBeamEmittance* em) { fEmX.reset(em); }
 	void SetEmittanceY(TntBeamEmittance* em) { fEmY.reset(em); }
+	void SetExGen(TntRng* exGen) { fEx.reset(exGen); }
 	
 	G4bool Generate();
 	const G4LorentzVector& GetBeam()       const { return fBeam;     }
@@ -59,7 +60,7 @@ private:
 	G4double fM1, fM2, fM3, fM4, fEbeam, fEbeamSpread, fThetaCM;
 	G4LorentzVector fBeam, fTarget, fEjectile, fRecoil;
 	G4ThreeVector fBeamPos;
-	std::auto_ptr<TntRng> fAngdist, fEx;
+	std::auto_ptr<TntRng> fAngdist, fEx ;
 	std::auto_ptr<TntBeamEmittance> fEmX, fEmY;
 };
 

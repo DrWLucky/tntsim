@@ -20,7 +20,11 @@ if(WITH_GEANT4_UIVIS)
   find_package(Geant4 REQUIRED ui_all vis_all)
 else()
   find_package(Geant4 REQUIRED)
-endif()
+    endif()
+
+FIND_PACKAGE(GSL REQUIRED)
+include_directories(${GSL_INCLUDE_DIRS} ${GSLCBLAS_INCLUDE_DIRS})
+# set(LIBS ${LIBS} ${GSL_LIBRARIES} ${GSLCBLAS_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Cmake Path for installation
@@ -159,14 +163,14 @@ SET(TNTSIM_LIBRARY_PROPERTIES ${TNTSIM_LIBRARY_PROPERTIES}
 EXECUTE_PROCESS(COMMAND root-config --libs OUTPUT_VARIABLE ROOT_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(CMAKE_EXE_LINKER_FLAGS ${ROOT_LD_FLAGS})
 add_library(TNTSIM_lib SHARED tntsim.cc ${TNTSIM_DICTIONARY} ${sources} ${headers})
-target_link_libraries(TNTSIM_lib ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+target_link_libraries(TNTSIM_lib ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${GSL_LIBRARIES})
 set_target_properties(TNTSIM_lib PROPERTIES ${TNTSIM_LIBRARY_PROPERTIES})
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(tntsim.exe tntsim.cc ${TNTSIM_DICTIONARY} ${sources} ${headers})
-target_link_libraries(tntsim.exe ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+target_link_libraries(tntsim.exe ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${GSL_LIBRARIES})
 add_dependencies(tntsim.exe TNTSIM_lib)
 
 #----------------------------------------------------------------------------

@@ -343,11 +343,14 @@ G4double TntTwoNeutronDecaySequential::Generate(G4bool)
 //
 
 TntTwoNeutronDecayDiNeutron::TntTwoNeutronDecayDiNeutron():
-	TntNeutronDecayIntermediate(2)
+	TntNeutronDecayIntermediate(2),
+	fRngVolya(0)  // LAZY initialization, in first call to Generate()
 { }
 
 TntTwoNeutronDecayDiNeutron::~TntTwoNeutronDecayDiNeutron()
-{ }
+{
+	if(fRngVolya) { delete fRngVolya; fRngVolya = 0; }
+}
 
 /////////////////
 // Code taken from st_reaction.cc out of st_mona simulation in
@@ -376,6 +379,12 @@ G4double TntTwoNeutronDecayDiNeutron::Generate(G4bool)
 	double exenDiNeutron = 118.5*keV;  // NOMINAL dineutron breakup energy, and POSSIBLY WRONG!!
 	exenDiNeutron = TntRngBreitWigner(118.5*keV, 100*keV).GenerateAbove(0);
 	double exen12_left = exenTotal - exenDiNeutron;
+
+	if(!fRngVolya) {
+//		fRngVolya = new TntRngVolyaDiNeutron(exenTotal, 
+																				 // (G4double Ei, G4double Gi, G4double a_s, G4int Ai):
+	}
+
 	
 	double e2N, eF;   // total neutron and fragment energy
   double eCM;   // total CM energy

@@ -94,6 +94,30 @@ public:
   static G4int MaxZ(G4int A);
   static G4int MinZ(G4int A);
 
+	// GET FROM STRING //
+	
+  // Operation: GetMassExcess
+  //   values imported from The Ame2003 atomic mass evaluation (II)  
+  static G4double GetMassExcess(const G4String& symbol); 
+
+  // Operation: GetAtomicMass .. in Geant4 Energy units!
+  //      Atomic_Mass =  MassExcess + A*amu_c2
+  static G4double GetAtomicMass(const G4String& symbol);
+
+  // Operation: GetNuclearMass
+  //      Nuclear_Mass = Atomic_Mass - electronMass
+  static G4double GetNuclearMass(const G4String& symbol);
+
+  // Operation: GetBindingEnergy
+  static G4double GetBindingEnergy(const G4String& symbol);
+
+  // Operation: GetBetaDecayEnergy
+  static G4double GetBetaDecayEnergy(const G4String& symbol);
+
+  // Is the nucleus (A,Z) in table?
+  static G4bool IsInTable(const G4String& symbol);
+
+	
 
 private:
 

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+
 #include "G4PhysicalConstants.hh"
 #include "Randomize.hh"
 #include "TntRng.hh"
@@ -264,4 +265,145 @@ std::pair<G4double, G4double> TntRngGaus2d::Generate()
   double y = mSigmaY * (mRho * u + sqrt(1 - mRho*mRho) * v) * scale;
 
 	return std::make_pair(x, y);
+}
+
+
+// TNT RNG VOLYA DINEUTRON //
+
+TntRngVolyaDiNeutron::TntRngVolyaDiNeutron(G4double Ei, G4double Gi, G4double a_s, G4int Ai):
+	fEi(Ei), fGi(Gi), fAs(a_s), fA(Ai)
+{
+	// Set Paramaters
+  G4double FragA = fA - 2; //Residual fragments after dineutron decay
+  // G4double Ei = fEi; //MeV Initial State
+  G4double as = fAs; //n-n scattering length (fm)
+
+  //NewParameter for addition of BW
+  G4double Gamma_in = fGi;
+
+  //Constants
+  G4double r0 = 1.4; //fm
+  //fixing the line below - JKS, 3 October 2013
+  //G4double RR = r0 * pow(FragA + 2, 0.333333); //fm
+  G4double RR = r0 * ( pow(FragA,0.333333) + pow(2,0.333333) ); //fm // channel radius for epsilon_K, first step
+  // next line changed by JKS to account for channel radius in dineutron break-up
+  G4double r = r0 * ( pow(1,0.333333) + pow(1,0.333333) ); //fm // channel radius for second step - breakup of dineutron
+
+  const G4int nSteps = 6000;
+  G4double min=0, max = 10.;
+  G4double stepsize = (max-min) / nSteps;
+
+	{
+		char buf[4096*2], buf1[4096*2];
+		sprintf(buf,"Inside StRNGVolya_Dineutron: Ei:%f GammaIn:%f as:%f FragA:%f\n",Ei,Gamma_in,as,FragA);
+		sprintf(buf1,"  nSteps:%d  stepsize:%f  Range:0-%f MeV\n\n",nSteps,stepsize,stepsize*nSteps);
+		G4cout << buf << G4endl;
+		G4cout << buf1 << G4endl;
+	}
+
+  if((1.5*Ei) > max) { 
+		G4cerr << "\n\nNeed to increase maxbin in StRNGVolya_2nseqGSL\n" << G4endl;
+	}
+
+  //Initialize the hists and pdfs.
+  fH2d = gsl_histogram2d_alloc (nSteps,nSteps); // define histo gram and alloc
+  gsl_histogram2d_set_ranges_uniform (fH2d, min, max, min, max); // set range and bins
+  fP2d = gsl_histogram2d_pdf_alloc (nSteps,nSteps); // init PDF
+
+
+  //Loop of BW
+  for(int j=0; j<nSteps; j++){
+    if((j%500)==0) {
+			G4cout << "Creating 2-D PDF for Volya+BW distribution.  Step: " 
+						 <<  j << " of " << nSteps <<  G4endl;
+		}
+    G4double Ebw0 = j*stepsize;
+    G4double Ebw1 = (j+1)*stepsize;
+    //Evaluate at midpoint
+    G4double Ebw = (Ebw0+Ebw1)/2.;
+    
+    G4double DecayRateArray[nSteps]={0}; 
+    G4double Total2nDecayWidth = 0;
+    //Loop over Erel
+    //JKS - does this have to be re-done just like the 2n sequential?
+    for(int i=0; i<nSteps; i++){
+      G4double di_ei0 = i*stepsize;  //intrinsic energy of the dineutron
+      G4double di_ei1 = (i+1)*stepsize; 
+      //Evaluate at midpoint
+      G4double di_ei = (di_ei1+di_ei0)/2.;
+      
+      G4double DecayRate = -1;
+      //why this if statement?
+      if(di_ei<=Ebw) DecayRate = this->GetDineutronDecayRate(FragA,Ebw, di_ei, r, RR, as);
+      else DecayRate = 0;
+      DecayRate = DecayRate * stepsize;
+
+      DecayRateArray[i] = DecayRate;
+      Total2nDecayWidth = Total2nDecayWidth + DecayRate;
+    }//i Erel   
+
+    // This is different than the sequential decay. - JKS, 3 October 2013
+    // Gamma_in is the input total decay width
+    G4double Gamma_Total = Total2nDecayWidth * Gamma_in;
+     //G4double Gamma_Total = Total2nDecayWidth + Gamma_in;
+
+    G4double BW = Gamma_in / ( pow(Ebw - Ei, 2.0) + 0.25*pow(Gamma_Total, 2.0));
+    BW = BW * stepsize;
+
+    //loop again to calc prob for each erel of each Ebw
+    for(int i=0; i<nSteps; i++){
+      G4double di_ei0 = i*stepsize;  //intrinsic energy of the dineutron
+      G4double di_ei1 = (i+1)*stepsize; 
+      //Evaluate at midpoint
+      G4double di_ei = (di_ei1+di_ei0)/2.;
+
+      G4double Prob = BW * DecayRateArray[i];
+      
+      G4double di_ek = Ebw - di_ei; //kinetic energy of dineutron   
+
+      //FILL HISTOGRAM FOR THE 2D PDF
+      gsl_histogram2d_accumulate(fH2d, di_ei, di_ek, Prob);
+
+    }//i second loop
+
+  }//j Ebw
+
+  
+  //CREATE 2-D PDF
+  gsl_histogram2d_pdf_init(fP2d, fH2d);
+	}
+
+
+TntRngVolyaDiNeutron::~TntRngVolyaDiNeutron()
+{
+	gsl_histogram2d_free(fH2d);
+	gsl_histogram2d_pdf_free(fP2d);
+}
+
+G4double TntRngVolyaDiNeutron::GetDineutronDecayRate(G4double FragA, 
+																										 G4double Ebw, 
+																										 G4double di_ei, 
+																										 G4double r0,
+																										 G4double RR, 
+																										 G4double as) 
+{
+  G4double redMass = 931.494 * ((1.008*1.008) / (1.008 + 1.008)); //Reduced dineutron mass
+  G4double Epsilon0 = (197*197) / (2*redMass*as*as); //MeV
+  G4double term1 = sqrt( (Ebw - di_ei)*di_ei );
+  G4double term2 = 1 + ( (r0*di_ei) / (2*as*Epsilon0) );
+  term2 = term2*term2*Epsilon0 + di_ei;
+  G4double DR = (1./CLHEP::pi) * (term1 / term2) * (r0 / RR);
+  return DR;
+}
+
+
+std::pair<G4double, G4double> TntRngVolyaDiNeutron::Generate()
+{
+  double RanNum =  TntRngUniform().Generate();
+  double RanNum2 =  TntRngUniform().Generate();
+   
+  double EI, EK;
+  gsl_histogram2d_pdf_sample(fP2d, RanNum, RanNum2, &EI, &EK);
+
+	return std::make_pair(EI, EK);
 }

@@ -1588,3 +1588,114 @@ const G4int TntNuclearMasses::shortTable[TntNuclearMasses::MaxA+1]=
  3342, 3345, 3347, 3350, 3352
 };
 
+
+
+
+//////////////////////////////////////////////
+// SYMBOL STUFF //////////////////////////////
+//////////////////////////////////////////////
+
+namespace {
+
+G4int get_z_from_symbol(G4String symbol)
+{
+	const G4String elements[] = {
+		"n", "H","He","Li","Be","B","C","N","O","F","Ne",
+		"Na","Mg","Al","Si","P","S","Cl","Ar","K","Ca",
+		"Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn",
+		"Ga","Ge","As","Se","Br","Kr","Rb","Sr","Y","Zr",
+		"Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn",
+		"Sb","Te","I","Xe","Cs","Ba","La","Ce","Pr","Nd",
+		"Pm","Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb",
+		"Lu","Hf","Ta","W","Re","Os","Ir","Pt","Au","Hg",
+		"Tl","Pb","Bi","Po","At","Rn","Fr","Ra","Ac","Th",
+		"Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm",
+		"Md","No","Lr","Rf","Db","Sg","Bh","Hs","Mt","Ds",
+		"Rg","Cn","Nh","Fl","Mc","Lv","Ts","Og"
+	};	
+	G4int N = sizeof(elements)/sizeof(elements[0]);
+	const G4String* p = std::find(elements, elements+N, symbol);
+	if(p< elements + N) return p-elements; return -1;
+}
+
+void convert_symbol(G4String* symbol)
+{
+	if(0) { }
+	else if(*symbol == "n") *symbol = "1n";
+	else if(*symbol == "p") *symbol = "1H";
+	else if(*symbol == "d") *symbol = "2H";
+	else if(*symbol == "t") *symbol = "3H";
+	else if(*symbol == "a") *symbol = "4He";
+	else  { }
+}
+
+void parse_symbol(G4String symbol, G4int* A, G4int* Z)
+{
+	convert_symbol(&symbol);
+	const char integers[] = {'0','1','2','3','4','5','6','7','8','9'};
+	G4int ni = sizeof(integers) / sizeof(integers[0]);
+	G4String A_str = "";
+	G4int indx = 0;
+	while(1) {
+		const char *p = std::find(integers,integers+ni,symbol[indx++]);
+		if(p<integers+ni) { A_str.push_back(*p); }
+		else break;
+		if(indx == ni) break;
+	}
+	*A = atoi(A_str.c_str());
+	*Z = get_z_from_symbol(symbol.substr(indx-1));	
+}
+}
+
+
+
+// Operation: TntNuclearMasses::GetMassExcess
+//   values imported from The Ame2003 atomic mass evaluation (II)  
+G4double TntNuclearMasses::GetMassExcess(const G4String& symbol)
+{
+	G4int a,z;
+	parse_symbol(symbol,&a,&z);
+	return TntNuclearMasses::GetMassExcess(z,a);
+} 
+
+// Operation: TntNuclearMasses::GetAtomicMass .. in Geant4 Energy units!
+//      Atomic_Mass =  MassExcess + A*amu_c2
+G4double TntNuclearMasses::GetAtomicMass(const G4String& symbol)
+{
+	G4int a,z;
+	parse_symbol(symbol,&a,&z);
+	return TntNuclearMasses::GetAtomicMass(z,a);
+}
+
+// Operation: TntNuclearMasses::GetNuclearMass
+//      Nuclear_Mass = Atomic_Mass - electronMass
+G4double TntNuclearMasses::GetNuclearMass(const G4String& symbol)
+{
+	G4int a,z;
+	parse_symbol(symbol,&a,&z);
+	return TntNuclearMasses::GetNuclearMass(z,a);
+}
+
+// Operation: TntNuclearMasses::GetBindingEnergy
+G4double TntNuclearMasses::GetBindingEnergy(const G4String& symbol)
+{
+	G4int a,z;
+	parse_symbol(symbol,&a,&z);
+	return TntNuclearMasses::GetBindingEnergy(z,a);
+}
+
+// Operation: TntNuclearMasses::GetBetaDecayEnergy
+G4double TntNuclearMasses::GetBetaDecayEnergy(const G4String& symbol)
+{
+	G4int a,z;
+	parse_symbol(symbol,&a,&z);
+	return TntNuclearMasses::GetBetaDecayEnergy(z,a);
+}
+
+// Is the nucleus (A,Z) in table?
+G4bool TntNuclearMasses::IsInTable(const G4String& symbol)
+{
+	G4int a,z;
+	parse_symbol(symbol,&a,&z);
+	return TntNuclearMasses::IsInTable(z,a);
+}

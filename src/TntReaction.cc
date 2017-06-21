@@ -83,7 +83,7 @@ G4bool TntReaction::Generate()
 
 	G4double x=0,tx=0,y=0,ty=0;
 	if(fEmX.get()) {
-		TntRngGaus2d rng_xtx(fEmX->GetSigmaX(), 
+		TntRngGaus2d rng_xtx(fEmX->GetSigmaX(),
 												 fEmX->GetSigmaTX(),
 												 fEmX->GetRho());
 		std::pair<G4double, G4double> xtx = 

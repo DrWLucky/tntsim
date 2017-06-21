@@ -5,6 +5,9 @@
 #include <G4ThreeVector.hh>
 #include <G4LorentzVector.hh>
 
+
+class TntRng2d;
+
 // Abstract base class for generic neutron decay
 //
 class TntNeutronDecay {
@@ -101,6 +104,8 @@ public:
 	TntTwoNeutronDecayDiNeutron();
 	virtual ~TntTwoNeutronDecayDiNeutron();
 	virtual G4double Generate(G4bool uniformWeight);
+private:
+	TntRng2d* fRngVolya;
 };
 
 // Concrete class for two neutron
