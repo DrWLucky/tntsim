@@ -1647,6 +1647,10 @@ void parse_symbol(G4String symbol, G4int* A, G4int* Z)
 }
 }
 
+void TntNuclearMasses::GetZAFromSymbol(const G4String& symbol, G4int* Z, G4int * A)
+{
+	parse_symbol(symbol,A,Z);
+}
 
 
 // Operation: TntNuclearMasses::GetMassExcess
@@ -1654,7 +1658,7 @@ void parse_symbol(G4String symbol, G4int* A, G4int* Z)
 G4double TntNuclearMasses::GetMassExcess(const G4String& symbol)
 {
 	G4int a,z;
-	parse_symbol(symbol,&a,&z);
+	GetZAFromSymbol(symbol,&z,&a);
 	return TntNuclearMasses::GetMassExcess(z,a);
 } 
 
@@ -1663,7 +1667,7 @@ G4double TntNuclearMasses::GetMassExcess(const G4String& symbol)
 G4double TntNuclearMasses::GetAtomicMass(const G4String& symbol)
 {
 	G4int a,z;
-	parse_symbol(symbol,&a,&z);
+	GetZAFromSymbol(symbol,&z,&a);
 	return TntNuclearMasses::GetAtomicMass(z,a);
 }
 
@@ -1672,7 +1676,7 @@ G4double TntNuclearMasses::GetAtomicMass(const G4String& symbol)
 G4double TntNuclearMasses::GetNuclearMass(const G4String& symbol)
 {
 	G4int a,z;
-	parse_symbol(symbol,&a,&z);
+	GetZAFromSymbol(symbol,&z,&a);
 	return TntNuclearMasses::GetNuclearMass(z,a);
 }
 
@@ -1680,7 +1684,7 @@ G4double TntNuclearMasses::GetNuclearMass(const G4String& symbol)
 G4double TntNuclearMasses::GetBindingEnergy(const G4String& symbol)
 {
 	G4int a,z;
-	parse_symbol(symbol,&a,&z);
+	GetZAFromSymbol(symbol,&z,&a);
 	return TntNuclearMasses::GetBindingEnergy(z,a);
 }
 
@@ -1688,7 +1692,7 @@ G4double TntNuclearMasses::GetBindingEnergy(const G4String& symbol)
 G4double TntNuclearMasses::GetBetaDecayEnergy(const G4String& symbol)
 {
 	G4int a,z;
-	parse_symbol(symbol,&a,&z);
+	GetZAFromSymbol(symbol,&z,&a);
 	return TntNuclearMasses::GetBetaDecayEnergy(z,a);
 }
 
@@ -1696,6 +1700,6 @@ G4double TntNuclearMasses::GetBetaDecayEnergy(const G4String& symbol)
 G4bool TntNuclearMasses::IsInTable(const G4String& symbol)
 {
 	G4int a,z;
-	parse_symbol(symbol,&a,&z);
+	GetZAFromSymbol(symbol,&z,&a);
 	return TntNuclearMasses::IsInTable(z,a);
 }

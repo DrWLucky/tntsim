@@ -95,6 +95,8 @@ public:
   static G4int MinZ(G4int A);
 
 	// GET FROM STRING //
+
+	static void GetZAFromSymbol(const G4String& symbol, G4int* Z, G4int * A);
 	
   // Operation: GetMassExcess
   //   values imported from The Ame2003 atomic mass evaluation (II)  
