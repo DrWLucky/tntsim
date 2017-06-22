@@ -92,7 +92,7 @@ TntRngUniform::TntRngUniform(G4double low, G4double high):
 TntRngUniform::~TntRngUniform()
 { }
 
-G4double TntRngUniform::Generate()
+G4double TntRngUniform::DoGenerate()
 {
 	G4double rndm = G4UniformRand();
 	return mLow + (mHigh-mLow)*rndm;
@@ -108,7 +108,7 @@ TntRngGaus::TntRngGaus(G4double mean, G4double sigma):
 TntRngGaus::~TntRngGaus()
 { }
 
-G4double TntRngGaus::Generate()
+G4double TntRngGaus::DoGenerate()
 {
 	return mSigma > 1e-9 ? CLHEP::RandGauss::shoot(mMean, mSigma) : mMean;
 }
@@ -123,7 +123,7 @@ TntRngBreitWigner::TntRngBreitWigner(G4double mean, G4double sigma):
 TntRngBreitWigner::~TntRngBreitWigner()
 { }
 
-G4double TntRngBreitWigner::Generate()
+G4double TntRngBreitWigner::DoGenerate()
 {
 	return mSigma > 1e-9 ? CLHEP::RandGauss::shoot(mMean, mSigma) : mMean;
 }
@@ -180,7 +180,7 @@ TntRngCustom::TntRngCustom(const G4String& filename)
 TntRngCustom::~TntRngCustom()
 { }
 
-G4double TntRngCustom::Generate()
+G4double TntRngCustom::DoGenerate()
 {
 	G4double r = TntRngUniform(0,1).Generate();
 	std::vector<double>::const_iterator it =
@@ -190,7 +190,7 @@ G4double TntRngCustom::Generate()
 	if(indx+1 < mXlow.size()) {
 		return TntRngUniform(mXlow[indx], mXlow[indx+1]).Generate();
 	} else {
-		G4cerr << "ERROR:: TntRngCustom::Generate:: "
+		G4cerr << "ERROR:: TntRngCustom::DoGenerate:: "
 					 << "Found out-of-range value in CDF. (indx, r): "
 					 << indx << ", " << r << G4endl;
 		throw indx;
@@ -230,6 +230,23 @@ TntRngCustomAngDist::~TntRngCustomAngDist()
 
 
 
+// TNT RNG VOLYA DINEUTRON EXCITATION ENERGY //
+
+TntRngVolyaDiNeutronEx::TntRngVolyaDiNeutronEx(G4double e, G4double w, G4double a_s, G4double Ai):
+	fR2d(new TntRngVolyaDiNeutron(e,w,a_s,Ai))
+{ }
+
+TntRngVolyaDiNeutronEx::~TntRngVolyaDiNeutronEx()
+{ }
+
+G4double TntRngVolyaDiNeutronEx::DoGenerate()
+{
+	fLastGen2d = fR2d->Generate();
+	return fLastGen2d.first + fLastGen2d.second;
+}
+
+
+
 // TNT RNG GAUS 2D //
 
 TntRngGaus2d::TntRngGaus2d(G4double sigma_x, G4double sigma_y, G4double rho):
@@ -238,7 +255,7 @@ TntRngGaus2d::TntRngGaus2d(G4double sigma_x, G4double sigma_y, G4double rho):
 	mRho(rho)
 {  }
 
-std::pair<G4double, G4double> TntRngGaus2d::Generate()
+std::pair<G4double, G4double> TntRngGaus2d::DoGenerate()
 {
 	// Routine taken from GSL source code (GPL licensed)
 	// Available online at:
@@ -397,7 +414,7 @@ G4double TntRngVolyaDiNeutron::GetDineutronDecayRate(G4double FragA,
 }
 
 
-std::pair<G4double, G4double> TntRngVolyaDiNeutron::Generate()
+std::pair<G4double, G4double> TntRngVolyaDiNeutron::DoGenerate()
 {
   double RanNum =  TntRngUniform().Generate();
   double RanNum2 =  TntRngUniform().Generate();

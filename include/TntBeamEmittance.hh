@@ -9,6 +9,7 @@ class TntBeamEmittance {
 public:
 	TntBeamEmittance();
 	TntBeamEmittance(double epsilon, double alpha,  double sigma_x);
+	TntBeamEmittance(double epsilon, double alpha,  double sigma_x, double x0);
 	void SetTwist(double epsilon, double alpha, double sigma_x);
 	double GetEpsilon() const { return fEpsilon; }
 	double GetAlpha()   const { return fAlpha;   }

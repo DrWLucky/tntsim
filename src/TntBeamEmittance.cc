@@ -10,6 +10,12 @@ TntBeamEmittance::TntBeamEmittance(double epsilon, double alpha, double sigmaX)
 	SetTwist(epsilon,alpha,sigmaX);
 }
 
+TntBeamEmittance::TntBeamEmittance(double epsilon, double alpha, double sigmaX, double x0)
+{
+	SetTwist(epsilon,alpha,sigmaX);
+	SetX0(x0);
+}
+
 void TntBeamEmittance::SetTwist(double epsilon, double alpha, double sigmaX)
 {
 	fEpsilon = epsilon;

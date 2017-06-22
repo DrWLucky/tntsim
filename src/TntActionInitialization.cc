@@ -40,6 +40,8 @@
 #include "TntSteppingVerbose.hh"
 
 #include "TntRecorderBase.hh"
+#include "TntGlobalParams.hh"
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -63,7 +65,11 @@ void TntActionInitialization::BuildForMaster() const
 
 void TntActionInitialization::Build() const
 {
-  SetUserAction(new TntPrimaryGeneratorAction());
+	if(TntGlobalParams::Instance()->GetReacFile() == "0") {
+		SetUserAction(new TntPrimaryGeneratorAction());
+	} else {
+		SetUserAction(new TntPGAReaction());
+	}
 
   SetUserAction(new TntStackingAction());
 

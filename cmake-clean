@@ -2,4 +2,5 @@
 
 mkdir -p build-backup
 for i in py mac dat; do cp build/*.$i build-backup/; done
+for i in Doxyfile dox.sh; do cp build/$i build-backup/; done
 rm -fr build

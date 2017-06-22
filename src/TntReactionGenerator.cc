@@ -1,3 +1,4 @@
+#include <vector>
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4ThreeVector.hh"
@@ -11,7 +12,7 @@ TntTwoBodyReactionGenerator::TntTwoBodyReactionGenerator():
 	fPos(0,0,0),
 	fRngEbeam(0), fRngEx3(0), fRngEx4(0), fRngTheta(0), fRngPhi(0),
 	fEmX(0), fEmY(0)
-{ fM1=fM2=fM3=fM4=0; }
+{ fM1=fM2=fM3=fM4=fTheta=fPhi=0; }
 
 TntTwoBodyReactionGenerator::~TntTwoBodyReactionGenerator()
 { }
@@ -41,8 +42,8 @@ void TntTwoBodyReactionGenerator::SetBeamTargetEjectile(G4int Zbeam, G4int Abeam
 
 void TntTwoBodyReactionGenerator::SetEmittance(TntBeamEmittance* emX, TntBeamEmittance* emY)
 {
-	fEmX.reset(emX);
-	fEmY.reset(emY);
+	fEmX = emX;
+	fEmY = emY;
 }
 
 void TntTwoBodyReactionGenerator::SetRNGs(TntRng* rngEbeam, 
@@ -51,11 +52,11 @@ void TntTwoBodyReactionGenerator::SetRNGs(TntRng* rngEbeam,
 																					TntRng* rngTheta,
 																					TntRng* rngPhi)
 {
-	fRngEbeam.reset(rngEbeam);
-	fRngEx3.reset(rngEx3);
-	fRngEx4.reset(rngEx4);
-	fRngTheta.reset(rngTheta);
-	fRngPhi.reset(rngPhi);
+	fRngEbeam = rngEbeam;
+	fRngEx3 = rngEx3;
+	fRngEx4 = rngEx4;
+	fRngTheta = rngTheta;
+	fRngPhi = rngPhi;
 }
 
 
@@ -103,7 +104,7 @@ G4bool TntTwoBodyReactionGenerator::Generate()
 	fPos.set(0,0,0);
 	G4double pbeam_xyz[3] = {0,0,pbeam};
 	G4int iloop = 0; 
-	for (auto* em : { fEmX.get(), fEmY.get() }) {
+	for (auto* em : { fEmX, fEmY }) {
 		if(em) {
 			TntRngGaus2d rng(em->GetSigmaX(), em->GetSigmaTX(), em->GetRho());
 			auto xtx = rng.Generate();
@@ -124,18 +125,18 @@ G4bool TntTwoBodyReactionGenerator::Generate()
 	
 	// Generate Excitation Energies
 	//
-	G4double ex3 = fRngEx3.get() ? fRngEx3->GenerateAbove(0) : 0;
-	G4double ex4 = fRngEx4.get() ? fRngEx4->GenerateAbove(0) : 0;
+	G4double ex3 = fRngEx3 ? fRngEx3->GenerateAbove(0) : 0;
+	G4double ex4 = fRngEx4 ? fRngEx4->GenerateAbove(0) : 0;
 
 	// Generate CM angles
 	//
-	G4double thetaCM = fRngTheta.get() ? fRngTheta->Generate() : 0;
-	G4double phiCM = fRngPhi.get() ? fRngPhi->Generate() : 0;
+	fTheta = fRngTheta ? fRngTheta->Generate() : 0;
+	fPhi = fRngPhi ? fRngPhi->Generate() : 0;
 
 	// Now calculate reaction
 	G4double masses[2] = { fM3+ex3, fM4+ex4 };
 	TntTwoBodyReactionKinematics reacKin(fBeam, fTarget, std::vector<G4double>(masses, masses+2));
-	G4bool isGood = reacKin.Calculate(thetaCM, phiCM);
+	G4bool isGood = reacKin.Calculate(fTheta, fPhi);
 	if(isGood) {
 		fEjectile = reacKin.GetProduct(3);
 		fRecoil = reacKin.GetProduct(4);

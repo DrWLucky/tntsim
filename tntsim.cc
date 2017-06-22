@@ -235,6 +235,7 @@ int main(int argc, char** argv)
 	TntInputFileParser<TntGlobalParams> parser(TntGlobalParams::Instance());
 	parser.AddInput("energy",      &TntGlobalParams::SetNeutronEnergy);
 	parser.AddInput("beamtype",    &TntGlobalParams::SetBeamType);
+	parser.AddInput("reacfile",    &TntGlobalParams::SetReacFile);
 	parser.AddInput("rootfile",    &TntGlobalParams::SetRootFileName);
 	parser.AddInput("resscale",    &TntGlobalParams::SetPhotonResolutionScale);
 	parser.AddInput("ntracking",   &TntGlobalParams::SetMenateR_Tracking);

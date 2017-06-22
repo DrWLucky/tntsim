@@ -6,7 +6,7 @@
 #include <G4LorentzVector.hh>
 
 
-class TntRng2d;
+class TntReactionGenerator;
 
 // Abstract base class for generic neutron decay
 //
@@ -14,9 +14,9 @@ class TntNeutronDecay {
 public:
 	TntNeutronDecay() { }
 	virtual ~TntNeutronDecay() { }
-	virtual void SetInitial(G4int Z, G4int A, const G4LorentzVector& momentum) = 0;
+	virtual void SetInputReaction(const TntReactionGenerator* r) = 0;
 	virtual G4int GetNumberOfNeutrons() const = 0;
-	virtual G4double Generate(G4bool uniformWeight) = 0;
+	virtual G4bool Generate() = 0;
 	virtual const G4LorentzVector& GetFinal(G4int indx) const = 0;
 };
 
@@ -41,9 +41,9 @@ class TntNeutronDecayIntermediate : public TntNeutronDecay {
 public:
 	TntNeutronDecayIntermediate(G4int number_of_neutrons_emitted);
 	virtual ~TntNeutronDecayIntermediate();
-	virtual void SetInitial(G4int Z, G4int A, const G4LorentzVector& momentum);
+	virtual void SetInputReaction(const TntReactionGenerator* r);
 	virtual G4int GetNumberOfNeutrons() const { return mNumberOfNeutronsEmitted; }
-	virtual G4double Generate(G4bool uniformWeight) = 0;
+	virtual G4bool Generate() = 0;
 	void SetParam(const G4String& par, G4double val);
 	G4double GetParam(const G4String& par);
 protected:
@@ -58,6 +58,7 @@ protected:
 	G4double mFinalFragMass; // Rest mass of final decay fragment
 	G4int mInitialA, mInitialZ;
 	G4LorentzVector mInitial;
+	const TntReactionGenerator* fReaction;
 };
 
 // Helper class to calculate neutron evaporation results
@@ -81,7 +82,7 @@ class TntOneNeutronDecay : public TntNeutronDecayIntermediate {
 public:
 	TntOneNeutronDecay();
 	virtual ~TntOneNeutronDecay();
-	virtual G4double Generate(G4bool uniformWeight);
+	virtual G4bool Generate();
 };
 
 // Concrete class for two neutron
@@ -91,7 +92,7 @@ class TntTwoNeutronDecayPhaseSpace : public TntNeutronDecayIntermediate {
 public:
 	TntTwoNeutronDecayPhaseSpace(G4bool fsi = FALSE);
 	virtual ~TntTwoNeutronDecayPhaseSpace();
-	virtual G4double Generate(G4bool uniformWeight);
+	virtual G4bool Generate();
 private:
 	G4bool fFSI;
 };
@@ -103,9 +104,9 @@ class TntTwoNeutronDecayDiNeutron : public TntNeutronDecayIntermediate {
 public:
 	TntTwoNeutronDecayDiNeutron();
 	virtual ~TntTwoNeutronDecayDiNeutron();
-	virtual G4double Generate(G4bool uniformWeight);
+	virtual G4bool Generate();
 private:
-	TntRng2d* fRngVolya;
+	//TntRngVolyaDiNeutronEx* fRngVolya;
 };
 
 // Concrete class for two neutron
@@ -115,8 +116,8 @@ class TntTwoNeutronDecaySequential : public TntNeutronDecayIntermediate {
 public:
 	TntTwoNeutronDecaySequential();
 	virtual ~TntTwoNeutronDecaySequential();
-	virtual void SetInitial(G4int Z, G4int A, const G4LorentzVector& momentum);
-	virtual G4double Generate(G4bool uniformWeight);
+	virtual void SetInputReaction(const TntReactionGenerator* r);
+	virtual G4bool Generate();
 public:
 	G4double mIntermediateFragMass;
 };

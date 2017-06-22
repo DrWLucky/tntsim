@@ -21,6 +21,9 @@ public:
 	G4String GetBeamType() { return fBeamType; }
 	void SetBeamType(G4String type) { fBeamType = type; }
 
+	G4String GetReacFile() { return fReacFile; }
+	void SetReacFile(G4String type) { fReacFile = type; }
+
 	G4String GetRootFileName() { return fRootFileName; }
 	void SetRootFileName(G4String name) { fRootFileName = name; }
 
@@ -60,6 +63,7 @@ private:
 	G4int fNumPmtX;
 	G4int fNumPmtY;
 	G4String fBeamType;
+	G4String fReacFile;
 	G4String fRootFileName;
 	G4double fPhotonResolutionScale;
 	G4int fMenateR_Tracking;

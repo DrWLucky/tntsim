@@ -31,33 +31,52 @@
 //
 #ifndef TntPrimaryGeneratorAction_h
 #define TntPrimaryGeneratorAction_h 1
-
+#include <memory>
 #include "G4VUserPrimaryGeneratorAction.hh"
 
 //by Shuya 160407
 #include "TntDataRecordTree.hh"
+
+#include "TntReactionGenerator.hh"
+#include "TntBeamEmittance.hh"
+#include "TntNeutronDecay.hh"
 
 class G4ParticleGun;
 class G4Event;
 
 class TntPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
-  public:
-
-    TntPrimaryGeneratorAction();
-    virtual ~TntPrimaryGeneratorAction();
+public:
+	TntPrimaryGeneratorAction();
+	virtual ~TntPrimaryGeneratorAction();
  
-  public:
+public:
+	virtual void GeneratePrimaries(G4Event* anEvent);
 
-    virtual void GeneratePrimaries(G4Event* anEvent);
-
-  private:
+protected:
 //by Shuya 160407
-    TntDataRecordTree* TntDataOutPG;
+	TntDataRecordTree* TntDataOutPG;
 
-    G4ParticleGun* fParticleGun;
+	G4ParticleGun* fParticleGun;
 //by Shuya 160510
-    G4String BeamType;
+	G4String BeamType;
+};
+
+
+
+class TntPGAReaction : public TntPrimaryGeneratorAction {
+public:
+	TntPGAReaction();
+	virtual ~TntPGAReaction();
+	virtual void GeneratePrimaries(G4Event* anEvent);
+
+protected:
+	G4String fReacFile;
+	G4int fA[4], fZ[4];
+	std::auto_ptr<TntReactionGenerator> fReac;
+	std::auto_ptr<TntNeutronDecay> fDecay;
+	std::auto_ptr<TntRng> fRngEbeam, fRngEx3, fRngEx4, fRngTheta, fRngPhi;
+	std::auto_ptr<TntBeamEmittance> fEmX, fEmY;
 };
 
 #endif

@@ -5,6 +5,7 @@
 #include "G4GenPhaseSpace.hh"
 #include "TntNuclearMasses.hh"
 #include "TntNeutronDecay.hh"
+#include "TntReactionGenerator.hh"
 #include "TntRng.hh"
 
 namespace {
@@ -31,19 +32,22 @@ TntNeutronDecayIntermediate::TntNeutronDecayIntermediate(G4int number_of_neutron
 	mFinalFragMass(0),
 	mInitialA(0),
 	mInitialZ(0), 
-	mInitial(0,0,0,0)
+	mInitial(0,0,0,0),
+	fReaction(0)
 { }
 
 TntNeutronDecayIntermediate::~TntNeutronDecayIntermediate()
 { }
 
-void TntNeutronDecayIntermediate::SetInitial(G4int Z, G4int A, const G4LorentzVector& momentum)
+void TntNeutronDecayIntermediate::SetInputReaction(const TntReactionGenerator* r)
 {
-	mInitialA = A;
-	mInitialZ = Z;
-	mInitialMass = TntNuclearMasses::GetNuclearMass(Z, A)*MeV;
-	mFinalFragMass = TntNuclearMasses::GetNuclearMass(Z, A - mNumberOfNeutronsEmitted)*MeV;
-	mInitial = momentum;
+	assert(0 && "NEED TO IMPLEMENT TntNeutronDecayIntermediate::SetInputReaction!!!!");
+	// mInitialA = A;
+	// mInitialZ = Z;
+	// mInitialMass = TntNuclearMasses::GetNuclearMass(Z, A)*MeV;
+	// mFinalFragMass = TntNuclearMasses::GetNuclearMass(Z, A - mNumberOfNeutronsEmitted)*MeV;
+	// mInitial = momentum;
+	fReaction = r;
 }
 
 void TntNeutronDecayIntermediate::SetFinal(G4int indx, const G4LorentzVector& v)
@@ -81,23 +85,7 @@ G4double TntNeutronDecayIntermediate::GetParam(const G4String& par)
 				 << par << G4endl;
 	throw par;
 }
-		
 
-
-//////////////////////////////////////////////////////////////////
-
-namespace {
-G4double do_weighted_generation(bool uniform, G4GenPhaseSpace& gen)
-{
-	G4double weight = gen.Generate();
-	if(uniform) {
-		while(weight/gen.GetWtMax() < kRngUniform.Generate()) {
-			weight = gen.Generate();
-		}
-		weight = 1;
-	}
-	return weight;
-} }
 
 
 /////////////////////////////////////////////////////////////////
@@ -112,7 +100,7 @@ TntOneNeutronDecay::~TntOneNeutronDecay()
 { }
 
 
-G4double TntOneNeutronDecay::Generate(G4bool uniformWeight)
+G4bool TntOneNeutronDecay::Generate()
 {
 	G4LorentzVector lvF, lvN;
 	TntNeutronEvaporation evap(mInitial.m(), mFinalFragMass, kNeutronMass);
@@ -126,7 +114,7 @@ G4double TntOneNeutronDecay::Generate(G4bool uniformWeight)
 	SetFinal(1, lvF);
 	SetFinal(2, lvN);
 
-	return 1;
+	return true;
 }
 
 
@@ -187,14 +175,14 @@ double Cnn0(double X, double r0)
 	return CNN0;
 } }
 
-G4double TntTwoNeutronDecayPhaseSpace::Generate(G4bool uniformWeight)
+G4bool TntTwoNeutronDecayPhaseSpace::Generate()
 {
 	G4double mOut[3] = { mFinalFragMass, kNeutronMass, kNeutronMass };
 	if(mInitial.m() < mFinalFragMass + 2*kNeutronMass) {
 		G4cerr << "ERROR:: TntTwoNeutronDecayPhaseSpace:: Not enough energy for decay!" << G4endl;
 		G4cerr << "MASSES (MBeam+ex, MF, 2*MN):: " << mInitial.m() << ", "
 					 << mOut[0] << ", " << 2*mOut[1] << G4endl;
-		throw false;
+		return false;
 	}
 	SetFinal(0, mInitial);
 
@@ -207,7 +195,6 @@ G4double TntTwoNeutronDecayPhaseSpace::Generate(G4bool uniformWeight)
 		throw possible;
 	}
 
-	G4double weight;
 	if(fFSI) { // Use Final State Interaction
 
 		// Not 100% sure what this parameter is, need to ask JKS.
@@ -238,17 +225,19 @@ G4double TntTwoNeutronDecayPhaseSpace::Generate(G4bool uniformWeight)
 
 			if( (ran < rel_weight) && (ran2 < Cnn) ) { break; }
 		}
-		
-		weight = 1; // always return weight 1 b/c of while loop
+	}	else { // NO FSI
+		G4double relwt, ran;
+		do {
+			relwt = gen.Generate() / gen.GetWtMax();
+			ran = kRngUniform.Generate();
+		} while(relwt < ran);
 	}
-	else { // NO FSI
-		weight = do_weighted_generation(uniformWeight, gen);
-	}
+	
 	SetFinal(1, *(gen.GetDecay(0))); // fragment
 	SetFinal(2, *(gen.GetDecay(1))); // neutron 1
 	SetFinal(3, *(gen.GetDecay(2))); // neutron 1
 
-	return weight;
+	return true;
 }
 
 
@@ -265,17 +254,17 @@ TntTwoNeutronDecaySequential::TntTwoNeutronDecaySequential():
 TntTwoNeutronDecaySequential::~TntTwoNeutronDecaySequential()
 { }
 
-void TntTwoNeutronDecaySequential::SetInitial(G4int Z, G4int A, const G4LorentzVector& momentum)
+void TntTwoNeutronDecaySequential::SetInputReaction(const TntReactionGenerator* r)
 {
-	TntNeutronDecayIntermediate::SetInitial(Z,A,momentum);
-	mIntermediateFragMass = TntNuclearMasses::GetNuclearMass(Z, A - 1)*MeV;
+	TntNeutronDecayIntermediate::SetInputReaction(r);
+	mIntermediateFragMass = TntNuclearMasses::GetNuclearMass(mInitialZ, mInitialA - 1)*MeV;
 }
 
 
 /////////////////
 // Code taken from st_reaction.cc out of st_mona simulation in
 // use by the MoNA collaboration.
-G4double TntTwoNeutronDecaySequential::Generate(G4bool)
+G4bool TntTwoNeutronDecaySequential::Generate()
 {
 	// Choose decay energies
 	// NOTE: This is my own interpretation of double BW.
@@ -333,7 +322,7 @@ G4double TntTwoNeutronDecaySequential::Generate(G4bool)
 	SetFinal(2, lvN1);     // neutron 1
 	SetFinal(3, lvN2);     // neutron 2
 
-	return 1.; // Always constant weight value = 1
+	return true;
 }
 
 
@@ -343,20 +332,24 @@ G4double TntTwoNeutronDecaySequential::Generate(G4bool)
 //
 
 TntTwoNeutronDecayDiNeutron::TntTwoNeutronDecayDiNeutron():
-	TntNeutronDecayIntermediate(2),
-	fRngVolya(0)  // LAZY initialization, in first call to Generate()
-{ }
+	TntNeutronDecayIntermediate(2)
+{
+	//fRngVolya = 
+}
 
 TntTwoNeutronDecayDiNeutron::~TntTwoNeutronDecayDiNeutron()
 {
-	if(fRngVolya) { delete fRngVolya; fRngVolya = 0; }
+//	if(fRngVolya) { delete fRngVolya; fRngVolya = 0; }
 }
 
 /////////////////
 // Code taken from st_reaction.cc out of st_mona simulation in
 // use by the MoNA collaboration.
-G4double TntTwoNeutronDecayDiNeutron::Generate(G4bool)
+G4bool TntTwoNeutronDecayDiNeutron::Generate()
 {
+	return true;
+
+#if 0
 	////////////////////////////////////////////////
   // initial unbound state decay: A -> (A-2) + (2n)
 	
@@ -468,7 +461,8 @@ G4double TntTwoNeutronDecayDiNeutron::Generate(G4bool)
 	SetFinal(2, lvN1);     // neutron 1
 	SetFinal(3, lvN2);     // neutron 2
 
-	return 1.; // Always constant weight value = 1
+	return true;
+#endif
 }
 
 
@@ -563,11 +557,10 @@ TntNeutronDecay* TntNeutronDecayFactory::Create()
 	}
 
 	TntNeutronDecayIntermediate *di = dynamic_cast<TntNeutronDecayIntermediate*>(decay);
-	for(std::map<G4String, G4double>::iterator it = mOptions.begin(); 
-			it != mOptions.end(); ++it) {
-
-		di->SetParam(it->first, it->second);
+	if(di) {
+		for(const auto& it : mOptions) {
+			di->SetParam(it.first, it.second);
+		}
 	}
-
 	return decay;
 }
