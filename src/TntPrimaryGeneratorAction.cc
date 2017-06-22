@@ -634,7 +634,7 @@ TntPGAReaction::TntPGAReaction():
 	fZ[3] = fZ[0]+fZ[1] - fZ[2];
 	fA[3] = fA[0]+fA[1] - fA[2];
 	
-	fRngEbeam.reset(new TntRngGaus(rfp.ebeam*fA[0], rfp.debeam*fA[0])); // beam energy
+	fRngEbeam.reset(new TntRngGaus(rfp.ebeam*fA[0], rfp.debeam*fA[0])); // TOTAL beam kinetic energy
 
 	// Reaction
 	fReac.reset(new TntTwoBodyReactionGenerator());
@@ -696,7 +696,9 @@ void TntPGAReaction::GeneratePrimaries(G4Event* anEvent)
 	}
 		
 	// Save beam position
-	G4ThreeVector beamPos(fReac->GetPos().x(), fReac->GetPos().y(), beam_z);
+	G4ThreeVector beamPos(fReac->GetReactant(1).PosX(),
+												fReac->GetReactant(1).PosY(),
+												beam_z);
 
 	// Set neutron energy+momentum (for 'whichNeutron')
 	// Offset in fDecay->GetFinal() is +2 (initial beam, fragment)
@@ -713,11 +715,11 @@ void TntPGAReaction::GeneratePrimaries(G4Event* anEvent)
 	TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
 	TntDataOutPG->senddataSecondary(beamPos, p_recoil);
 	TntDataOutPG->senddataEjectile(beamPos,
-																 fReac->GetReactant(3),
+																 fReac->GetReactant(3).Momentum(),
 																 fReac->GetThetaCM());
 	TntDataOutPG->senddataReaction(beamPos,
-																 fReac->GetReactant(1),
-																 fReac->GetReactant(2).m());
+																 fReac->GetReactant(1).Momentum(),
+																 fReac->GetReactant(2).M());
 
 	
 	// Iterate through successive neutrons

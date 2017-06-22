@@ -1,18 +1,21 @@
+#include <cassert>
 #include <vector>
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4ThreeVector.hh"
-#include "TntNuclearMasses.hh"
 #include "TntReactionKinematics.hh"
 #include "TntReactionGenerator.hh"
 
 
+namespace {
+template<typename T> T POW2(const T& t) { return t*t; }
+}
+
+
 TntTwoBodyReactionGenerator::TntTwoBodyReactionGenerator():
-	fBeam(0,0,0,0), fTarget(0,0,0,0), fEjectile(0,0,0,0), fRecoil(0,0,0,0),
-	fPos(0,0,0),
 	fRngEbeam(0), fRngEx3(0), fRngEx4(0), fRngTheta(0), fRngPhi(0),
 	fEmX(0), fEmY(0)
-{ fM1=fM2=fM3=fM4=fTheta=fPhi=0; }
+{ fTheta=fPhi=0; }
 
 TntTwoBodyReactionGenerator::~TntTwoBodyReactionGenerator()
 { }
@@ -21,23 +24,24 @@ void TntTwoBodyReactionGenerator::SetBeamTargetEjectile(const G4String& beam,
 																												const G4String& target, 
 																												const G4String& ejectile)
 {
-	int z1,a1; TntNuclearMasses::GetZAFromSymbol(beam,&z1,&a1);
-	int z2,a2; TntNuclearMasses::GetZAFromSymbol(target,&z2,&a2);
-	int z3,a3; TntNuclearMasses::GetZAFromSymbol(ejectile,&z3,&a3);
-
-	SetBeamTargetEjectile(z1,a1,z2,a2,z3,a3);
+	fP1.SetNucleus(beam);
+	fP2.SetNucleus(target);
+	fP3.SetNucleus(ejectile);
+	G4int Z4 = fP1.Z() + fP2.Z() - fP3.Z();
+	G4int A4 = fP1.A() + fP2.A() - fP3.A();
+	fP4.SetNucleus(Z4, A4);
 }
 
 void TntTwoBodyReactionGenerator::SetBeamTargetEjectile(G4int Zbeam, G4int Abeam, 
 																												G4int Ztrgt, G4int Atrgt,
 																												G4int Zejectile, G4int Aejectile)
 {
-	G4int Zrecoil = Zbeam + Ztrgt - Zejectile;
-	G4int Arecoil = Abeam + Atrgt - Aejectile;
-	fM1 = TntNuclearMasses::GetNuclearMass(Zbeam,     Abeam)     * MeV;
-	fM2 = TntNuclearMasses::GetNuclearMass(Ztrgt,     Atrgt)     * MeV;
-	fM3 = TntNuclearMasses::GetNuclearMass(Zejectile, Aejectile) * MeV;
-	fM4 = TntNuclearMasses::GetNuclearMass(Zrecoil,   Arecoil)   * MeV;
+	fP1.SetNucleus(Zbeam, Abeam);
+	fP2.SetNucleus(Ztrgt, Atrgt);
+	fP3.SetNucleus(Zejectile, Aejectile);
+	G4int Z4 = fP1.Z() + fP2.Z() - fP3.Z();
+	G4int A4 = fP1.A() + fP2.A() - fP3.A();
+	fP4.SetNucleus(Z4, A4);
 }
 
 void TntTwoBodyReactionGenerator::SetEmittance(TntBeamEmittance* emX, TntBeamEmittance* emY)
@@ -53,40 +57,24 @@ void TntTwoBodyReactionGenerator::SetRNGs(TntRng* rngEbeam,
 																					TntRng* rngPhi)
 {
 	fRngEbeam = rngEbeam;
-	fRngEx3 = rngEx3;
-	fRngEx4 = rngEx4;
+	fRngEx3   = rngEx3;
+	fRngEx4   = rngEx4;
 	fRngTheta = rngTheta;
-	fRngPhi = rngPhi;
+	fRngPhi   = rngPhi;
 }
 
-
-G4double TntTwoBodyReactionGenerator::GetReactantMass(G4int i) const
+const TntParticle& TntTwoBodyReactionGenerator::GetReactant(G4int i) const
 {
 	switch(i) {
-	case 1: return fM1;
-	case 2: return fM2;
-	case 3: return fM3;
-	case 4: return fM4;
-	default:
-		{
-			G4cerr << "ERROR:: TntTwoBodyReactionGenerator::GetReactantMass:: Invalid indx: " << i
-					 << ". Valid arguments are 1,2,3,4. Returning DUMMY value: 0" << G4endl;
-			return 0;
-		}
-	}
-}
-const G4LorentzVector& TntTwoBodyReactionGenerator::GetReactant(G4int i) const
-{
-	switch(i) {
-	case 1: return fBeam;
-	case 2: return fTarget;
-	case 3: return fEjectile;
-	case 4: return fRecoil;
+	case 1: return fP1;
+	case 2: return fP2;
+	case 3: return fP3;
+	case 4: return fP4;
 	default:
 		{
 			G4cerr << "ERROR:: TntTwoBodyReactionGenerator::GetReactant:: Invalid indx: " << i
 					 << ". Valid arguments are 1,2,3,4. Returning DUMMY vector: (0,0,0,0)" << G4endl;
-			static G4LorentzVector dummy(0,0,0,0);
+			static TntParticle dummy;
 			return dummy;
 		}
 	}
@@ -97,31 +85,36 @@ G4bool TntTwoBodyReactionGenerator::Generate()
 	// Generate incoming beam particle enegy
 	//
 	G4double ebeam = fRngEbeam->GenerateAbove(0); // beam kinetic energy
-	G4double pbeam = sqrt(pow(fM1+ebeam, 2) - fM1*fM1); // beam momentum;
+	G4double pbeam = sqrt( POW2(fP1.M()+ebeam) - fP1.M2() ); // beam momentum;
 	
 	// Generate Beam Angle & Position //
 	//
-	fPos.set(0,0,0);
-	G4double pbeam_xyz[3] = {0,0,pbeam};
+	G4ThreeVector pos(0,0,0);
+	G4ThreeVector pbeam3(0,0,pbeam);
 	G4int iloop = 0; 
 	for (auto* em : { fEmX, fEmY }) {
 		if(em) {
 			TntRngGaus2d rng(em->GetSigmaX(), em->GetSigmaTX(), em->GetRho());
 			auto xtx = rng.Generate();
 			G4double x  = xtx.first * mm  +  em->GetX0() * mm; // position
-			fPos[iloop] = x;
+			pos[iloop] = x;
 
 			G4double tx = xtx.second * mrad; // angle
-			pbeam_xyz[iloop] = pbeam*sin(tx/rad);
+			pbeam3[iloop] = pbeam*sin(tx/rad);
 		}
 		++iloop;
 	}	
-	pbeam_xyz[2] = sqrt(pow(pbeam, 2) - pow(pbeam_xyz[0], 2) - pow(pbeam_xyz[1], 2));
-	fBeam.set(pbeam_xyz[0], pbeam_xyz[1], pbeam_xyz[2], fM1+ebeam);
-
+	pbeam3[2] = sqrt( POW2(pbeam) - POW2(pbeam3[0]) - POW2(pbeam3[1]) );
+	fP1.SetPosition(pos);
+	fP1.SetP3(pbeam3);
+	assert( fabs(fP1.E() - fP1.M()) - ebeam < 1e-8 );
+	assert( fabs(fP1.P() - pbeam) < 1e-8 );
+	assert( fabs(fP1.Momentum().m() - fP1.M()) < 1e-8 );
+	
 	// Set target
 	//
-	fTarget.set(0,0,0,fM2);
+	fP2.SetP3XYZ(0,0,0);
+	fP2.SetPosition(fP1.Position());
 	
 	// Generate Excitation Energies
 	//
@@ -134,16 +127,21 @@ G4bool TntTwoBodyReactionGenerator::Generate()
 	fPhi = fRngPhi ? fRngPhi->Generate() : 0;
 
 	// Now calculate reaction
-	G4double masses[2] = { fM3+ex3, fM4+ex4 };
-	TntTwoBodyReactionKinematics reacKin(fBeam, fTarget, std::vector<G4double>(masses, masses+2));
+	G4double masses[2] = { fP3.M()+ex3, fP4.M()+ex4 };
+	TntTwoBodyReactionKinematics 
+		reacKin(fP1.Momentum(), fP2.Momentum(), std::vector<G4double>(masses, masses+2));
 	G4bool isGood = reacKin.Calculate(fTheta, fPhi);
 	if(isGood) {
-		fEjectile = reacKin.GetProduct(3);
-		fRecoil = reacKin.GetProduct(4);
+		fP3.SetPosition(fP1.Position());
+		fP4.SetPosition(fP1.Position());
+		fP3.SetP3(reacKin.GetProduct(3).vect());
+		fP4.SetP3(reacKin.GetProduct(4).vect());
 	} else {
-		fEjectile.set(0,0,0,0);
-		fRecoil.set(0,0,0,0);
+		fP3.SetPosition(0,0,0);
+		fP4.SetPosition(0,0,0);
+		fP3.SetP3XYZ(0,0,0);
+		fP4.SetP3XYZ(0,0,0);
 	}
 	
-	return TRUE;
+	return isGood;
 }
