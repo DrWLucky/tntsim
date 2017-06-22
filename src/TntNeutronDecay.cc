@@ -42,11 +42,12 @@ TntNeutronDecayIntermediate::~TntNeutronDecayIntermediate()
 void TntNeutronDecayIntermediate::SetInputReaction(const TntReactionGenerator* r)
 {
 	assert(0 && "NEED TO IMPLEMENT TntNeutronDecayIntermediate::SetInputReaction!!!!");
-	// mInitialA = A;
-	// mInitialZ = Z;
-	// mInitialMass = TntNuclearMasses::GetNuclearMass(Z, A)*MeV;
-	// mFinalFragMass = TntNuclearMasses::GetNuclearMass(Z, A - mNumberOfNeutronsEmitted)*MeV;
-	// mInitial = momentum;
+	mInitialA = r->GetReactant(4).A();
+	mInitialZ = r->GetReactant(4).Z();
+	mInitialMass = r->GetReactant(4).M();
+	mFinalFragMass = 
+		TntNuclearMasses::GetNuclearMass(mInitialZ, mInitialA - mNumberOfNeutronsEmitted)*MeV;
+	mInitial = r->GetReactant(4).Momentum();
 	fReaction = r;
 }
 
@@ -347,12 +348,9 @@ TntTwoNeutronDecayDiNeutron::~TntTwoNeutronDecayDiNeutron()
 // use by the MoNA collaboration.
 G4bool TntTwoNeutronDecayDiNeutron::Generate()
 {
-	return true;
-
-#if 0
 	////////////////////////////////////////////////
   // initial unbound state decay: A -> (A-2) + (2n)
-	
+	//
 	if(mInitial.m() < mFinalFragMass + 2*kNeutronMass) {
 		G4cerr << "ERROR:: TntTwoNeutronDecayPhaseSpace:: Not enough energy for decay!" << G4endl;
 		G4cerr << "MASSES (MBeam+ex, MF, 2*MN):: " << mInitial.m() << ", "
@@ -366,19 +364,45 @@ G4bool TntTwoNeutronDecayDiNeutron::Generate()
 	// di-neutron
 	G4LorentzVector lv2N(0,0,0,2*kNeutronMass);
 
+	#if 0
 	///TODO:: Need Generators for exenTotal, exenDiNeutron, incl. Volya stuff.
 	/// (see st_reaction.cc, line 967)
 	double exenTotal = mInitial.m() - lvFrag.m() - lv2N.m(); // TOTAL decay energy
 	double exenDiNeutron = 118.5*keV;  // NOMINAL dineutron breakup energy, and POSSIBLY WRONG!!
 	exenDiNeutron = TntRngBreitWigner(118.5*keV, 100*keV).GenerateAbove(0);
 	double exen12_left = exenTotal - exenDiNeutron;
-
-	if(!fRngVolya) {
-//		fRngVolya = new TntRngVolyaDiNeutron(exenTotal, 
-																				 // (G4double Ei, G4double Gi, G4double a_s, G4int Ai):
-	}
-
+#endif
 	
+	// 'Volya' dineutron decay
+	//  Generates intrinsic and kinetic energies of dineutron
+	//  The generation happens in TntRngTwoBodyGenerator, so we
+	//  need to read the last generated values from the
+	//  RNG used to make pick the recoil excitation energy, when
+	//  the reaction generator was run.
+	//
+	std::pair<double, double> di_eiek; // Dineutron intrinsic, kinetic energy
+	try
+	{
+		const TntRngVolyaDiNeutronEx& rngVolya =
+			dynamic_cast<const TntRngVolyaDiNeutronEx&>(*fReaction->GetRngEx4());
+		
+		di_eiek = rngVolya.GetRng2d()->GetLast();
+	}
+	catch (std::exception& e) 
+	{
+		// Wrong RNG class set in TntReactionGenerator
+		G4cerr << "ERROR:: TntReactionGenerator has the wrong RNG class"
+					 << " for dineuton decay!" << G4endl;
+		exit(1);
+	}
+	const G4double exenTotal = mInitial.m() - mFinalFragMass - 2*kNeutronMass; // TOTAL decay energy
+	G4cerr << exenTotal << " " <<  (di_eiek.first + di_eiek.second) << " <<<exenTotal di_ei+ei_ek"<<G4endl;
+
+	//
+	G4double exenDiNeutron = di_eiek.first;
+	double exen12_left = exenTotal - exenDiNeutron;
+	G4cerr << exen12_left << " " << di_eiek.second << " <<<exen12_left di_ek"<<G4endl;
+
 	double e2N, eF;   // total neutron and fragment energy
   double eCM;   // total CM energy
 
@@ -462,7 +486,6 @@ G4bool TntTwoNeutronDecayDiNeutron::Generate()
 	SetFinal(3, lvN2);     // neutron 2
 
 	return true;
-#endif
 }
 
 

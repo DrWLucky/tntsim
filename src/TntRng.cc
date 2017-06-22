@@ -241,8 +241,8 @@ TntRngVolyaDiNeutronEx::~TntRngVolyaDiNeutronEx()
 
 G4double TntRngVolyaDiNeutronEx::DoGenerate()
 {
-	fLastGen2d = fR2d->Generate();
-	return fLastGen2d.first + fLastGen2d.second;
+	auto gen2d = fR2d->Generate(); // dineutron ei, ek
+	return gen2d.first + gen2d.second; // sum of energies is total decay energy
 }
 
 
@@ -287,12 +287,12 @@ std::pair<G4double, G4double> TntRngGaus2d::DoGenerate()
 
 // TNT RNG VOLYA DINEUTRON //
 
-TntRngVolyaDiNeutron::TntRngVolyaDiNeutron(G4double Ei, G4double Gi, G4double a_s, G4int Ai):
-	fEi(Ei), fGi(Gi), fAs(a_s), fA(Ai)
+TntRngVolyaDiNeutron::TntRngVolyaDiNeutron(G4double E_i, G4double G_i, G4double a_s, G4int A_i):
+	fEi(E_i), fGi(G_i), fAs(a_s), fA(A_i)
 {
 	// Set Paramaters
   G4double FragA = fA - 2; //Residual fragments after dineutron decay
-  // G4double Ei = fEi; //MeV Initial State
+	G4double Ei = fEi; //MeV Initial State
   G4double as = fAs; //n-n scattering length (fm)
 
   //NewParameter for addition of BW
@@ -384,11 +384,11 @@ TntRngVolyaDiNeutron::TntRngVolyaDiNeutron(G4double Ei, G4double Gi, G4double a_
     }//i second loop
 
   }//j Ebw
-
+	
   
   //CREATE 2-D PDF
   gsl_histogram2d_pdf_init(fP2d, fH2d);
-	}
+}
 
 
 TntRngVolyaDiNeutron::~TntRngVolyaDiNeutron()

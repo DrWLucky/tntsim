@@ -125,47 +125,7 @@ G4String macfile = "", inputfile = "";
 
 // #include "TLorentzVector.h"
 int main(int argc, char** argv)
-{
-	TntRngVolyaDiNeutron rng(0.822, 0.118, -18., 6);
-	TFile f("test-volya.root", "recreate");
-	TTree *t=new TTree("t", "volya dineutron");
-	double x,y;
-	t->Branch("x",&x,"x/D");
-	t->Branch("y",&y,"y/D");
-	for(int i=0; i<100000;++i) {
-		std::pair<double,double> gen = rng.Generate();
-		x=gen.first;
-		y=gen.second;
-		t->Fill();
-	}
-	t->Write();
-
-
-	TH2* hst = new TH2D("hst", "", 6000, 0, 10, 6000, 0, 10);
-	for(int i=0; i< 6000; ++i) {
-		if(i%1000 == 0){G4cout<<i<<"... ";std::flush(G4cout);}
-		for(int j=0; j< 6000; ++j) {
-			double cnt = gsl_histogram2d_get (rng.GetHist(), i, j);
-			hst->SetBinContent(i+1,j+1,cnt);
-		}
-	}
-	G4cout<<G4endl;
-	hst->Write();
-	f.Close();
-
-	
-	
-	// FILE* fhist = fopen("hhist.dat", "w");
-	// gsl_histogram2d_fprintf (fhist, rng.GetHist(), "%f", "%f");
-	// fclose(fhist);
-
-	// FILE* fpdf = fopen("hpdf.dat", "w");
-	// gsl_histogram2d_pdf_fprintf (fpdf, rng.GetPdfHist(), "%f", "%f");
-	// fclose(fpdf);
-	
-	return 0;
-	
-	
+{	
 # if 0
 // TEST //
 	TntNeutronDecay* decay = new TntTwoNeutronDecayPhaseSpace;

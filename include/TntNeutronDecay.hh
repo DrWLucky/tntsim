@@ -105,8 +105,6 @@ public:
 	TntTwoNeutronDecayDiNeutron();
 	virtual ~TntTwoNeutronDecayDiNeutron();
 	virtual G4bool Generate();
-private:
-	//TntRngVolyaDiNeutronEx* fRngVolya;
 };
 
 // Concrete class for two neutron

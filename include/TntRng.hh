@@ -119,11 +119,11 @@ class TntRngVolyaDiNeutronEx : public TntRng {
 public:
 	TntRngVolyaDiNeutronEx(G4double e, G4double w, G4double a_s, G4double Ai);
 	virtual ~TntRngVolyaDiNeutronEx();
+	const TntRngVolyaDiNeutron* GetRng2d() const { return fR2d.get(); }
 private:	
 	G4double DoGenerate();
 private:
 	std::auto_ptr<TntRngVolyaDiNeutron> fR2d;
-	std::pair<G4double, G4double> fLastGen2d;
 };
 
 
