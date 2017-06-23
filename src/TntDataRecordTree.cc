@@ -18,6 +18,7 @@
 //
 #include <cassert>
 #include <string>
+#include <sstream>
 #include <algorithm>
 #include "TntGlobalParams.hh"
 #include "TntDataRecordTree.hh"
@@ -365,6 +366,18 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
   cout << TntPointer << endl;
 }
 
+namespace { 
+void write_file_to_root(const char* fname, const char* name) {
+	std::ifstream file(fname);
+	std::stringstream buffer;
+	buffer << file.rdbuf();
+	TObjString objStr(buffer.str().c_str());
+	objStr.Write(name);
+} }	
+	
+
+extern G4int TntGetRngSeed();
+
 TntDataRecordTree::~TntDataRecordTree()
 {/* Destructor, Close root file */
 
@@ -392,6 +405,17 @@ TntDataRecordTree::~TntDataRecordTree()
 	
 	TObjString objReactionCodes(reactionCodes.c_str());
 	objReactionCodes.Write("ReactionCodes");
+
+	// input file
+	write_file_to_root(TntGlobalParams::Instance()->GetInputFile(), "inputfile");
+
+	// reaction file
+	write_file_to_root(TntGlobalParams::Instance()->GetReacFile(), "reacfile");
+
+	// seed
+	TObjString strSeed(std::to_string(TntGetRngSeed()).c_str());
+	strSeed.Write("seed");
+
 	
   DataFile->Write(); 
   DataFile->Close();
@@ -1009,3 +1033,4 @@ G4String TntDataRecordTree::GetReactionName(G4int  code)
 	return ((code-1) >= 0 && (code-1) < NCODES) ?
 		G4String(ReactionNames[code-1].c_str()) : G4String("INVALID");
 }
+

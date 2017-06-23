@@ -41,8 +41,6 @@
 #include "G4UImanager.hh"
 #include "G4String.hh"
 
-#include "Randomize.hh"
-
 #include "TntPhysicsList.hh"
 #include "TntDetectorConstruction.hh"
 
@@ -99,7 +97,7 @@ int main(int argc, char** argv)
 		}
 		else if(arg == "-seed") {
 			G4int theSeed = atoi(argv[++i]);
-			CLHEP::HepRandom::setTheSeed( theSeed );
+			TntSetRngSeed( theSeed );
 		}
 		else if(arg == "-fout") {
 			FILEOUT_ = argv[++i];
@@ -125,9 +123,10 @@ int main(int argc, char** argv)
 	parser.AddInput("anger",       &TntGlobalParams::SetAngerAnalysis);
 	
 	parser.Parse(inputfile);
+	TntGlobalParams::Instance()->SetInputFile(inputfile);
 
 	if(FILEOUT_ != "") TntGlobalParams::Instance()->SetRootFileName(FILEOUT_);
-	G4cerr << "Running with RNG seed:: " << CLHEP::HepRandom::getTheSeed() << G4endl;
+	G4cerr << "Running with RNG seed:: " << TntGetRngSeed() << G4endl;
 
 	
 //by Shuya 160421. All copied from tntsim.cc

@@ -266,21 +266,44 @@ void TntTwoNeutronDecaySequential::SetInputReaction(const TntReactionGenerator* 
 G4bool TntTwoNeutronDecaySequential::Generate()
 {
 	// Choose decay energies
-	// NOTE: This is my own interpretation of double BW.
-	// It is not necessarily correct. Once I have the RNGs from
-	// Jenna, update to do a 'Volya' sequential decay.
-
+	//
+	const G4double s2n = mInitial->M() - mFinalFragMass - GetNumberOfNeutrons()*kNeutronMass;
 	G4double edecay1, edecay2;
-	const G4double ex1 = GetDecayParam("ex1");  // Intermediate state EXCITATION energy
-	const G4double  w1 = GetDecayParam("width1"); // Intermediate state width
-	const G4double edecay = mInitial->MplusEx() - mFinalFragMass - 2*kNeutronMass; // TOTAL decay energy
-	do {
-		G4double exIntermediate = TntRngBreitWigner(ex1, w1).Generate();
-		edecay1 = mInitial->MplusEx() - (mIntermediateFragMass+exIntermediate) - kNeutronMass;
-		edecay2 = edecay - edecay1;
-	} while(edecay1 < 0 || edecay2 < 0);
+	try
+	{
+		/** \note Using 'Volya' sequential decay.
+		 *  Generates total *excitation* energy, and relative n-n energy
+		 *  The generation happens in TntRngTwoBodyGenerator, so we
+		 *  need to read the last generated values from the
+		 *  RNG used to pick the recoil excitation energy, when
+		 *  the reaction generator was run.
+		 */
+		const TntRngVolyaSequentialEx& rngVolya =
+			dynamic_cast<const TntRngVolyaSequentialEx&>(*fReaction->GetRngEx4());
 
+		G4double edecay2n = s2n + rngVolya.GetRng2d()->GetLast().first;
+		G4double erel = rngVolya.GetRng2d()->GetLast().second;
 
+		edecay1 = (edecay2n + erel)/2;
+		edecay2 = (edecay2n - erel)/2;
+	}
+	catch (std::exception& e) 
+	{
+		// Wrong RNG class set in TntReactionGenerator
+		if(GetVerboseLevel() > 0) {
+			TNTERR << "TntTwoNeutronDecaySequential:: TntReactionGenerator has the wrong RNG class"
+						 << " for dineuton decay!" << G4endl;
+		}
+		exit(1);
+	}	
+	if(edecay1 < 0 || edecay2 < 0) {
+		if(GetVerboseLevel() > 1) {
+			TNTWAR << "TntTwoNeutronDecaySequential :: Not enough energy for decay "
+						 << "(edecay1, edecay2 :: "  << edecay1 << ", " << edecay2 << G4endl;
+		}
+		return false;
+	}
+	
 	////////////////////////////////////////
 	// Evaportation of neutrons
 
@@ -305,15 +328,13 @@ G4bool TntTwoNeutronDecaySequential::Generate()
 
 	// First boost to frame where frag is at rest after first decay
 	// n.b. neutron 1 (lvN1) is already in this frame
-	G4ThreeVector t4boost = lvF1.boostVector();
-	lvF2.boost(t4boost); // FINAL fragment
-	lvN2.boost(t4boost); // neutron from SECOND decay
+	lvF2.boost(lvF1.boostVector()); // FINAL fragment
+	lvN2.boost(lvF1.boostVector()); // neutron from SECOND decay
 
 	// Now boost all three into lab frame
-	G4ThreeVector t3boost = mInitial->Momentum().boostVector();
-	lvN1.boost(t3boost); // neutron 1
-	lvN2.boost(t3boost); // neutron 2
-	lvF2.boost(t3boost); // final fragment
+	lvN1.boost(mInitial->Momentum().boostVector()); // neutron 1
+	lvN2.boost(mInitial->Momentum().boostVector()); // neutron 2
+	lvF2.boost(mInitial->Momentum().boostVector()); // final fragment
 
 	
 	SetFinal(0, mInitial->Momentum()); // initial nucleus, before decay

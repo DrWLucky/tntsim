@@ -335,8 +335,8 @@ TntPGAReaction::TntPGAReaction():
 	TntNuclearMasses::GetZAFromSymbol(rfp.beam, fZ, fA);
 	TntNuclearMasses::GetZAFromSymbol(rfp.target, fZ+1, fA+1);
 	TntNuclearMasses::GetZAFromSymbol(rfp.ejectile, fZ+2, fA+2);
-	fZ[3] = fZ[0]+fZ[1] - fZ[2];
-	fA[3] = fA[0]+fA[1] - fA[2];
+	fZ[3] = fZ[0]+fZ[1] - fZ[2]; const G4double FragZ = fZ[3];
+	fA[3] = fA[0]+fA[1] - fA[2]; const G4double FragA = fA[3];
 	
 	fRngEbeam.reset(new TntRngGaus(rfp.ebeam*fA[0], rfp.debeam*fA[0])); // TOTAL beam kinetic energy
 
@@ -355,10 +355,25 @@ TntPGAReaction::TntPGAReaction():
 	fDecay->SetVerboseLevel(1); // only print FATAL messages
 	// ExEn RNG
 	// (+Depends on decay type)
-	if(dynamic_cast<TntTwoNeutronDecayDiNeutron*>(fDecay.get())) {
-		fRngEx4.reset(new TntRngVolyaDiNeutronEx(rfp.ex, rfp.width, -18.7, fA[0]));
+	if(dynamic_cast<TntTwoNeutronDecayDiNeutron*>(fDecay.get())) 
+	{
+		fRngEx4.reset(new TntRngVolyaDiNeutronEx(rfp.ex, rfp.width, -18.7, FragA));
 	}
-	else {
+	else if(dynamic_cast<TntTwoNeutronDecaySequential*>(fDecay.get())) 
+	{
+		G4double Mass_i = TntNuclearMasses::GetNuclearMass(FragZ, FragA-1);
+		G4double Mass_f = TntNuclearMasses::GetNuclearMass(FragZ, FragA-2);
+		G4double Ev = Mass_i - Mass_f - CLHEP::neutron_mass_c2;
+		fRngEx4.reset(new TntRngVolyaSequentialEx(rfp.ex,
+																							Ev,
+																							1, // sI
+																							1, // sF
+																							1, // L
+																							rfp.width,
+																							FragA));
+	}
+	else
+	{
 		fRngEx4.reset(new TntRngBreitWigner(rfp.ex, rfp.width));
 	}
 	fReac->SetRNGs(fRngEbeam.get(), 0, fRngEx4.get(), fRngTheta.get(), fRngPhi.get());

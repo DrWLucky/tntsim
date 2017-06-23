@@ -49,6 +49,19 @@ void TntCheckMaxTries::operator() (G4int& n, const char* fct, G4double* low, G4d
 	}
 }
 
+
+
+void TntSetRngSeed(G4int seed)
+{
+	CLHEP::HepRandom::setTheSeed( seed );
+}
+
+G4int TntGetRngSeed()
+{
+	return CLHEP::HepRandom::getTheSeed( );
+}
+
+
 // TNT RNG (BASE CLASS) //
 
 G4double TntRng::GenerateAbove(G4double low)

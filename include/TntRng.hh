@@ -8,6 +8,12 @@
 
 
 
+/// Set Global RNG seed
+extern void TntSetRngSeed(G4int seed);
+
+/// Get Global RNG seed
+extern G4int TntGetRngSeed();
+
 /// Abstract random number generator class
 /** Derived classes implement details of generating random
  *  numbers from set distributions.

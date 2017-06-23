@@ -231,7 +231,7 @@ private:
 	G4int GetParticleCode(const G4String& name);
 	G4int GetReactionCode(const G4String& name);
 	G4String GetParticleName(G4int  code);
-	G4String GetReactionName(G4int  code);
+	G4String GetReactionName(G4int  code);	
 	
 private:
   TntDataRecordTree() {;}   // Hide Default Constructor
