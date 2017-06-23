@@ -88,93 +88,8 @@ G4int NumOfCreatedPhotons = 0;
 
 G4String macfile = "", inputfile = "";
 
-// namespace{ void ReadArgs(int argc, char** argv)
-// {
-// 	for(int i=1; i< argc; ++i) {
-// 		if(false) { }
-// # if 0
-// 		else if(G4String(argv[i]) == "-energy") {
-// 			TntGlobalParams::Instance()->SetNeutronEnergy(atof(argv[++i]) * MeV);
-// 		}
-// 		else if(G4String(argv[i]) == "-beamtype") {
-// 			TntGlobalParams::Instance()->SetBeamType(argv[++i]);
-// 		}
-// 		else if(G4String(argv[i]) == "-rootfile") {
-// 			TntGlobalParams::Instance()->SetRootFileName(argv[++i]);
-// 		}
-// 		else if(G4String(argv[i]) == "-resscale") {
-// 			TntGlobalParams::Instance()->SetPhotonResolutionScale(atoi(argv[++i]));
-// 		}
-// 		else if(G4String(argv[i]) == "-ntracking") {
-// 			TntGlobalParams::Instance()->SetMenateR_Tracking(atoi(argv[++i])); 
-// 		}
-// #endifaa
-// 		else if(i == 1) {
-// 			macfile = argv[i];
-// 		}
-// 		else {
-// 			G4cerr << "ERROR: Invalid flag " << argv[i] << G4endl;
-// 			exit(1);
-// 		}
-// 	}
-// } }
-
-
-#include "TntRng.hh"
-#include <TH2D.h>
-
-// #include "TLorentzVector.h"
 int main(int argc, char** argv)
-{	
-# if 0
-// TEST //
-	TntNeutronDecay* decay = new TntTwoNeutronDecayPhaseSpace;
-	decay->SetBeam(2, 6, G4ThreeVector(0, 0, 0.841*GeV));
-	decay->SetDecayParameter("energy", 1797*keV);
-	decay->SetDecayParameter("width", 113*keV);
-
-	
-	TFile* f = new TFile("test123.root", "recreate");
-	TTree* t = new TTree("t", "");
-	TLorentzVector *v0=0, *v1=0, *v2=0, *vi=0;
-	double edecay = 0;
-	t->Branch("vi", &vi);
-	t->Branch("v0", &v0);
-	t->Branch("v1", &v1);
-	t->Branch("v2", &v2);
-	t->Branch("edecay", &edecay, "edecay/D");
-	for(int i=0; i< 100000; ++i) {
-		decay->Generate(true);
-		vi->SetXYZT(decay->GetFinal(0).x(), decay->GetFinal(0).y(), decay->GetFinal(0).z(), decay->GetFinal(0).t());
-		v0->SetXYZT(decay->GetFinal(1).x(), decay->GetFinal(1).y(), decay->GetFinal(1).z(), decay->GetFinal(1).t());
-		v1->SetXYZT(decay->GetFinal(2).x(), decay->GetFinal(2).y(), decay->GetFinal(2).z(), decay->GetFinal(2).t());
-		v2->SetXYZT(decay->GetFinal(3).x(), decay->GetFinal(3).y(), decay->GetFinal(3).z(), decay->GetFinal(3).t());
-		edecay = (*v0+*v1+*v2).M() - v0->M() - v1->M() - v2->M();
-		t->Fill();
-	}
-	t->Write();
-	f->Close();
-	return 0;
-
-//////////
-	
-	TntRngCustom c("zero.dat");
-	TFile*f = new TFile("test123.root","recreate");
-	TTree*t = new TTree("t","");
-	TLorentzVector *v3=0,*v4=0;
-	t->Branch("v3",&v3);	t->Branch("v4",&v4);
-	TntReaction r(3,7,1,2,2,6,15,1.7,"");
-	for(int i=0;i<100000;++i){
-		r.Generate();
-		v3->SetXYZT(r.GetEjectile().x(), r.GetEjectile().y(), r.GetEjectile().z(), r.GetEjectile().t());
-		v4->SetXYZT(r.GetRecoil().x(), r.GetRecoil().y(), r.GetRecoil().z(), r.GetRecoil().t());
-		t->Fill();}
-	t->Write();
-	f->Close();
-	delete f;
-	return 0;
-#endif
-	
+{
 	G4String FILEOUT_ = "";
 	for(int i=1; i< argc; ++i) {
 		std::string arg = argv[i];
@@ -214,47 +129,6 @@ int main(int argc, char** argv)
 	if(FILEOUT_ != "") TntGlobalParams::Instance()->SetRootFileName(FILEOUT_);
 	G4cerr << "Running with RNG seed:: " << CLHEP::HepRandom::getTheSeed() << G4endl;
 
-	// G4cerr << TntGlobalParams::Instance()->GetRootFileName() << " <<<< FNAME:: " << G4endl;
-
-	// TntInputFileParser<Test> testParser(&test123);
-	// testParser.AddInput("test", &Test::Set);
-	// testParser.Parse(inputfile);
-	// G4cerr << test123.p1_<<"\t"<<test123.p2_<<G4endl;
-	// return 0;
-	
-	// G4cerr << TntGlobalParams::Instance()->GetDetectorZ() << "\t"
-	// 			 << TntGlobalParams::Instance()->GetNeutronEnergy() << G4endl;
-
-
-	// TntReactionFactory factory;
-	// TntInputFileParser<TntReactionFactory> reacParser(&factory);
-	// reacParser.AddInput("beam", &TntReactionFactory::SetBeam);
-	// reacParser.AddInput("target", &TntReactionFactory::SetTarget);
-	// reacParser.AddInput("ejectile", &TntReactionFactory::SetEjectile);
-	// reacParser.AddInput("ebeam", &TntReactionFactory::SetEbeamPerA);
-	// reacParser.AddInput("ex", &TntReactionFactory::SetEx);
-	// reacParser.AddInput("width", &TntReactionFactory::SetWidth);
-	// reacParser.AddInput("angdist", &TntReactionFactory::SetAngDistFile);
-
-	// reacParser.Parse("reaction.dat");
-	// std::auto_ptr<TntReaction> r(factory.CreateReaction());
-
-	// TFile*f = new TFile("test123.root","recreate");
-	// TTree*t = new TTree("t","");
-	// TLorentzVector *v3=0,*v4=0;
-	// t->Branch("v3",&v3);	t->Branch("v4",&v4);
-	// for(int i=0;i<100000;++i){
-	// 	r->Generate();
-	// 	v3->SetXYZT(r->GetEjectile().x(), r->GetEjectile().y(), r->GetEjectile().z(), r->GetEjectile().t());
-	// 	v4->SetXYZT(r->GetRecoil().x(), r->GetRecoil().y(), r->GetRecoil().z(), r->GetRecoil().t());
-	// 	t->Fill();}
-	// t->Write();
-	// f->Close();
-	// delete f;
-
-	
-	// return 1;
-	
 	
 //by Shuya 160421. All copied from tntsim.cc
 //  G4int numberOfEvent = 10;

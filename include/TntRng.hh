@@ -246,7 +246,6 @@ public:
 	 *  \param [in] Ev    Intermediate state energy, if Ev < 0 then it is assumed to be scattering length for L=0 decay
 	 *  \param [in] sI    Spectroscopic factor for the I->V single particle decay
 	 *  \param [in] sV    Spectroscopic factor for the V->F single particle decay
-	 *  \param [in] par5 
 	 *  \param [in] L     Orbital angular momentum
 	 *  \param [in] Gamma_in  Initial width
 	 *  \param [in] fragA Initial fragment mass number
@@ -272,6 +271,28 @@ private:
 	gsl_histogram2d_pdf* fP2d;
 	gsl_histogram2d* fH2d;	
 };
+
+/// Custom excitation energy generator for 'Volya' dineutron decay model
+/** Generates the total decay energy.
+ *  Uses TntRngVolyaSequential internally; pair of <EBW , EREL_N>
+ *  can be accessed through internal 2d generator, using GetRng2d()
+ *  \attention The constructor is highly non-trivial and very computationally
+ *  expensive. It is recommended to create instances as few times as possible!
+ */
+class TntRngVolyaSequentialEx : public TntRng {
+public:
+	/// Ctor, same parameters as TntRngVolyaSequential
+	TntRngVolyaSequentialEx(double Ei, double Ev, double sI, double sV,
+													int L, double Gamma_in, int fragA);
+	virtual ~TntRngVolyaSequentialEx();
+	/// Returns internal 2d generator
+	const TntRngVolyaSequential* GetRng2d() const { return fR2d.get(); }
+private:	
+	G4double DoGenerate();
+private:
+	std::auto_ptr<TntRngVolyaSequential> fR2d;
+};
+
 
 
 

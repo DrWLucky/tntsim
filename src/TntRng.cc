@@ -244,7 +244,23 @@ TntRngVolyaDiNeutronEx::~TntRngVolyaDiNeutronEx()
 G4double TntRngVolyaDiNeutronEx::DoGenerate()
 {
 	auto gen2d = fR2d->Generate(); // dineutron ei, ek
-	return gen2d.first + gen2d.second; // sum of energies is total decay energy
+	return gen2d.first + gen2d.second; // sum of energies is total excitation energy
+}
+
+
+// TNT RNG VOLYA DINEUTRON EXCITATION ENERGY //
+
+TntRngVolyaSequentialEx::TntRngVolyaSequentialEx(double Ei, double Ev, double sI, double sV,
+																								 int L, double Gamma_in, int fragA):
+	fR2d(new TntRngVolyaSequential(Ei,Ev,sI,sV,L,Gamma_in,fragA))
+{ }
+
+TntRngVolyaSequentialEx::~TntRngVolyaSequentialEx()
+{ }
+
+G4double TntRngVolyaSequentialEx::DoGenerate()
+{
+	return fR2d->Generate().first; // Total BW energy
 }
 
 
