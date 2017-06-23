@@ -122,7 +122,6 @@ private:
 	G4double mM0, mMf, mMn;
 };
 
-
 /// Concrete class for single neutron decay, Breit Wigner
 /** Parameters to set are "energy" and "width"
  *  Setting "width" to zero returns a uniform (spike) decay energy

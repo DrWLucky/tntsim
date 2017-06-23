@@ -289,19 +289,17 @@ std::pair<G4double, G4double> TntRngGaus2d::DoGenerate()
 
 // TNT RNG VOLYA DINEUTRON //
 
-TntRngVolyaDiNeutron::TntRngVolyaDiNeutron(G4double E_i, G4double G_i, G4double a_s, G4int A_i):
-	fEi(E_i), fGi(G_i), fAs(a_s), fA(A_i)
+TntRngVolyaDiNeutron::TntRngVolyaDiNeutron(G4double E_i, G4double G_i, G4double as, G4int A_i)
 {
 	// Set Paramaters
-  G4double FragA = fA - 2; //Residual fragments after dineutron decay
-	G4double Ei = fEi; //MeV Initial State
-  G4double as = fAs; //n-n scattering length (fm)
+  G4double FragA = A_i - 2; //Residual fragments after dineutron decay
+	G4double Ei = E_i;   //MeV Initial State
 
   //NewParameter for addition of BW
-  G4double Gamma_in = fGi;
+  G4double Gamma_in = G_i;
 
   //Constants
-  G4double r0 = 1.4; //fm
+  const G4double r0 = 1.4; //fm
   //fixing the line below - JKS, 3 October 2013
   //G4double RR = r0 * pow(FragA + 2, 0.333333); //fm
   G4double RR = r0 * ( pow(FragA,0.333333) + pow(2,0.333333) ); //fm // channel radius for epsilon_K, first step
