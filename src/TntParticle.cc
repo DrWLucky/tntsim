@@ -4,7 +4,7 @@
 
 
 TntParticle::TntParticle():
-	fA(0), fZ(0), fP(0,0,0,0), fPos(0,0,0)
+	fA(0), fZ(0), fM(0), fEx(0), fP(0,0,0,0), fPos(0,0,0)
 { }
 
 TntParticle::~TntParticle()
@@ -23,9 +23,21 @@ void TntParticle::SetNucleus(const G4String& symbol)
 	SetMass(TntNuclearMasses::GetNuclearMass(fZ, fA)*MeV);
 }
 
+void TntParticle::SetMass(G4double mass) 
+{
+	fM = mass;
+	fP.set(0,0,0,fM+fEx);
+}
+
+void TntParticle::SetEx(G4double ex) 
+{
+	fEx = ex;
+	fP.set(0,0,0,fM+fEx);
+}
+
 void TntParticle::SetP3(const G4ThreeVector& p)
 {
-	G4double E = sqrt(p.mag2() + fM*fM);
+	G4double E = sqrt(p.mag2() + pow(fM+fEx, 2));
 	fP.set(p, E);
 }
 
@@ -43,7 +55,7 @@ void TntParticle::SetP3ThetaPhi(G4double p, G4double theta, G4double phi)
 
 void TntParticle::SetEkinThetaPhi(G4double ekin, G4double theta, G4double phi)
 {
-	G4double E = ekin+M();
+	G4double E = ekin+M()+Ex();
 	G4double p = sqrt(E*E - M2());
 	SetP3ThetaPhi(p,theta,phi);
 }

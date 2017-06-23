@@ -10,24 +10,27 @@ public:
 	TntParticle();
 	~TntParticle();
 	void SetNucleus(G4int Z, G4int A);  /// Sets A,Z, and Mass
-	void SetNucleus(const G4String& symbol);  /// Sets A,Z, and Mass
-	void SetMass(G4double mass) { fM = mass; }
+	void SetNucleus(const G4String& symbol);     /// Sets A,Z, and GROUND STATE Mass
+	void SetMass(G4double mass);
+	void SetEx(G4double ex);
 	void SetA(G4int a) { fA = a; }
 	void SetZ(G4int z) { fZ = z; }
 	
-	G4int    A()     const { return fA; }
-	G4int    Z()     const { return fZ; }
-	G4double M()     const { return fM;      }
-	G4double M2()    const { return fM*fM;   }
-	G4double Amu()   const { return fM*CLHEP::amu_c2; }
-	G4double E()     const { return fP.e();  }
-	G4double P()     const { return fP.vect().mag();  }
-	G4double Px()    const { return fP.px(); }
-	G4double Py()    const { return fP.py(); }
-	G4double Pz()    const { return fP.pz(); }
-	G4double Ekin()  const { return fP.e() - fP.m(); }
-	G4double Theta() const { return fP.theta(); }
-	G4double Phi()   const { return fP.phi();   }
+	G4int    A()       const { return fA; }
+	G4int    Z()       const { return fZ; }
+	G4double M()       const { return fM;      } /// GROUND STATE mass
+	G4double M2()      const { return fM*fM;   } /// GROUND STATE mass^2
+	G4double Ex()      const { return fEx;     } /// Excitation energy
+	G4double MplusEx() const { return fM+fEx;} /// TOTAL intrinsic energy
+	G4double Amu()     const { return fM*CLHEP::amu_c2; }
+	G4double E()       const { return fP.e();  } /// TOTAL ENERGY
+	G4double P()       const { return fP.vect().mag();  }
+	G4double Px()      const { return fP.px(); }
+	G4double Py()      const { return fP.py(); }
+	G4double Pz()      const { return fP.pz(); }
+	G4double Ekin()    const { return fP.e() - fP.m(); }
+	G4double Theta()   const { return fP.theta(); }
+	G4double Phi()     const { return fP.phi();   }
 	const G4LorentzVector& Momentum() const { return fP; }
 	void SetP3(const G4ThreeVector& p);
 	void SetP3XYZ(G4double px, G4double py, G4double pz);
@@ -44,7 +47,7 @@ public:
 	
 private:
 	G4int fA, fZ;
-	G4double fM;
+	G4double fM, fEx;
 	G4LorentzVector fP;
 	G4ThreeVector fPos;
 };

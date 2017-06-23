@@ -25,7 +25,7 @@ public:
 	virtual ~G4GenPhaseSpace() {}
 	G4GenPhaseSpace& operator=(const G4GenPhaseSpace &gen);
 
-	bool          SetDecay(G4LorentzVector &P, G4int nt, const G4double *mass, const char *opt="");
+	bool          SetDecay(const G4LorentzVector &P, G4int nt, const G4double *mass, const char *opt="");
 	G4double        Generate();
 	G4LorentzVector *GetDecay(G4int n);
 

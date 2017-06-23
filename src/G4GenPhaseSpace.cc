@@ -185,11 +185,12 @@ G4LorentzVector *G4GenPhaseSpace::GetDecay(G4int n)
 ///  - false:     the decay is forbidden by kinematics
 ///
 
-bool G4GenPhaseSpace::SetDecay(G4LorentzVector &P, G4int nt,
+bool G4GenPhaseSpace::SetDecay(const G4LorentzVector &P_, G4int nt,
 															 const G4double *mass, const char *opt)
 {
 	// Put things into GeV for internal calculations
 	//
+	G4LorentzVector P = P_;
 	G4double xyzt[4] = {P.x()/GeV, P.y()/GeV, P.z()/GeV, P.t()/GeV};
 	P.set(xyzt[0], xyzt[1], xyzt[2], xyzt[3]);
 	

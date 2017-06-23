@@ -1,3 +1,4 @@
+#include <fstream>
 #include <cassert>
 #include <map>
 #include <CLHEP/Random/RandBreitWigner.h>
@@ -7,6 +8,8 @@
 #include "TntNeutronDecay.hh"
 #include "TntReactionGenerator.hh"
 #include "TntRng.hh"
+#include "TntError.hh"
+
 
 namespace {
 
@@ -28,11 +31,9 @@ template<typename T> T POW2(const T& t) { return t*t; }
 TntNeutronDecayIntermediate::TntNeutronDecayIntermediate(G4int number_of_neutrons_emitted):
 	mNumberOfNeutronsEmitted(number_of_neutrons_emitted),
 	mFinal(number_of_neutrons_emitted + 2),
-	mInitialMass(0),
+	fVerb(2),
 	mFinalFragMass(0),
-	mInitialA(0),
-	mInitialZ(0), 
-	mInitial(0,0,0,0),
+	mInitial(),
 	fReaction(0)
 { }
 
@@ -41,14 +42,10 @@ TntNeutronDecayIntermediate::~TntNeutronDecayIntermediate()
 
 void TntNeutronDecayIntermediate::SetInputReaction(const TntReactionGenerator* r)
 {
-	assert(0 && "NEED TO IMPLEMENT TntNeutronDecayIntermediate::SetInputReaction!!!!");
-	mInitialA = r->GetReactant(4).A();
-	mInitialZ = r->GetReactant(4).Z();
-	mInitialMass = r->GetReactant(4).M();
-	mFinalFragMass = 
-		TntNuclearMasses::GetNuclearMass(mInitialZ, mInitialA - mNumberOfNeutronsEmitted)*MeV;
-	mInitial = r->GetReactant(4).Momentum();
 	fReaction = r;
+	mInitial  = &(r->GetReactant(4));
+	mFinalFragMass = 
+		TntNuclearMasses::GetNuclearMass(mInitial->Z(), mInitial->A() - mNumberOfNeutronsEmitted)*MeV;
 }
 
 void TntNeutronDecayIntermediate::SetFinal(G4int indx, const G4LorentzVector& v)
@@ -56,9 +53,11 @@ void TntNeutronDecayIntermediate::SetFinal(G4int indx, const G4LorentzVector& v)
 	if(size_t(indx) < mFinal.size())	{
 		mFinal[indx].set(v.x(), v.y(), v.z(), v.t());
 	}
-	else { 		
-		G4cerr << "ERROR:: Invalid index to TntNeutronDecayIntermediate::SetFinal:: " << indx << G4endl;
-		mFinal.at(indx).set(0,0,0,0); // throws 
+	else {
+		if(GetVerboseLevel() > 0) {
+			TNTERR << "Invalid index to TntNeutronDecayIntermediate::SetFinal:: " << indx << G4endl;
+		}
+		exit(1);
 	}
 }
 
@@ -68,23 +67,28 @@ const G4LorentzVector& TntNeutronDecayIntermediate::GetFinal(G4int indx) const
 		return mFinal[indx]; 
 	}
 	else {
-		G4cerr << "ERROR:: Invalid index to TntNeutronDecayIntermediate::GetFinal:: " << indx << G4endl;
-		return mFinal.at(indx); // throws
+		if(GetVerboseLevel() > 0) {
+			TNTERR << "Invalid index to TntNeutronDecayIntermediate::GetFinal:: " << indx << G4endl;
+		}
+		exit(1);
 	}
 }
 
-void TntNeutronDecayIntermediate::SetParam(const G4String& par, G4double val)
+void TntNeutronDecayIntermediate::SetDecayParam(const G4String& par, G4double val)
 {
 	mParams[par] = val;
 }
 
-G4double TntNeutronDecayIntermediate::GetParam(const G4String& par)
+G4double TntNeutronDecayIntermediate::GetDecayParam(const G4String& par)
 {
 	std::map<G4String, G4double>::iterator it = mParams.find(par);
 	if(it != mParams.end()) { return it->second; }
-	G4cerr << "ERROR:: TntNeutronDecayIntermediate::GetParam:: Invalid Parameter "
-				 << par << G4endl;
-	throw par;
+
+	if(GetVerboseLevel() > 0) {
+		TNTERR << "TntNeutronDecayIntermediate::GetDecayParam:: Invalid Parameter "
+					 << par << G4endl;
+	}
+	exit(1);
 }
 
 
@@ -104,14 +108,14 @@ TntOneNeutronDecay::~TntOneNeutronDecay()
 G4bool TntOneNeutronDecay::Generate()
 {
 	G4LorentzVector lvF, lvN;
-	TntNeutronEvaporation evap(mInitial.m(), mFinalFragMass, kNeutronMass);
+	TntNeutronEvaporation evap(mInitial->MplusEx(), mFinalFragMass, kNeutronMass);
 	evap(&lvF, &lvN);
 
-	G4ThreeVector t3boost = mInitial.boostVector();
+	G4ThreeVector t3boost = mInitial->Momentum().boostVector();
 	lvN.boost(t3boost); // neutron 1
 	lvF.boost(t3boost); // final fragment
 
-	SetFinal(0, mInitial);
+	SetFinal(0, mInitial->Momentum());
 	SetFinal(1, lvF);
 	SetFinal(2, lvN);
 
@@ -127,7 +131,7 @@ TntTwoNeutronDecayPhaseSpace::TntTwoNeutronDecayPhaseSpace(G4bool fsi):
 	TntNeutronDecayIntermediate(2),
 	fFSI(fsi)
 {
-	SetParam("r0", 6.6);
+	SetDecayParam("r0", 2.4);
 }
 
 TntTwoNeutronDecayPhaseSpace::~TntTwoNeutronDecayPhaseSpace()
@@ -179,34 +183,26 @@ double Cnn0(double X, double r0)
 G4bool TntTwoNeutronDecayPhaseSpace::Generate()
 {
 	G4double mOut[3] = { mFinalFragMass, kNeutronMass, kNeutronMass };
-	if(mInitial.m() < mFinalFragMass + 2*kNeutronMass) {
-		G4cerr << "ERROR:: TntTwoNeutronDecayPhaseSpace:: Not enough energy for decay!" << G4endl;
-		G4cerr << "MASSES (MBeam+ex, MF, 2*MN):: " << mInitial.m() << ", "
-					 << mOut[0] << ", " << 2*mOut[1] << G4endl;
-		return false;
-	}
-	SetFinal(0, mInitial);
 
 	G4GenPhaseSpace gen;
-	G4bool possible = gen.SetDecay(mInitial, 3, mOut);
+	G4bool possible = gen.SetDecay(mInitial->Momentum(), 3, mOut);
 	if(!possible) {
-		G4cerr << "ERROR:: TntTwoNeutronDecayPhaseSpace:: Not enough energy for decay!" << G4endl;
-		G4cerr << "MASSES (MBeam+ex, MF, 2*MN):: " << mInitial.m() << ", "
-					 << mOut[0] << ", " << 2*mOut[1] << G4endl;
-		throw possible;
+		if(GetVerboseLevel() > 1) {
+			TNTERR << "TntTwoNeutronDecayPhaseSpace:: Not enough energy for decay!" << G4endl;
+			TNTERR << "MASSES (MBeam+ex, MF, 2*MN):: " << mInitial->MplusEx() << ", "
+						 << mOut[0] << ", " << 2*mOut[1] << G4endl;
+		}
+		return false;
 	}
 
 	if(fFSI) { // Use Final State Interaction
-
-		// Not 100% sure what this parameter is, need to ask JKS.
-		// Likely it's the "source size" (avg. distance between the
-		// two neutrons in the original nucleus). This was 6.6 fm in
-		// the JKS NIM paper (and also the original paper on 11Li FSI
-		// by Marquis).
-		//
-		// If this is correct, then the value needs to be dynamic...
-		// and I should look up the correct value for 6He (if it exists)
-		G4double r0 = GetParam("r0");
+		/**
+		* \note The 'r0' parameter is the "source size" from
+		* PLB 476, 219 (2000). It is set in the 'reaction.dat' 
+		* input file. The PLB paper gives respective source sizes for 
+		* 6He, 11Li, 14Be of r0 = 2.4, 2.7, and 2.2 fm.
+		*/
+		G4double r0 = GetDecayParam("r0");
 		G4double CnnM = Cnn0(0, r0);
 		while(1) {
 			G4double rel_weight = gen.Generate() / gen.GetWtMax();
@@ -233,10 +229,11 @@ G4bool TntTwoNeutronDecayPhaseSpace::Generate()
 			ran = kRngUniform.Generate();
 		} while(relwt < ran);
 	}
-	
-	SetFinal(1, *(gen.GetDecay(0))); // fragment
-	SetFinal(2, *(gen.GetDecay(1))); // neutron 1
-	SetFinal(3, *(gen.GetDecay(2))); // neutron 1
+
+	SetFinal(0, mInitial->Momentum()); // recoil
+	SetFinal(1, *(gen.GetDecay(0)));  // fragment
+	SetFinal(2, *(gen.GetDecay(1)));  // neutron 1
+	SetFinal(3, *(gen.GetDecay(2)));  // neutron 1
 
 	return true;
 }
@@ -258,7 +255,8 @@ TntTwoNeutronDecaySequential::~TntTwoNeutronDecaySequential()
 void TntTwoNeutronDecaySequential::SetInputReaction(const TntReactionGenerator* r)
 {
 	TntNeutronDecayIntermediate::SetInputReaction(r);
-	mIntermediateFragMass = TntNuclearMasses::GetNuclearMass(mInitialZ, mInitialA - 1)*MeV;
+	mIntermediateFragMass =
+		TntNuclearMasses::GetNuclearMass(mInitial->Z(), mInitial->A() - 1)*MeV;
 }
 
 
@@ -273,12 +271,12 @@ G4bool TntTwoNeutronDecaySequential::Generate()
 	// Jenna, update to do a 'Volya' sequential decay.
 
 	G4double edecay1, edecay2;
-	const G4double ex1 = GetParam("ex1");  // Intermediate state EXCITATION energy
-	const G4double  w1 = GetParam("width1"); // Intermediate state width
-	const G4double edecay = mInitial.m() - mFinalFragMass - 2*kNeutronMass; // TOTAL decay energy
+	const G4double ex1 = GetDecayParam("ex1");  // Intermediate state EXCITATION energy
+	const G4double  w1 = GetDecayParam("width1"); // Intermediate state width
+	const G4double edecay = mInitial->MplusEx() - mFinalFragMass - 2*kNeutronMass; // TOTAL decay energy
 	do {
 		G4double exIntermediate = TntRngBreitWigner(ex1, w1).Generate();
-		edecay1 = mInitial.m() - (mIntermediateFragMass+exIntermediate) - kNeutronMass;
+		edecay1 = mInitial->MplusEx() - (mIntermediateFragMass+exIntermediate) - kNeutronMass;
 		edecay2 = edecay - edecay1;
 	} while(edecay1 < 0 || edecay2 < 0);
 
@@ -287,11 +285,11 @@ G4bool TntTwoNeutronDecaySequential::Generate()
 	// Evaportation of neutrons
 
 	G4LorentzVector lvN1, lvF1, lvN2, lvF2;
-	G4double intermediateMass = mInitial.m() - kNeutronMass - edecay1;
+	G4double intermediateMass = mInitial->MplusEx() - kNeutronMass - edecay1;
 
 	// Do first neutron evaporation in COM frame
 	{
-		TntNeutronEvaporation evap1(mInitial.m(), intermediateMass, kNeutronMass);
+		TntNeutronEvaporation evap1(mInitial->MplusEx(), intermediateMass, kNeutronMass);
 		evap1(&lvF1, &lvN1);
 	}
 
@@ -312,13 +310,13 @@ G4bool TntTwoNeutronDecaySequential::Generate()
 	lvN2.boost(t4boost); // neutron from SECOND decay
 
 	// Now boost all three into lab frame
-	G4ThreeVector t3boost = mInitial.boostVector();
+	G4ThreeVector t3boost = mInitial->Momentum().boostVector();
 	lvN1.boost(t3boost); // neutron 1
 	lvN2.boost(t3boost); // neutron 2
 	lvF2.boost(t3boost); // final fragment
 
 	
-	SetFinal(0, mInitial); // initial nucleus, before decay
+	SetFinal(0, mInitial->Momentum()); // initial nucleus, before decay
 	SetFinal(1, lvF2);     // fragment
 	SetFinal(2, lvN1);     // neutron 1
 	SetFinal(3, lvN2);     // neutron 2
@@ -334,14 +332,10 @@ G4bool TntTwoNeutronDecaySequential::Generate()
 
 TntTwoNeutronDecayDiNeutron::TntTwoNeutronDecayDiNeutron():
 	TntNeutronDecayIntermediate(2)
-{
-	//fRngVolya = 
-}
+{ }
 
 TntTwoNeutronDecayDiNeutron::~TntTwoNeutronDecayDiNeutron()
-{
-//	if(fRngVolya) { delete fRngVolya; fRngVolya = 0; }
-}
+{ }
 
 /////////////////
 // Code taken from st_reaction.cc out of st_mona simulation in
@@ -349,138 +343,85 @@ TntTwoNeutronDecayDiNeutron::~TntTwoNeutronDecayDiNeutron()
 G4bool TntTwoNeutronDecayDiNeutron::Generate()
 {
 	////////////////////////////////////////////////
-  // initial unbound state decay: A -> (A-2) + (2n)
+  // figure out decay energy, etc
 	//
-	if(mInitial.m() < mFinalFragMass + 2*kNeutronMass) {
-		G4cerr << "ERROR:: TntTwoNeutronDecayPhaseSpace:: Not enough energy for decay!" << G4endl;
-		G4cerr << "MASSES (MBeam+ex, MF, 2*MN):: " << mInitial.m() << ", "
-					 << mFinalFragMass << ", " << 2*kNeutronMass << G4endl;
-		throw false;
-	}
-
-	// heavy fragment
-	G4LorentzVector lvFrag(0,0,0,mFinalFragMass);
-
-	// di-neutron
-	G4LorentzVector lv2N(0,0,0,2*kNeutronMass);
-
-	#if 0
-	///TODO:: Need Generators for exenTotal, exenDiNeutron, incl. Volya stuff.
-	/// (see st_reaction.cc, line 967)
-	double exenTotal = mInitial.m() - lvFrag.m() - lv2N.m(); // TOTAL decay energy
-	double exenDiNeutron = 118.5*keV;  // NOMINAL dineutron breakup energy, and POSSIBLY WRONG!!
-	exenDiNeutron = TntRngBreitWigner(118.5*keV, 100*keV).GenerateAbove(0);
-	double exen12_left = exenTotal - exenDiNeutron;
-#endif
-	
-	// 'Volya' dineutron decay
-	//  Generates intrinsic and kinetic energies of dineutron
-	//  The generation happens in TntRngTwoBodyGenerator, so we
-	//  need to read the last generated values from the
-	//  RNG used to make pick the recoil excitation energy, when
-	//  the reaction generator was run.
-	//
-	std::pair<double, double> di_eiek; // Dineutron intrinsic, kinetic energy
+	const G4double s2n = // 2n separation energy
+		mInitial->M() - mFinalFragMass - GetNumberOfNeutrons()*kNeutronMass;
+	G4double ed2n; // total DECAY energy:  A -> [(A-2) + (2n)]
+	G4double ei2n; // dineutron INTRINSIC energy
 	try
 	{
+		/** \note Using 'Volya' dineutron decay.
+		 *  Generates intrinsic and kinetic energies of dineutron.
+		 *  The generation happens in TntRngTwoBodyGenerator, so we
+		 *  need to read the last generated values from the
+		 *  RNG used to pick the recoil excitation energy, when
+		 *  the reaction generator was run.
+		 */
 		const TntRngVolyaDiNeutronEx& rngVolya =
 			dynamic_cast<const TntRngVolyaDiNeutronEx&>(*fReaction->GetRngEx4());
-		
-		di_eiek = rngVolya.GetRng2d()->GetLast();
+
+		ei2n = rngVolya.GetRng2d()->GetLast().first;
+		ed2n = s2n + rngVolya.GetRng2d()->GetLast().second;
 	}
 	catch (std::exception& e) 
 	{
 		// Wrong RNG class set in TntReactionGenerator
-		G4cerr << "ERROR:: TntReactionGenerator has the wrong RNG class"
-					 << " for dineuton decay!" << G4endl;
+		if(GetVerboseLevel() > 0) {
+			TNTERR << "TntTwoNeutronDecayDiNeutron:: TntReactionGenerator has the wrong RNG class"
+						 << " for dineuton decay!" << G4endl;
+		}
 		exit(1);
 	}
-	const G4double exenTotal = mInitial.m() - mFinalFragMass - 2*kNeutronMass; // TOTAL decay energy
-	G4cerr << exenTotal << " " <<  (di_eiek.first + di_eiek.second) << " <<<exenTotal di_ei+ei_ek"<<G4endl;
-
-	//
-	G4double exenDiNeutron = di_eiek.first;
-	double exen12_left = exenTotal - exenDiNeutron;
-	G4cerr << exen12_left << " " << di_eiek.second << " <<<exen12_left di_ek"<<G4endl;
-
-	double e2N, eF;   // total neutron and fragment energy
-  double eCM;   // total CM energy
-
-	eCM = lv2N.m() + lvFrag.m() + exen12_left;  // total CM energy
-	e2N = POW2(eCM) + POW2(lv2N.m()) - POW2(lvFrag.m());
-	e2N = e2N/(2*eCM); // total energy neutron
-  eF  = POW2(eCM) - POW2(lv2N.m()) + POW2(lvFrag.m());
-  eF = eF/(2.*eCM);  // total energy of fragment
 	
-  double p2N,pF; // fragment and neutron momentum
-  p2N = e2N*e2N - POW2(lv2N.m());
-  p2N = sqrt(p2N);
-  pF = eF*eF - POW2(lvFrag.m());
-  if (pF < 0) { pF = 0; }
-  else        { pF = sqrt(pF); }
-  pF = -pF;  // fragment goes in opposite direction
-
-  lvFrag.set(0,0,pF,eF);
-  lv2N.set(0,0,p2N,e2N);
-
-	// set theta and phi for the first decay to some random value
-  double cosTheta = kRngUniform_neg1_pos1.Generate();  // cos(theta)
-  double theta    = acos(cosTheta);
-  double phi      = kRngUniform_0_2pi.Generate();
-
-  lvFrag.setTheta(theta); // Set fragment angle
-  lvFrag.setPhi(phi);     // Set fragment phi angle
-  lv2N.setTheta(CLHEP::pi - theta); // Set di-neutron angle 180-theta
-  lv2N.setPhi(phi + CLHEP::pi);     // set di-neutron phi angle
-
-  G4ThreeVector t4Boost = lv2N.boostVector();  // boost vector for di-neutron
-
-
+	if(ed2n < 0) {
+		if(GetVerboseLevel() > 1) {
+			TNTERR << "TntTwoNeutronDecayDiNeutron:: Not enough energy for decay!" << G4endl
+						 << "MASSES (MBeam, ex, MF, 2*MN):: " << mInitial->M() << ", " 
+						 << mInitial->Ex() << ", "
+						 << mFinalFragMass << ", " << 2*kNeutronMass << G4endl
+						 << "Edecay (2n), s2n, Eintrinsic (2n):" 
+						 << ed2n << ", " << s2n << ", " << ei2n << G4endl;
+		}
+		return false;
+	}
 
 	////////////////////////////////////////////////
-  // start of the di-neutron decay: 2n -> n+n
+  // initial unbound state decay: A -> (A-2) + (2n)
+	//
+	G4LorentzVector lvFrag, lv2N; // fragment, dineutron
+	{
+		G4double eCM = 2*kNeutronMass + mFinalFragMass + ed2n; // total initial energy
+		TntNeutronEvaporation evap(eCM, mFinalFragMass, 2*kNeutronMass);
+		evap(&lvFrag, &lv2N);
+	}
 
-  G4LorentzVector lvN1(0,0,0,kNeutronMass);  // particle 3 (neutron 1)
-  G4LorentzVector lvN2(0,0,0,kNeutronMass);  // particle 4 (neutron 2)
-
-  double eN_1, eN_2; // total neutron and fragment energy
-  double eCM2;       // total CM energy
-
-  eCM2 = 2*kNeutronMass + exenDiNeutron;  // total CM energy
-	eN_1 = eN_2 = POW2(eCM2);
-	eN_1 = eN_1/(2.*eCM2); // total energy of neutron 1
-	eN_2 = eN_2/(2.*eCM2); // total energy of neutron 2
+	////////////////////////////////////////////////
+  // di-neutron decay: 2n -> n+n
+	//
+	G4LorentzVector lvN1, lvN2; // neutron 1, neutron 2
+	{
+		G4double eCM = 2*kNeutronMass + ei2n; // total CM energy
+		TntNeutronEvaporation evap(eCM, kNeutronMass, kNeutronMass);
+		evap(&lvN1, &lvN2);
+	}
 	
-  double pN_2, pN_1; // fragment and neutron momentum
-  pN_2 = +sqrt(POW2(eN_2) - POW2(kNeutronMass));
-  pN_1 = -sqrt(POW2(eN_1) - POW2(kNeutronMass)); // goes in opposite direction
+	////////////////////////////////////////////////
+  // Boosting into the frame where the fragment is
+	// at rest after the first decay
+	//
+  lvN1.boost(lv2N.boostVector());
+  lvN2.boost(lv2N.boostVector());
 
-  lvN1.set(0,0,pN_1,eN_1);
-  lvN2.set(0,0,pN_2,eN_2);
-
-  // set theta and phi to some random value
-  cosTheta = kRngUniform_neg1_pos1.Generate(); // cos(theta)
-  theta    = acos(cosTheta);
-  phi      = kRngUniform_0_2pi.Generate();     // phi
-  lvN1.setTheta(theta);       // Set neutron1 angle
-  lvN1.setPhi(phi);           // Set neutron1 phi angle
-  lvN2.setTheta(CLHEP::pi - theta); // Set neutron2 angle 180-theta
-  lvN2.setPhi(phi + CLHEP::pi);     // Set neutron2 phi angle
-
-  //Boosting into the frame where the fragment is at rest after the first decay
-  lvN1.boost(t4Boost);
-  lvN2.boost(t4Boost);
-
-	
 	////////////////////////////////////////////////
   // final boost into lab frame + set return values
-	
-  G4ThreeVector t3Boost = mInitial.boostVector();
-  lvFrag.boost(t3Boost);
-  lvN1.boost(t3Boost);
-  lvN2.boost(t3Boost);
+	//
+  const G4ThreeVector& labBoost = mInitial->Momentum().boostVector();
+  lvFrag.boost(labBoost);
+  lvN1.boost(labBoost);
+  lvN2.boost(labBoost);
 
-	SetFinal(0, mInitial); // initial nucleus, before decay
+	SetFinal(0, mInitial->Momentum()); // initial nucleus, before decay
 	SetFinal(1, lvFrag);   // fragment
 	SetFinal(2, lvN1);     // neutron 1
 	SetFinal(3, lvN2);     // neutron 2
@@ -514,7 +455,7 @@ void TntNeutronEvaporation::operator() (G4LorentzVector* Frag, G4LorentzVector* 
 	G4double pF = POW2(eF) - POW2(mMf);
 	pF = pF < 0 ? 0 : -1*sqrt(pF); // n.b.: opposite direction
 
-	// Momentum laong z-direction
+	// Momentum along z-direction
 	Frag->set(0,0,pF,eF);
 	Neut->set(0,0,pN,eN);
 
@@ -574,15 +515,15 @@ TntNeutronDecay* TntNeutronDecayFactory::Create()
 		decay = new TntTwoNeutronDecaySequential();
 	}
 	else {
-		G4cerr << "TntNeutronDecayFactory::Create:: Invalid GetDecayType():: " << GetDecayType()
+		TNTERR << "TntNeutronDecayFactory::Create:: Invalid GetDecayType():: " << GetDecayType()
 					 << G4endl;
-		throw GetDecayType();
+		exit(1);
 	}
 
 	TntNeutronDecayIntermediate *di = dynamic_cast<TntNeutronDecayIntermediate*>(decay);
 	if(di) {
 		for(const auto& it : mOptions) {
-			di->SetParam(it.first, it.second);
+			di->SetDecayParam(it.first, it.second);
 		}
 	}
 	return decay;

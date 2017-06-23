@@ -119,23 +119,25 @@ G4bool TntTwoBodyReactionGenerator::Generate()
 	// Generate Excitation Energies
 	//
 	G4double ex3 = fRngEx3 ? fRngEx3->GenerateAbove(0) : 0;
+	fP3.SetEx(ex3);
 	G4double ex4 = fRngEx4 ? fRngEx4->GenerateAbove(0) : 0;
-
+	fP4.SetEx(ex4);
+	
 	// Generate CM angles
 	//
 	fTheta = fRngTheta ? fRngTheta->Generate() : 0;
 	fPhi = fRngPhi ? fRngPhi->Generate() : 0;
 
 	// Now calculate reaction
-	G4double masses[2] = { fP3.M()+ex3, fP4.M()+ex4 };
+	G4double masses[2] = { fP3.MplusEx() , fP4.MplusEx() };
 	TntTwoBodyReactionKinematics 
 		reacKin(fP1.Momentum(), fP2.Momentum(), std::vector<G4double>(masses, masses+2));
 	G4bool isGood = reacKin.Calculate(fTheta, fPhi);
 	if(isGood) {
 		fP3.SetPosition(fP1.Position());
 		fP4.SetPosition(fP1.Position());
-		fP3.SetP3(reacKin.GetProduct(3).vect());
-		fP4.SetP3(reacKin.GetProduct(4).vect());
+		fP3.SetP3(reacKin.GetProduct(0).vect());
+		fP4.SetP3(reacKin.GetProduct(1).vect());
 	} else {
 		fP3.SetPosition(0,0,0);
 		fP4.SetPosition(0,0,0);

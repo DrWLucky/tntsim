@@ -86,7 +86,10 @@ G4bool TntTwoBodyReactionKinematics::Calculate(G4double thetaCM, G4double phiCM)
 	}
 	G4double mSum = GetProductMass(0) + GetProductMass(1);
 	if(GetBeam().e() + GetTarget().e() < mSum) {
-		G4cerr << "ERROR:: TntReaction::Calculate:: Not enough energy for reaction!" << G4endl;
+		G4cerr << "ERROR:: TntReactionKinematics::Calculate:: "
+					 << "Not enough energy for reaction!" << G4endl;
+		G4cerr << "\tBeam, Target, Ejectile, Recoil:: " << GetBeam().e() << ", " << GetTarget().e()
+					 << ", " << GetProductMass(0) << ", " << GetProductMass(1) << G4endl;
 		return FALSE;
 	}
 

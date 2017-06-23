@@ -102,8 +102,7 @@ public:
 	const gsl_histogram2d* GetHist() const { return fH2d; }
 private:
 	virtual std::pair<G4double, G4double> DoGenerate();
-	G4double GetDineutronDecayRate(G4double FragA, G4double Ebw, 
-																 G4double di_ei, G4double r0, 
+	G4double GetDineutronDecayRate(G4double Ebw, G4double di_ei, G4double r0, 
 																 G4double RR, G4double as);
 private:
 	G4double fEi; // initial state energy
@@ -126,6 +125,16 @@ private:
 	std::auto_ptr<TntRngVolyaDiNeutron> fR2d;
 };
 
+
+/// Class to prevent infinite loops when trying to
+/// generate RNGs within a range
+class TntCheckMaxTries {
+public:
+	TntCheckMaxTries(G4int max=10000): kMaxTries(max) { }
+	void operator() (G4int& n, const char* fct, G4double* low = 0, G4double* high = 0);
+private:
+	const G4int kMaxTries;
+};
 
 
 #endif
