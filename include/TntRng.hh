@@ -213,7 +213,7 @@ private:
 	gsl_histogram2d* fH2d;	
 };
 
-/// Custom generator for 'Volya' dineutron decay model
+/// Custom excitation energy generator for 'Volya' dineutron decay model
 /** Generates the total decay energy.
  *  Uses TntRngVolyaDiNeutron internally; pair of <EI, EK>
  *  can be accessed through internal 2d generator, using GetRng2d()
@@ -232,6 +232,48 @@ private:
 private:
 	std::auto_ptr<TntRngVolyaDiNeutron> fR2d;
 };
+
+/// Custom generator for 'Volya' sequentual 2n decay model
+/** Generates pairs of <dineutron intrinsic energy, dineutron kinetic energy>
+ *  The total decay energy is the sum of the two.
+ *  \attention The constructor is highly non-trivial and very computationally
+ *  expensive. It is recommended to create instances as few times as possible!
+ */
+class TntRngVolyaSequential : public TntRng2d {
+public:
+	/// Ctor
+	/** \param [in] Ei    Initial state energy
+	 *  \param [in] Ev    Intermediate state energy, if Ev < 0 then it is assumed to be scattering length for L=0 decay
+	 *  \param [in] sI    Spectroscopic factor for the I->V single particle decay
+	 *  \param [in] sV    Spectroscopic factor for the V->F single particle decay
+	 *  \param [in] par5 
+	 *  \param [in] L     Orbital angular momentum
+	 *  \param [in] Gamma_in  Initial width
+	 *  \param [in] fragA Initial fragment mass number
+	 */
+	TntRngVolyaSequential(double Ei, double Ev, double sI, double sV,
+												int L, double Gamma_in, int fragA);
+	virtual ~TntRngVolyaSequential();
+	/// Get internal histogram of CDF for picking random numbers
+	const gsl_histogram2d_pdf* GetPdfHist() const { return fP2d; }
+	/// Get internal histogram of PDF for picking random numbers
+	const gsl_histogram2d* GetHist() const { return fH2d; }
+private:
+	/// Returns pair: <EBW , EREL_N>
+	virtual std::pair<G4double, G4double> DoGenerate();
+	/// Get single particle decay width
+	G4double SPDW(double ee, int L, double fragA, int add);
+	/// Get gamma value
+	G4double Gamma(double ee, int L, double fragA, int add, double S);
+	/// Get decay rate
+	G4double GetDecayRate(int L, double Ei, double S, double Ev, double Er, double e, double ep, double sI, double sV, double fragA);
+
+private:
+	gsl_histogram2d_pdf* fP2d;
+	gsl_histogram2d* fH2d;	
+};
+
+
 
 /// Class to prevent infinite loops when trying to
 /// generate RNGs within a range
