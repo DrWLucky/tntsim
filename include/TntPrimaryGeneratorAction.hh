@@ -73,10 +73,10 @@ public:
 protected:
 	G4String fReacFile;
 	G4int fA[4], fZ[4];
-	std::auto_ptr<TntReactionGenerator> fReac;
-	std::auto_ptr<TntNeutronDecay> fDecay;
-	std::auto_ptr<TntRng> fRngEbeam, fRngEx3, fRngEx4, fRngTheta, fRngPhi;
-	std::auto_ptr<TntBeamEmittance> fEmX, fEmY;
+	std::unique_ptr<TntReactionGenerator> fReac;
+	std::unique_ptr<TntNeutronDecay> fDecay;
+	std::unique_ptr<TntRng> fRngEbeam, fRngEx3, fRngEx4, fRngTheta, fRngPhi;
+	std::unique_ptr<TntBeamEmittance> fEmX, fEmY;
 };
 
 #endif

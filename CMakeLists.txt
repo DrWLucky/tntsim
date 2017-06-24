@@ -1,4 +1,3 @@
-# -*- mode: perl; -*-
 # $Id: CMakeLists.txt 86065 2014-11-07 08:51:15Z gcosmo $
 
 #--------------------CMake file for Geant 4.9.5.p01 with ROOT libs -----------

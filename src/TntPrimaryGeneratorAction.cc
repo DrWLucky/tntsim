@@ -293,9 +293,15 @@ namespace { struct reac_file_params {
 
 TntPGAReaction::TntPGAReaction():
 	TntPrimaryGeneratorAction(),
-	fReac(0), fDecay(0),
-	fRngEbeam(0), fRngEx3(0), fRngEx4(0), fRngTheta(0), fRngPhi(0),
-	fEmX(0), fEmY(0)
+	fReac(nullptr), 
+	fDecay(nullptr),
+	fRngEbeam(nullptr), 
+	fRngEx3(nullptr), 
+	fRngEx4(nullptr), 
+	fRngTheta(nullptr), 
+	fRngPhi(nullptr),
+	fEmX(nullptr), 
+	fEmY(nullptr)
 {
 	// Parse reaction file
 	//

@@ -236,7 +236,7 @@ public:
 private:	
 	G4double DoGenerate();
 private:
-	std::auto_ptr<TntRngVolyaDiNeutron> fR2d;
+	std::unique_ptr<TntRngVolyaDiNeutron> fR2d;
 };
 
 /// Custom generator for 'Volya' sequentual 2n decay model
@@ -296,7 +296,7 @@ public:
 private:	
 	G4double DoGenerate();
 private:
-	std::auto_ptr<TntRngVolyaSequential> fR2d;
+	std::unique_ptr<TntRngVolyaSequential> fR2d;
 };
 
 
