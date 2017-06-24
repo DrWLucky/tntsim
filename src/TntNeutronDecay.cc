@@ -1,7 +1,6 @@
 #include <fstream>
 #include <cassert>
 #include <map>
-#include <CLHEP/Random/RandBreitWigner.h>
 #include <G4SystemOfUnits.hh>
 #include "G4GenPhaseSpace.hh"
 #include "TntNuclearMasses.hh"
@@ -32,8 +31,7 @@ TntNeutronDecayIntermediate::TntNeutronDecayIntermediate(G4int number_of_neutron
 	mFinal(number_of_neutrons_emitted + 2),
 	fVerb(2),
 	mFinalFragMass(0),
-	mInitial(0),
-	mRngEx(0)
+	mInitial(0)
 { }
 
 TntNeutronDecayIntermediate::~TntNeutronDecayIntermediate()
@@ -89,6 +87,21 @@ G4double TntNeutronDecayIntermediate::GetDecayParam(const G4String& par)
 	exit(1);
 }
 
+std::unique_ptr<TntRng> TntNeutronDecayBreitWigner::CreateRngEx()
+{
+	const G4double ex = GetDecayParam("ex"); // excitation energy
+	const G4double width = GetDecayParam("width"); // BW width
+	TntRng* rng = 0;
+	if(width < 1e-8) { // treat width < 1e-8 as constant
+		rng = new TntRngConstant(ex);
+	} else {
+		rng = new TntRngBreitWigner(ex, width);
+	}
+	mRngEx = rng;
+	return std::unique_ptr<TntRng>(rng);
+}
+
+
 
 
 /////////////////////////////////////////////////////////////////
@@ -96,7 +109,7 @@ G4double TntNeutronDecayIntermediate::GetDecayParam(const G4String& par)
 //
 
 TntOneNeutronDecay::TntOneNeutronDecay():
-	TntNeutronDecayIntermediate(1)
+	TntNeutronDecayBreitWigner(1)
 { }
 
 TntOneNeutronDecay::~TntOneNeutronDecay()
@@ -129,7 +142,7 @@ G4bool TntOneNeutronDecay::Generate()
 //
 
 TntTwoNeutronDecayPhaseSpace::TntTwoNeutronDecayPhaseSpace(G4bool fsi):
-	TntNeutronDecayIntermediate(2),
+	TntNeutronDecayBreitWigner(2),
 	fFSI(fsi)
 {
 	SetDecayParam("r0", 2.4);
@@ -206,7 +219,7 @@ G4bool TntTwoNeutronDecayPhaseSpace::Generate()
 		* input file. The PLB paper gives respective source sizes for 
 		* 6He, 11Li, 14Be of r0 = 2.4, 2.7, and 2.2 fm.
 		*/
-		G4double r0 = GetDecayParam("r0");
+		const G4double r0 = GetDecayParam("r0");
 		G4double CnnM = Cnn0(0, r0);
 		while(1) {
 			G4double rel_weight = gen.Generate() / gen.GetWtMax();
@@ -263,47 +276,54 @@ void TntTwoNeutronDecaySequential::SetInputParticle(const TntParticle* p)
 		TntNuclearMasses::GetNuclearMass(mInitial->Z(), mInitial->A() - 1)*MeV;
 }
 
+std::unique_ptr<TntRng> TntTwoNeutronDecaySequential::CreateRngEx()
+{
+	const G4double ex = GetDecayParam("ex"); // excitation energy
+	const G4double width = GetDecayParam("width"); // BW width
+	const G4int Z_i = GetDecayParam("Z_i");
+	const G4int A_i = GetDecayParam("A_i");
+	const G4double Mass_i = TntNuclearMasses::GetNuclearMass(Z_i, A_i - 1);
+	const G4double Mass_f = TntNuclearMasses::GetNuclearMass(Z_i, A_i - 2);
+	const G4double Ev = Mass_i - Mass_f - kNeutronMass;
+	//! \todo Set spectroscopic factors and L generically (not hard coded!)
+	TntRngVolyaSequentialEx* rng = new TntRngVolyaSequentialEx(ex,
+																														 Ev,
+																														 1, // sI
+																														 1, // sF
+																														 1, // L
+																														 width,
+																														 A_i);
+	mRngEx = rng;
+	return std::unique_ptr<TntRng>(rng);
+}
 
-/////////////////
-// Code taken from st_reaction.cc out of st_mona simulation in
-// use by the MoNA collaboration.
+
 G4bool TntTwoNeutronDecaySequential::Generate()
 {
-	assert (mInitial);
+/** Code taken from st_reaction.cc out of st_mona simulation in
+ *  use by the MoNA collaboration.
+ *
+ *  \note Using 'Volya' sequential decay.
+ *  Generates total *excitation* energy, and relative n-n energy
+ *  The generation happens in TntRngTwoBodyGenerator, so we
+ *  need to read the last generated values from the
+ *  RNG used to pick the recoil excitation energy, when
+ *  the reaction generator was run.
+ */
+ 	assert (mInitial);
 	assert (mRngEx);
 	
 	// Choose decay energies
 	//
-	const G4double s2n = mInitial->M() - mFinalFragMass - GetNumberOfNeutrons()*kNeutronMass;
-	G4double edecay1, edecay2;
-	try
-	{
-		/** \note Using 'Volya' sequential decay.
-		 *  Generates total *excitation* energy, and relative n-n energy
-		 *  The generation happens in TntRngTwoBodyGenerator, so we
-		 *  need to read the last generated values from the
-		 *  RNG used to pick the recoil excitation energy, when
-		 *  the reaction generator was run.
-		 */
-		const TntRngVolyaSequentialEx& rngVolya =
-			dynamic_cast<const TntRngVolyaSequentialEx&>(*mRngEx);
-
-		G4double edecay2n = s2n + rngVolya.GetRng2d()->GetLast().first;
-		G4double erel = rngVolya.GetRng2d()->GetLast().second;
-
-		edecay1 = (edecay2n + erel)/2;
-		edecay2 = (edecay2n - erel)/2;
-	}
-	catch (std::exception& e) 
-	{
-		// Wrong RNG class set in TntReactionGenerator
-		if(GetVerboseLevel() > 0) {
-			TNTERR << "TntTwoNeutronDecaySequential:: TntReactionGenerator has the wrong RNG class"
-						 << " for dineuton decay!" << G4endl;
-		}
-		exit(1);
-	}	
-	if(edecay1 < 0 || edecay2 < 0) {
+	// 2n separation energy
+	const G4double s2n = 
+		mInitial->M() - mFinalFragMass - GetNumberOfNeutrons()*kNeutronMass;
+	const G4double edecay2n = s2n + mRngEx->GetRng2d()->GetLast().first;
+	const G4double erel = mRngEx->GetRng2d()->GetLast().second;
+	const G4double edecay1 = (edecay2n + erel)/2; // decay energy n1
+	const G4double edecay2 = (edecay2n - erel)/2; // decay energy n2
+	// Check both decay energies are valid
+	if(edecay1 <= 0 || edecay2 <= 0) {
 		if(GetVerboseLevel() > 1) {
 			TNTWAR << "TntTwoNeutronDecaySequential :: Not enough energy for decay "
 						 << "(edecay1, edecay2 :: "  << edecay1 << ", " << edecay2 << G4endl;
@@ -365,47 +385,43 @@ TntTwoNeutronDecayDiNeutron::TntTwoNeutronDecayDiNeutron():
 TntTwoNeutronDecayDiNeutron::~TntTwoNeutronDecayDiNeutron()
 { }
 
-/////////////////
-// Code taken from st_reaction.cc out of st_mona simulation in
-// use by the MoNA collaboration.
+std::unique_ptr<TntRng> TntTwoNeutronDecayDiNeutron::CreateRngEx()
+{
+	const G4double ex = GetDecayParam("ex"); // excitation energy
+	const G4double width = GetDecayParam("width"); // BW width
+	const G4int A_i = GetDecayParam("A_i");
+	TntRngVolyaDiNeutronEx* rng = new TntRngVolyaDiNeutronEx(ex, width, -18.7, A_i);
+	mRngEx = rng;
+	return std::unique_ptr<TntRng>(rng);
+}
+
 G4bool TntTwoNeutronDecayDiNeutron::Generate()
 {
+	/** Code taken from st_reaction.cc out of st_mona simulation in
+	 *  use by the MoNA collaboration. Adapted for this simulation.
+	 */
 	assert (mInitial);
 	assert (mRngEx);
 
 	////////////////////////////////////////////////
   // figure out decay energy, etc
 	//
-	const G4double s2n = // 2n separation energy
+	/** \note Using 'Volya' dineutron decay.
+	 *  Generates intrinsic and kinetic energies of dineutron.
+	 *  The generation happens in TntRngTwoBodyGenerator, so we
+	 *  need to read the last generated values from the
+	 *  RNG used to pick the recoil excitation energy, when
+	 *  the reaction generator was run.
+	 */
+	// 2n separation energy
+	const G4double s2n =
 		mInitial->M() - mFinalFragMass - GetNumberOfNeutrons()*kNeutronMass;
-	G4double ed2n; // total DECAY energy:  A -> [(A-2) + (2n)]
-	G4double ei2n; // dineutron INTRINSIC energy
-	try
-	{
-		/** \note Using 'Volya' dineutron decay.
-		 *  Generates intrinsic and kinetic energies of dineutron.
-		 *  The generation happens in TntRngTwoBodyGenerator, so we
-		 *  need to read the last generated values from the
-		 *  RNG used to pick the recoil excitation energy, when
-		 *  the reaction generator was run.
-		 */
-		const TntRngVolyaDiNeutronEx& rngVolya =
-			dynamic_cast<const TntRngVolyaDiNeutronEx&>(*mRngEx);
-
-		ei2n = rngVolya.GetRng2d()->GetLast().first;
-		ed2n = s2n + rngVolya.GetRng2d()->GetLast().second;
-	}
-	catch (std::exception& e) 
-	{
-		// Wrong RNG class set in TntReactionGenerator
-		if(GetVerboseLevel() > 0) {
-			TNTERR << "TntTwoNeutronDecayDiNeutron:: TntReactionGenerator has the wrong RNG class"
-						 << " for dineuton decay!" << G4endl;
-		}
-		exit(1);
-	}
-	
-	if(ed2n < 0) {
+	// total DECAY energy:  A -> [(A-2) + (2n)]
+	const G4double ei2n = mRngEx->GetRng2d()->GetLast().first;
+	// dineutron INTRINSIC energy
+	const G4double ed2n = s2n + mRngEx->GetRng2d()->GetLast().second;
+	// make sure edecay is valid ( > 0)
+	if(ed2n <= 0) {
 		if(GetVerboseLevel() > 1) {
 			TNTERR << "TntTwoNeutronDecayDiNeutron:: Not enough energy for decay!" << G4endl
 						 << "MASSES (MBeam, ex, MF, 2*MN):: " << mInitial->M() << ", " 

@@ -2,6 +2,7 @@
 #ifndef TNT_NEUTRON_DECAY_HH
 #define TNT_NEUTRON_DECAY_HH
 #include <map>
+#include <memory>
 #include <G4String.hh>
 #include <G4ThreeVector.hh>
 #include <G4LorentzVector.hh>
@@ -22,11 +23,10 @@ public:
 	 *  \attention It shold be called every time, before calling Generate()
 	 */
 	virtual void SetInputParticle(const TntParticle* p) = 0;
-	/// Set pointer to RNG used for excitation energy generation
-	/** \todo Make this something that is created in the class itself
-	 * and then returned! To allow for polymorphism automatically...
+	/// Create the RNG used for excitation energy generation
+	/** Returned instance is wrapped in "smart" pointer class std::unique_ptr
 	 */
-	virtual void SetRngEx(const TntRng* rng) = 0;
+	virtual std::unique_ptr<TntRng> CreateRngEx() = 0;
 	/// Set verbosity level
 	/** 0: Print nothing
 	 *  1: Print fatal errror/warning messages only (to G4cerr)
@@ -55,6 +55,120 @@ public:
 };
 
 
+/// 'Intermediate' TntNeutronDecay class, implementing many of the details
+/// common to all decay types.
+/** Still abstract, need to implement Generate() */
+class TntNeutronDecayIntermediate : public TntNeutronDecay {
+public:
+	TntNeutronDecayIntermediate(G4int number_of_neutrons_emitted);
+	virtual ~TntNeutronDecayIntermediate();
+	virtual void SetInputParticle(const TntParticle* p);
+	virtual std::unique_ptr<TntRng> CreateRngEx() = 0;
+	virtual G4int GetNumberOfNeutrons() const { return mNumberOfNeutronsEmitted; }
+	virtual G4bool Generate() = 0;
+	virtual void SetDecayParam(const G4String& par, G4double val);
+	virtual G4double GetDecayParam(const G4String& par);
+	virtual void SetVerboseLevel(G4int level) { fVerb = level; }
+	virtual G4int GetVerboseLevel() const { return fVerb; }
+protected:
+	void SetFinal(G4int indx, const G4LorentzVector& v);
+	virtual const G4LorentzVector& GetFinal(G4int indx) const;
+private:
+	G4int mNumberOfNeutronsEmitted;
+	std::map<G4String, G4double> mParams;
+	std::vector<G4LorentzVector> mFinal;
+	G4int fVerb;
+protected:
+	G4double mFinalFragMass; // Rest mass of final decay fragment
+	const TntParticle* mInitial;
+};
+
+
+/// Implements CreateRngEx() for symmetric breit-wigner
+/// excitation energy distributions
+/** Parameters to set are "ex" and "width"
+ *  Setting "width" to zero returns a uniform (spike) decay energy
+ */
+class TntNeutronDecayBreitWigner : public TntNeutronDecayIntermediate {
+public:
+	TntNeutronDecayBreitWigner(G4int nneut):
+		TntNeutronDecayIntermediate(nneut),
+		mRngEx(0) { }
+	virtual ~TntNeutronDecayBreitWigner()  { }
+	virtual G4bool Generate() = 0;
+	virtual std::unique_ptr<TntRng> CreateRngEx();
+protected:
+	/// Pointer to created RNG (NO OWNERSHIP)
+	/** \attention Derived classes have responsibility to ensure
+	 *  its validity!
+	 */
+	const TntRng* mRngEx;
+};
+
+
+/// Concrete class for single neutron decay, Breit Wigner
+/** Parameters to set are "energy" and "width"
+ *  Setting "width" to zero returns a uniform (spike) decay energy
+ */
+class TntOneNeutronDecay : public TntNeutronDecayBreitWigner {
+public:
+	TntOneNeutronDecay();
+	virtual ~TntOneNeutronDecay();
+	virtual G4bool Generate();
+};
+
+/// Concrete class for two neutron  phase space decay. Includes optional
+/// final state interaction (FSI).
+/**  If used, FSI is taken from the code by
+ *   F. Marquis, sent originally by him to J.K. Smith, then to GAC. 
+ *   Reference for the FSI calculation is PLB 476, 219 (2000), 
+ *   https://doi.org/10.1016/S0370-2693(00)00141-6
+ */
+class TntTwoNeutronDecayPhaseSpace : public TntNeutronDecayBreitWigner {
+public:
+	/// Ctor
+	/** \param [in] fsi If true, include final state interaction in calculation;
+	 *   if false, do not include FSI.
+	 */
+	TntTwoNeutronDecayPhaseSpace(G4bool fsi = FALSE);
+	virtual ~TntTwoNeutronDecayPhaseSpace();
+	virtual G4bool Generate();
+private:
+	G4bool fFSI;
+};
+
+/// Concrete class for two neutron 'dineutron' decay
+/** Dineutron decay is calculated using the formalism developed
+ *  by A. Volya, PRC 76, 064314, 2006 && EPJ Web Conf., 38, 03003, 2012
+ */
+class TntTwoNeutronDecayDiNeutron : public TntNeutronDecayIntermediate {
+public:
+	TntTwoNeutronDecayDiNeutron();
+	virtual ~TntTwoNeutronDecayDiNeutron();
+	virtual std::unique_ptr<TntRng> CreateRngEx();
+	virtual G4bool Generate();
+private:
+	const TntRngVolyaDiNeutronEx* mRngEx;
+};
+
+/// Concrete class for two neutron sequential decay
+/** Calculated using the formalism developed
+ *  by A. Volya, PRC 76, 064314, 2006 && EPJ Web Conf., 38, 03003, 2012
+ */
+class TntTwoNeutronDecaySequential : public TntNeutronDecayIntermediate {
+public:
+	TntTwoNeutronDecaySequential();
+	virtual ~TntTwoNeutronDecaySequential();
+	virtual void SetInputParticle(const TntParticle* p);
+	virtual std::unique_ptr<TntRng> CreateRngEx();
+	virtual G4bool Generate();
+public:
+	G4double mIntermediateFragMass;
+	const TntRngVolyaSequentialEx* mRngEx;
+};
+
+
+
 /// Factory class
 /** Create different types of TntNeutronDecay instances,
  *  based on inputs
@@ -78,35 +192,6 @@ private:
 };
 
 
-/// 'Intermediate' TntNeutronDecay class, implementing many of the details
-/// common to all decay types.
-/** Still abstract, need to implement Generate() */
-class TntNeutronDecayIntermediate : public TntNeutronDecay {
-public:
-	TntNeutronDecayIntermediate(G4int number_of_neutrons_emitted);
-	virtual ~TntNeutronDecayIntermediate();
-	virtual void SetInputParticle(const TntParticle* p);
-	virtual void SetRngEx(const TntRng* rng) { mRngEx = rng; }
-	virtual G4int GetNumberOfNeutrons() const { return mNumberOfNeutronsEmitted; }
-	virtual G4bool Generate() = 0;
-	virtual void SetDecayParam(const G4String& par, G4double val);
-	virtual G4double GetDecayParam(const G4String& par);
-	virtual void SetVerboseLevel(G4int level) { fVerb = level; }
-	virtual G4int GetVerboseLevel() const { return fVerb; }
-protected:
-	void SetFinal(G4int indx, const G4LorentzVector& v);
-	virtual const G4LorentzVector& GetFinal(G4int indx) const;
-private:
-	G4int mNumberOfNeutronsEmitted;
-	std::map<G4String, G4double> mParams;
-	std::vector<G4LorentzVector> mFinal;
-	G4int fVerb;
-protected:
-	G4double mFinalFragMass; // Rest mass of final decay fragment
-	const TntParticle* mInitial;
-	const TntRng* mRngEx;
-};
-
 /// Helper class to calculate neutron evaporation
 class TntNeutronEvaporation {
 public:
@@ -127,62 +212,5 @@ public:
 private:
 	G4double mM0, mMf, mMn;
 };
-
-/// Concrete class for single neutron decay, Breit Wigner
-/** Parameters to set are "energy" and "width"
- *  Setting "width" to zero returns a uniform (spike) decay energy
- */
-class TntOneNeutronDecay : public TntNeutronDecayIntermediate {
-public:
-	TntOneNeutronDecay();
-	virtual ~TntOneNeutronDecay();
-	virtual G4bool Generate();
-};
-
-/// Concrete class for two neutron  phase space decay. Includes optional
-/// final state interaction (FSI).
-/**  If used, FSI is taken from the code by
- *   F. Marquis, sent originally by him to J.K. Smith, then to GAC. 
- *   Reference for the FSI calculation is PLB 476, 219 (2000), 
- *   https://doi.org/10.1016/S0370-2693(00)00141-6
- */
-class TntTwoNeutronDecayPhaseSpace : public TntNeutronDecayIntermediate {
-public:
-	/// Ctor
-	/** \param [in] fsi If true, include final state interaction in calculation;
-	 *   if false, do not include FSI.
-	 */
-	TntTwoNeutronDecayPhaseSpace(G4bool fsi = FALSE);
-	virtual ~TntTwoNeutronDecayPhaseSpace();
-	virtual G4bool Generate();
-private:
-	G4bool fFSI;
-};
-
-/// Concrete class for two neutron 'dineutron' decay
-/** Dineutron decay is calculated using the formalism developed
- *  by A. Volya, PRC 76, 064314, 2006 && EPJ Web Conf., 38, 03003, 2012
- */
-class TntTwoNeutronDecayDiNeutron : public TntNeutronDecayIntermediate {
-public:
-	TntTwoNeutronDecayDiNeutron();
-	virtual ~TntTwoNeutronDecayDiNeutron();
-	virtual G4bool Generate();
-};
-
-/// Concrete class for two neutron sequential decay
-/** Calculated using the formalism developed
- *  by A. Volya, PRC 76, 064314, 2006 && EPJ Web Conf., 38, 03003, 2012
- */
-class TntTwoNeutronDecaySequential : public TntNeutronDecayIntermediate {
-public:
-	TntTwoNeutronDecaySequential();
-	virtual ~TntTwoNeutronDecaySequential();
-	virtual void SetInputParticle(const TntParticle* p);
-	virtual G4bool Generate();
-public:
-	G4double mIntermediateFragMass;
-};
-
 
 #endif

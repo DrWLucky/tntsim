@@ -1,6 +1,7 @@
 /// \brief Defines random number generator classes
 #ifndef TNT_RNG_HH
 #define TNT_RNG_HH
+#include <memory>
 #include <vector>
 #include <utility>
 #include <gsl/gsl_histogram2d.h>

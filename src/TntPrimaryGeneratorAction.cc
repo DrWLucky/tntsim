@@ -359,6 +359,14 @@ TntPGAReaction::TntPGAReaction():
 	// Decay
 	fDecay.reset(decayFactory.Create());
 	fDecay->SetVerboseLevel(1); // only print FATAL messages
+	fDecay->SetDecayParam("ex", rfp.ex);
+	fDecay->SetDecayParam("width", rfp.width);
+	fDecay->SetDecayParam("A_i", FragA);
+	fDecay->SetDecayParam("Z_i", FragZ);
+	fRngEx4 = fDecay->CreateRngEx();
+	// Reac RNGs
+	fReac->SetRNGs(fRngEbeam.get(), 0, fRngEx4.get(), fRngTheta.get(), fRngPhi.get());
+#if 0
 	// ExEn RNG
 	// (+Depends on decay type)
 	if(dynamic_cast<TntTwoNeutronDecayDiNeutron*>(fDecay.get())) 
@@ -384,6 +392,7 @@ TntPGAReaction::TntPGAReaction():
 	}
 	fReac->SetRNGs(fRngEbeam.get(), 0, fRngEx4.get(), fRngTheta.get(), fRngPhi.get());
 	fDecay->SetRngEx(fRngEx4.get());
+#endif
 }
 
 TntPGAReaction::~TntPGAReaction()
