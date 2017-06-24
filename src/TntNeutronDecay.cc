@@ -5,11 +5,10 @@
 #include <G4SystemOfUnits.hh>
 #include "G4GenPhaseSpace.hh"
 #include "TntNuclearMasses.hh"
-#include "TntNeutronDecay.hh"
-#include "TntReactionGenerator.hh"
 #include "TntRng.hh"
 #include "TntError.hh"
-
+#include "TntParticle.hh"
+#include "TntNeutronDecay.hh"
 
 namespace {
 
@@ -33,17 +32,16 @@ TntNeutronDecayIntermediate::TntNeutronDecayIntermediate(G4int number_of_neutron
 	mFinal(number_of_neutrons_emitted + 2),
 	fVerb(2),
 	mFinalFragMass(0),
-	mInitial(),
-	fReaction(0)
+	mInitial(0),
+	mRngEx(0)
 { }
 
 TntNeutronDecayIntermediate::~TntNeutronDecayIntermediate()
 { }
 
-void TntNeutronDecayIntermediate::SetInputReaction(const TntReactionGenerator* r)
+void TntNeutronDecayIntermediate::SetInputParticle(const TntParticle* p)
 {
-	fReaction = r;
-	mInitial  = &(r->GetReactant(4));
+	mInitial = p;
 	mFinalFragMass = 
 		TntNuclearMasses::GetNuclearMass(mInitial->Z(), mInitial->A() - mNumberOfNeutronsEmitted)*MeV;
 }
@@ -107,6 +105,9 @@ TntOneNeutronDecay::~TntOneNeutronDecay()
 
 G4bool TntOneNeutronDecay::Generate()
 {
+	assert (mInitial);
+	assert (mRngEx);
+
 	G4LorentzVector lvF, lvN;
 	TntNeutronEvaporation evap(mInitial->MplusEx(), mFinalFragMass, kNeutronMass);
 	evap(&lvF, &lvN);
@@ -182,6 +183,9 @@ double Cnn0(double X, double r0)
 
 G4bool TntTwoNeutronDecayPhaseSpace::Generate()
 {
+	assert (mInitial);
+	assert (mRngEx);
+
 	G4double mOut[3] = { mFinalFragMass, kNeutronMass, kNeutronMass };
 
 	G4GenPhaseSpace gen;
@@ -252,9 +256,9 @@ TntTwoNeutronDecaySequential::TntTwoNeutronDecaySequential():
 TntTwoNeutronDecaySequential::~TntTwoNeutronDecaySequential()
 { }
 
-void TntTwoNeutronDecaySequential::SetInputReaction(const TntReactionGenerator* r)
+void TntTwoNeutronDecaySequential::SetInputParticle(const TntParticle* p)
 {
-	TntNeutronDecayIntermediate::SetInputReaction(r);
+	TntNeutronDecayIntermediate::SetInputParticle(p);
 	mIntermediateFragMass =
 		TntNuclearMasses::GetNuclearMass(mInitial->Z(), mInitial->A() - 1)*MeV;
 }
@@ -265,6 +269,9 @@ void TntTwoNeutronDecaySequential::SetInputReaction(const TntReactionGenerator* 
 // use by the MoNA collaboration.
 G4bool TntTwoNeutronDecaySequential::Generate()
 {
+	assert (mInitial);
+	assert (mRngEx);
+	
 	// Choose decay energies
 	//
 	const G4double s2n = mInitial->M() - mFinalFragMass - GetNumberOfNeutrons()*kNeutronMass;
@@ -279,7 +286,7 @@ G4bool TntTwoNeutronDecaySequential::Generate()
 		 *  the reaction generator was run.
 		 */
 		const TntRngVolyaSequentialEx& rngVolya =
-			dynamic_cast<const TntRngVolyaSequentialEx&>(*fReaction->GetRngEx4());
+			dynamic_cast<const TntRngVolyaSequentialEx&>(*mRngEx);
 
 		G4double edecay2n = s2n + rngVolya.GetRng2d()->GetLast().first;
 		G4double erel = rngVolya.GetRng2d()->GetLast().second;
@@ -363,6 +370,9 @@ TntTwoNeutronDecayDiNeutron::~TntTwoNeutronDecayDiNeutron()
 // use by the MoNA collaboration.
 G4bool TntTwoNeutronDecayDiNeutron::Generate()
 {
+	assert (mInitial);
+	assert (mRngEx);
+
 	////////////////////////////////////////////////
   // figure out decay energy, etc
 	//
@@ -380,7 +390,7 @@ G4bool TntTwoNeutronDecayDiNeutron::Generate()
 		 *  the reaction generator was run.
 		 */
 		const TntRngVolyaDiNeutronEx& rngVolya =
-			dynamic_cast<const TntRngVolyaDiNeutronEx&>(*fReaction->GetRngEx4());
+			dynamic_cast<const TntRngVolyaDiNeutronEx&>(*mRngEx);
 
 		ei2n = rngVolya.GetRng2d()->GetLast().first;
 		ed2n = s2n + rngVolya.GetRng2d()->GetLast().second;

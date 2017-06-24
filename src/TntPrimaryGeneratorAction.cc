@@ -383,7 +383,7 @@ TntPGAReaction::TntPGAReaction():
 		fRngEx4.reset(new TntRngBreitWigner(rfp.ex, rfp.width));
 	}
 	fReac->SetRNGs(fRngEbeam.get(), 0, fRngEx4.get(), fRngTheta.get(), fRngPhi.get());
-	
+	fDecay->SetRngEx(fRngEx4.get());
 }
 
 TntPGAReaction::~TntPGAReaction()
@@ -419,7 +419,7 @@ void TntPGAReaction::GeneratePrimaries(G4Event* anEvent)
 			assert(reacSuccess);
 		
 			// Neutron Decay
-			fDecay->SetInputReaction(fReac.get());
+			fDecay->SetInputParticle(&fReac->GetReactant(4));
 			enoughEnergyForDecay = fDecay->Generate();
 			TntCheckMaxTries() (ntries, "TntPgaReaction::GeneratePrimaries");
 		} while(!enoughEnergyForDecay);
