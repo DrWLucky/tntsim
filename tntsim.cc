@@ -56,6 +56,7 @@
 #include "G4UIExecutive.hh"
 #endif
 
+#include "TntReactionGenerator.hh"
 #include "TntNeutronDecay.hh"
 
 //by Shuya 160406
@@ -66,7 +67,6 @@
 #include "G4PhysicalConstants.hh"
 
 #include "TntInputFileParser.hh"
-#include "TntReaction.hh"
 
 using namespace std;
 

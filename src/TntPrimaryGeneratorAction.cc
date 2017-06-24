@@ -45,7 +45,7 @@
 #include "TntNeutronDecay.hh"
 #include "TntNuclearMasses.hh"
 #include "TntInputFileParser.hh"
-#include "TntReaction.hh"
+#include "TntReactionGenerator.hh"
 
 //by Shuya 160510. Just copied from Tntsim.
 // need the below for random theta angle source (from Demon)
