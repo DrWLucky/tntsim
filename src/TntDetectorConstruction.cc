@@ -40,6 +40,7 @@
 //////////////////////////////////////////////////////////////////////
 
 
+#include <algorithm>
 
 #include "TntDetectorConstruction.hh"
 #include "TntPMTSD.hh"
@@ -73,6 +74,9 @@
 #include "G4UImanager.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
+
+#include "TntError.hh"
+
 
 G4bool TntDetectorConstruction::fSphereOn = true;
 
@@ -163,19 +167,37 @@ void TntDetectorConstruction::DefineMaterials(){
   //fTnt = new G4Material("Tnt",z=54.,a=131.29*g/mole,density=3.020*g/cm3);
   //G4Material* BC505 = 
 //by Shuya 160421. 
-  //G4Material* BC519 = 
-  G4Material* fTnt = 
+  //G4Material* BC519 =
+
+
+	// GAC 06/25/17 - Now set materials dynamically, based on input file
+//  G4Material* fTnt = nullptr;
 //////////////////////////// Comment By Shuya 160525. THIS IS TO CHANGE FOR SCINTILLATION MATERIALS (1/8) /////////////////////////////////
-		//createHydrocarbon("BC505", 0.877*g/cm3, 1.331, fH, fC);
-		//createHydrocarbon("Tnt", 0.893*g/cm3, 1.331, fH, fC);
-		//Saint GoBain value
-		//createHydrocarbon("Tnt", 0.877*g/cm3, 1.331, fH, fC);
+
+	const G4String scintMaterial = TntGlobalParams::Instance()->GetScintMaterial();
+	if      (scintMaterial == "NE213") {
+		fTnt = createHydrocarbon("Tnt", 0.893*g/cm3, 1.331, fH, fC);
+	}
+	else if (scintMaterial == "BC505") {
+		//Saint GoBain value (BC505)
+		fTnt = createHydrocarbon("Tnt", 0.877*g/cm3, 1.331, fH, fC);
+	}
+	else if (scintMaterial == "BC519") {
 		//by Shuya 160421. BC519.
-		//createHydrocarbon("Tnt", 0.875*g/cm3, 1.728, fH, fC);
+		fTnt = createHydrocarbon("Tnt", 0.875*g/cm3, 1.728, fH, fC);
+	}
+	else if (scintMaterial == "BC404") {
 		//by Shuya 160512. BC404. (# of C:H = 4.68:5.15 -> H/C = 1.100
-		createHydrocarbon("Tnt", 1.023*g/cm3, 1.100, fH, fC);
-		//by Shuya 160523. EJ309.
-		//createHydrocarbon("Tnt", 0.959*g/cm3, 1.25, fH, fC);
+		fTnt = createHydrocarbon("Tnt", 1.023*g/cm3, 1.100, fH, fC);
+	}
+	else if (scintMaterial == "EJ309") {
+    //by Shuya 160523. EJ309.
+		fTnt = createHydrocarbon("Tnt", 0.959*g/cm3, 1.25, fH, fC);
+	} else {
+		TNTERR << "TntDetectorConstruction :: Invalid material: \""
+					 << scintMaterial << "\"!" << G4endl;
+		exit(1);
+	}
 
   //Aluminum
   fAl = new G4Material("Al",z=13.,a=26.98*g/mole,density=2.7*g/cm3);
@@ -221,48 +243,119 @@ void TntDetectorConstruction::DefineMaterials(){
   //***Material properties tables
 
 //////////////////////////// Comment By Shuya 160525. THIS IS TO CHANGE FOR SCINTILLATION MATERIALS (2/8) /////////////////////////////////
-  //G4double lxe_Energy[]    = { 7.0*eV , 7.07*eV, 7.14*eV };
-//by Shuya 160414 for BC505, BC519
-  //G4double lxe_Energy[]    = { 2.4797*eV , 2.9173*eV, 3.0613*eV };	//500nm (10% of peak), 425nm (peak), 405nm (10% of peak)
-//by Shuya 160512 for BC404
-  G4double lxe_Energy[]    = { 2.5830*eV , 3.0388*eV, 3.2627*eV };	//500nm (10% of peak), 425nm (peak), 405nm (10% of peak)
-//by Shuya 160523 for EJ309
-  //G4double lxe_Energy[]    = { 2.4075*eV , 2.9173*eV, 3.2204*eV };	//515nm (10% of peak), 425nm (peak), 385nm (10% of peak)
-  const G4int lxenum = sizeof(lxe_Energy)/sizeof(G4double);
+	// GAC - 06/25/17 - set dynamically
+	G4double lxe_Energy[] = {0,0,0};
+	if      (scintMaterial == "NE213" || scintMaterial == "BC505" || scintMaterial == "BC519") {
+		//by Shuya 160414 for BC505, BC519
+		//500nm (10% of peak), 425nm (peak), 405nm (10% of peak)
+		G4double eTmp[] = { 2.4797*eV , 2.9173*eV , 3.0613*eV };
+		std::copy(eTmp, eTmp+3, lxe_Energy);
+	}
+	else if (scintMaterial == "BC404") {
+    //by Shuya 160512 for BC404
+		//500nm (10% of peak), 425nm (peak), 405nm (10% of peak)
+		G4double eTmp[] = { 2.5830*eV , 3.0388*eV, 3.2627*eV };
+		std::copy(eTmp, eTmp+3, lxe_Energy);
+	}
+	else if (scintMaterial == "EJ309") {
+    //by Shuya 160523 for EJ309
+		//515nm (10% of peak), 425nm (peak), 385nm (10% of peak)
+		G4double eTmp[]  = { 2.4075*eV , 2.9173*eV, 3.2204*eV };
+		std::copy(eTmp, eTmp+3, lxe_Energy);
+	}
+	else {
+		assert(false && "BAD SCINTILLATOR MATERIAL!");
+	}
+	G4int lxenum = sizeof(lxe_Energy)/sizeof(G4double);
 
 //////////////////////////// Comment By Shuya 160525. THIS IS TO CHANGE FOR SCINTILLATION MATERIALS (3/8) /////////////////////////////////
-//Comment by Shuya. I didn't change these values because it almost reflects correct values of BC505 and BC519 spectra.
-//  G4double lxe_SCINT[] = { 0.1, 1.0, 0.1 };
-  //by Shuya 160512 for BC404
-  G4double lxe_SCINT[] = { 0.05, 1.0, 0.05 };
+	// GAC - 06/25/17 - Made Dynamic (EJ309 values unknown!!)
+	G4double lxe_SCINT[] = {0,0,0};
+	if (scintMaterial == "NE213" || scintMaterial == "BC505" || scintMaterial == "BC519") {
+		//Comment by Shuya. I didn't change these values because it almost reflects correct values of BC505 and BC519 spectra.
+		G4double tmp[] = { 0.1, 1.0, 0.1 };
+		std::copy(tmp, tmp+3, lxe_SCINT);
+	}
+	else if (scintMaterial == "BC404") {
+		//by Shuya 160512 for BC404
+		G4double tmp[] = { 0.05, 1.0, 0.05 };
+		std::copy(tmp, tmp+3, lxe_SCINT);
+	}
+	else if (scintMaterial == "EJ319") {
+		//GAC need to look these up
+		TNTERR << "Missing Properties for EJ309!!" << G4endl;
+		exit(1);
+	}
+	else {
+		assert(false && "BAD SCINTILLATOR MATERIAL!");
+	}
   assert(sizeof(lxe_SCINT) == sizeof(lxe_Energy));
 
 
 //////////////////////////// Comment By Shuya 160525. THIS IS TO CHANGE FOR SCINTILLATION MATERIALS (4/8) /////////////////////////////////
-  //G4double lxe_RIND[]  = { 1.59 , 1.57, 1.54 };
+	// GAC - 06/25/17 - Made dynamic
+  G4double lxe_RIND[]  = {0,0,0};
+	if (scintMaterial == "NE213") { // Correct???
+		G4double tmp[] = { 1.59 , 1.57, 1.54 };
+		std::copy(tmp,tmp+3,lxe_RIND);
+	}
+	else if (scintMaterial == "BC505") {
 //by Shuya 160414 for BC505
-  //G4double lxe_RIND[]  = { 1.505 , 1.505, 1.505 };
+		G4double tmp[] = { 1.505 , 1.505, 1.505 };
+		std::copy(tmp,tmp+3,lxe_RIND);
+	}
+	else if (scintMaterial == "BC519") {
 //by Shuya 160414 for BC519
-  //G4double lxe_RIND[]  = { 1.50 , 1.50, 1.50 };
+		G4double tmp[]  = { 1.50 , 1.50, 1.50 };
+		std::copy(tmp,tmp+3,lxe_RIND);
+	}
+	else if (scintMaterial == "BC404") {
 //by Shuya 160512 for BC404
-  G4double lxe_RIND[]  = { 1.58 , 1.58, 1.58 };
+		G4double tmp[] = { 1.58 , 1.58, 1.58 };
+		std::copy(tmp,tmp+3,lxe_RIND);
+	}
+	else if (scintMaterial == "EJ309") {
 //by Shuya 160523 for EJ309
-//  G4double lxe_RIND[]  = { 1.57 , 1.57, 1.57 };
+		G4double tmp[] = { 1.57 , 1.57, 1.57 };
+		std::copy(tmp,tmp+3,lxe_RIND);
+	}
+	else {
+		assert(false && "BAD SCINTILATOR!!");
+	}
 //by Shuya 160526 for TEST of dependence on photon (angular) distribution (should be independent because of isotropic emission...)
 //  G4double lxe_RIND[]  = { 2.0 , 2.0, 2.0 };
   assert(sizeof(lxe_RIND) == sizeof(lxe_Energy));
 
 
 //////////////////////////// Comment By Shuya 160525. THIS IS TO CHANGE FOR SCINTILLATION MATERIALS (5/8) /////////////////////////////////
-//by Shuya 160414 for BC505
-  //G4double lxe_ABSL[]  = { 35.*cm, 35.*cm, 35.*cm};
-  //G4double lxe_ABSL[]  = { 300.*cm, 300.*cm, 300.*cm};
+	G4double lxe_ABSL[] = {0,0,0};
+	if (scintMaterial == "BC505" || scintMaterial == "NE213") {
+    //by Shuya 160414 for BC505
+		/** \todo FIgure out BC505/NE213 atten. length */
+		// G4double tmp[]  = { 35.*cm, 35.*cm, 35.*cm};
+		G4double tmp[]  = { 300.*cm, 300.*cm, 300.*cm};
+		std::copy(tmp,tmp+3,lxe_ABSL);
+		TNTWAR << "NOT SURE IF SCINT MATERIAL IS CORRECTLY DEFINED!!!!!!!!" <<G4endl;
+	}
+	else if (scintMaterial == "BC519" || scintMaterial == "EJ319") {
 //by Shuya 160421 for BC519
-  //G4double lxe_ABSL[]  = { 100.*cm, 100.*cm, 100.*cm};
-//by Shuya 160512 for BC404
-	G4double lxe_ABSL[]  = { 160.*cm, 160.*cm, 160.*cm};
 //by Shuya 160523 for EJ309
-  //G4double lxe_ABSL[]  = { 100.*cm, 100.*cm, 100.*cm};
+		G4double tmp[]  = { 100.*cm, 100.*cm, 100.*cm};
+		std::copy(tmp,tmp+3,lxe_ABSL);
+	}
+	else if (scintMaterial == "BC404") {
+//by Shuya 160512 for BC404
+		G4double tmp[]  = { 160.*cm, 160.*cm, 160.*cm};
+		std::copy(tmp,tmp+3,lxe_ABSL);
+	}
+	else if (scintMaterial == "EJ319") {
+
+		G4double tmp[]  = { 160.*cm, 160.*cm, 160.*cm};
+		std::copy(tmp,tmp+3,lxe_ABSL);
+	}
+	else {
+		assert(false && "BAD SCINTILLATOR!!");
+	}
   assert(sizeof(lxe_ABSL) == sizeof(lxe_Energy));
 
   fTnt_mt = new G4MaterialPropertiesTable();
@@ -273,6 +366,10 @@ void TntDetectorConstruction::DefineMaterials(){
 
 
 //////////////////////////// Comment By Shuya 160525. THIS IS TO CHANGE FOR SCINTILLATION MATERIALS (6/8) /////////////////////////////////
+	// ------ GAC - 06/25/17 ----------
+	// This value is set dynamically by itself, in the input file
+	// Can change params "nphot" and "qe"
+	//
 //by Shuya 160506. To take into account the PMT efficiency (20%) with errors. 
   //fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(12000.*0.2)/MeV);
 //Comment By Shuya 160512. Scintillation Yield: BC505=12000, BC519:9500, BC404=10400, EJ309=11500 (From Ejen catalogue). Anthracene~15000.
@@ -293,13 +390,25 @@ void TntDetectorConstruction::DefineMaterials(){
 
 //////////////////////////// Comment By Shuya 160525. THIS IS TO CHANGE FOR SCINTILLATION MATERIALS (7/8) /////////////////////////////////
   //fTnt_mt->AddConstProperty("FASTTIMECONSTANT",20.*ns);
+
+	// GAC - 06/25/17 - Made Dynamic
+	//
+	if (scintMaterial == "BC505" || scintMaterial == "NE213" || scintMaterial == "EJ319") {
 //by Shuya 160414 for BC505
-  //fTnt_mt->AddConstProperty("FASTTIMECONSTANT",2.7*ns);
+		fTnt_mt->AddConstProperty("FASTTIMECONSTANT",2.7*ns);
+	}
+	else if (scintMaterial == "BC519") {
 //by Shuya 160421 for BC519
-  //fTnt_mt->AddConstProperty("FASTTIMECONSTANT",4.*ns);
+		fTnt_mt->AddConstProperty("FASTTIMECONSTANT",4.*ns);
+	}
+	else if (scintMaterial == "BC404") {
 //by Shuya 160512 for BC404 (not sure about slow one)
-	fTnt_mt->AddConstProperty("FASTSCINTILLATIONRISETIME",0.9*ns); // RISE TIME
-  fTnt_mt->AddConstProperty("FASTTIMECONSTANT",2.1*ns); // DECAY TIME
+		fTnt_mt->AddConstProperty("FASTSCINTILLATIONRISETIME",0.9*ns); // RISE TIME
+		fTnt_mt->AddConstProperty("FASTTIMECONSTANT",2.1*ns); // DECAY TIME
+	} 
+	else {
+		assert (false && "BAD SCINTILLATOR!!!");
+	}
 
 //by Shuya 160523 for EJ309 (not sure about slow one)
   //fTnt_mt->AddConstProperty("FASTTIMECONSTANT",3.5*ns);
@@ -319,6 +428,8 @@ void TntDetectorConstruction::DefineMaterials(){
   fTnt->GetIonisation()->SetBirksConstant(0.126*mm/MeV);
  
 //by Shuya 160606. To test if the refractive index affects the photon detection at PMTs.
+/** \todo (GAC - 06/25/17) :: Do we need to set the glass refractive index equal to the scint ???? 
+ */
   G4double glass_RIND[]={1.49,1.49,1.49};
   //G4double glass_RIND[]={1.57,1.57,1.57};
   assert(sizeof(glass_RIND) == sizeof(lxe_Energy));
@@ -651,6 +762,12 @@ void TntDetectorConstruction::SetDefaults() {
 //Comment By Shuya 160512. Scintillation Yield: BC505=12000, BC519:9500, BC404=10400, EJ309=11500 (From Ejen catalogue). Anthracene~15000.
   //if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(12000.*0.2)/MeV);
   //if(fTnt_mt)fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(9500.*0.2)/MeV);
+	//
+	// GAC - 06/25/17 - Set as an input - see above ("this is to change" 6/8)
+	/** \todo Would be better to NOT set light output in the input file - take it
+	 *  from published material properties. But still set QE in file (which allows
+	 *  arbitrary scaling).
+	 */	
   if(fTnt_mt) {
 		G4double nphot =  TntGlobalParams::Instance()->GetLightOutput() *
 			TntGlobalParams::Instance()->GetQuantumEfficiency(); // 10400.*0.2;

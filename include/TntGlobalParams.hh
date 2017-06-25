@@ -36,6 +36,9 @@ public:
 	G4int GetMenateR_Tracking();
 	void SetMenateR_Tracking(G4int n);
 
+	G4String GetScintMaterial() { return fScintMaterial; }
+	void SetScintMaterial(G4String materialName) { fScintMaterial = materialName; }
+
 	G4double GetDetectorX() { return fDetectorX; }
 	void SetDetectorX(G4double x) { fDetectorX = x; }
 
@@ -71,6 +74,7 @@ private:
 	G4String fRootFileName;
 	G4double fPhotonResolutionScale;
 	G4int fMenateR_Tracking;
+	G4String fScintMaterial;
 	G4double fDetectorX, fDetectorY, fDetectorZ, fSourceZ;
 	G4int fLightOutput;
 	G4double fQuantumEfficiency;

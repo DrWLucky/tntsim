@@ -117,6 +117,7 @@ int main(int argc, char** argv)
 	parser.AddInput("dx",          &TntGlobalParams::SetDetectorX);
 	parser.AddInput("dy",          &TntGlobalParams::SetDetectorY);
 	parser.AddInput("dz",          &TntGlobalParams::SetDetectorZ);
+	parser.AddInput("scint",       &TntGlobalParams::SetScintMaterial);
 	parser.AddInput("beamz",       &TntGlobalParams::SetSourceZ);
 	parser.AddInput("nphot",       &TntGlobalParams::SetLightOutput);
 	parser.AddInput("qe",          &TntGlobalParams::SetQuantumEfficiency);
