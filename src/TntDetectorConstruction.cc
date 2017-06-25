@@ -193,7 +193,15 @@ void TntDetectorConstruction::DefineMaterials(){
 	else if (scintMaterial == "EJ309") {
     //by Shuya 160523. EJ309.
 		fTnt = createHydrocarbon("Tnt", 0.959*g/cm3, 1.25, fH, fC);
-	} else {
+	}
+	else if (scintMaterial == "P-TERP") {
+		//by Greg 170625. P-terphyenl
+		/** P-terp properties from:
+		 *  http://detecsciences.com/api/files/535012e58cd6be252e000081-Scint_Brochure.pdf
+		 */
+		fTnt = createHydrocarbon("Tnt", 1.23*g/cm3, 0.778, fH, fC);
+	}
+	else {
 		TNTERR << "TntDetectorConstruction :: Invalid material: \""
 					 << scintMaterial << "\"!" << G4endl;
 		exit(1);
@@ -245,7 +253,7 @@ void TntDetectorConstruction::DefineMaterials(){
 //////////////////////////// Comment By Shuya 160525. THIS IS TO CHANGE FOR SCINTILLATION MATERIALS (2/8) /////////////////////////////////
 	// GAC - 06/25/17 - set dynamically
 	G4double lxe_Energy[] = {0,0,0};
-	if      (scintMaterial == "NE213" || scintMaterial == "BC505" || scintMaterial == "BC519") {
+	if (scintMaterial == "NE213" || scintMaterial == "BC505" || scintMaterial == "BC519") {
 		//by Shuya 160414 for BC505, BC519
 		//500nm (10% of peak), 425nm (peak), 405nm (10% of peak)
 		G4double eTmp[] = { 2.4797*eV , 2.9173*eV , 3.0613*eV };
@@ -261,6 +269,13 @@ void TntDetectorConstruction::DefineMaterials(){
     //by Shuya 160523 for EJ309
 		//515nm (10% of peak), 425nm (peak), 385nm (10% of peak)
 		G4double eTmp[]  = { 2.4075*eV , 2.9173*eV, 3.2204*eV };
+		std::copy(eTmp, eTmp+3, lxe_Energy);
+	}
+	else if (scintMaterial == "P-TERP") {
+		//by Greg 062517
+		//500nm (10% of peak), 420nm (peak), 380nm (10% of peak)
+		/** \todo Verify p-Terp emission spectrum */
+		G4double eTmp[]  = { (1240./380)*eV , (1240./420)*eV , (1240./380)*eV };
 		std::copy(eTmp, eTmp+3, lxe_Energy);
 	}
 	else {
@@ -284,6 +299,13 @@ void TntDetectorConstruction::DefineMaterials(){
 	else if (scintMaterial == "EJ319") {
 		//GAC need to look these up
 		TNTERR << "Missing Properties for EJ309!!" << G4endl;
+		exit(1);
+	}
+	else if (scintMaterial == "P-TERP") {
+		//GAC need to look these up
+		/**\todo Figure out what this parameter is , and look it up for p-Terp
+		 */
+		TNTERR << "Missing Properties for P-TERP!!" << G4endl;
 		exit(1);
 	}
 	else {
@@ -319,6 +341,11 @@ void TntDetectorConstruction::DefineMaterials(){
 		G4double tmp[] = { 1.57 , 1.57, 1.57 };
 		std::copy(tmp,tmp+3,lxe_RIND);
 	}
+	else if (scintMaterial == "P-TERP") {
+//by Greg 062517
+		G4double tmp[] = { 1.65 , 1.65 , 1.65 };
+		std::copy(tmp,tmp+3,lxe_RIND);
+	}
 	else {
 		assert(false && "BAD SCINTILATOR!!");
 	}
@@ -349,8 +376,14 @@ void TntDetectorConstruction::DefineMaterials(){
 		std::copy(tmp,tmp+3,lxe_ABSL);
 	}
 	else if (scintMaterial == "EJ319") {
-
 		G4double tmp[]  = { 160.*cm, 160.*cm, 160.*cm};
+		std::copy(tmp,tmp+3,lxe_ABSL);
+	}
+	else if (scintMaterial == "P-TERP") {
+		// GAC - 06/25/17
+		/** \note p-Terp atten length from https://arxiv.org/pdf/1305.0442.pdf
+		 */
+		G4double tmp[]  = { 4.73*mm, 4.73*mm, 4.73*mm};
 		std::copy(tmp,tmp+3,lxe_ABSL);
 	}
 	else {
@@ -382,7 +415,10 @@ void TntDetectorConstruction::DefineMaterials(){
 
   //fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(11500.*0.2)/MeV);
   //fTnt_mt->AddConstProperty("SCINTILLATIONYIELD",(11500.)/MeV);
-
+	/** \note Yield values:
+	 *  BC505=12000, BC519:9500, BC404=10400, EJ309=11500 (From Ejen catalogue). Anthracene~15000.
+	 *  p-Terphynel: 27000
+	 */
 	G4double resScale = TntGlobalParams::Instance()->GetPhotonResolutionScale();
 
   fTnt_mt->AddConstProperty("RESOLUTIONSCALE", resScale);
@@ -405,6 +441,15 @@ void TntDetectorConstruction::DefineMaterials(){
 //by Shuya 160512 for BC404 (not sure about slow one)
 		fTnt_mt->AddConstProperty("FASTSCINTILLATIONRISETIME",0.9*ns); // RISE TIME
 		fTnt_mt->AddConstProperty("FASTTIMECONSTANT",2.1*ns); // DECAY TIME
+	} 
+	else if (scintMaterial == "P-TERP") {
+//by Greg 170625 for p-Terp
+		/** \note p-Terp rise time not specified in brochure.
+		 * Using 1 ns, which is probably close enough.
+		 * Using decay time 4 ns (brochure says 3-4 ns).
+		 */
+		fTnt_mt->AddConstProperty("FASTSCINTILLATIONRISETIME",1.*ns); // RISE TIME
+		fTnt_mt->AddConstProperty("FASTTIMECONSTANT",4.*ns); // DECAY TIME
 	} 
 	else {
 		assert (false && "BAD SCINTILLATOR!!!");
