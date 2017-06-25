@@ -365,34 +365,7 @@ TntPGAReaction::TntPGAReaction():
 	fDecay->SetDecayParam("Z_i", FragZ);
 	fRngEx4 = fDecay->CreateRngEx();
 	// Reac RNGs
-	fReac->SetRNGs(fRngEbeam.get(), 0, fRngEx4.get(), fRngTheta.get(), fRngPhi.get());
-#if 0
-	// ExEn RNG
-	// (+Depends on decay type)
-	if(dynamic_cast<TntTwoNeutronDecayDiNeutron*>(fDecay.get())) 
-	{
-		fRngEx4.reset(new TntRngVolyaDiNeutronEx(rfp.ex, rfp.width, -18.7, FragA));
-	}
-	else if(dynamic_cast<TntTwoNeutronDecaySequential*>(fDecay.get())) 
-	{
-		G4double Mass_i = TntNuclearMasses::GetNuclearMass(FragZ, FragA-1);
-		G4double Mass_f = TntNuclearMasses::GetNuclearMass(FragZ, FragA-2);
-		G4double Ev = Mass_i - Mass_f - CLHEP::neutron_mass_c2;
-		fRngEx4.reset(new TntRngVolyaSequentialEx(rfp.ex,
-																							Ev,
-																							1, // sI
-																							1, // sF
-																							1, // L
-																							rfp.width,
-																							FragA));
-	}
-	else
-	{
-		fRngEx4.reset(new TntRngBreitWigner(rfp.ex, rfp.width));
-	}
-	fReac->SetRNGs(fRngEbeam.get(), 0, fRngEx4.get(), fRngTheta.get(), fRngPhi.get());
-	fDecay->SetRngEx(fRngEx4.get());
-#endif
+	fReac->SetRNGs({fRngEbeam.get(), 0, fRngEx4.get(), fRngTheta.get(), fRngPhi.get()});
 }
 
 TntPGAReaction::~TntPGAReaction()
@@ -448,7 +421,7 @@ void TntPGAReaction::GeneratePrimaries(G4Event* anEvent)
 	momentum_z = fDecay->GetFinal(whichNeutron+2).pz();
 
 	// Recoil ('fragment') momentum (4-vector)
-	G4LorentzVector p_recoil = fDecay->GetFinal(whichNeutron+1);
+	G4LorentzVector p_recoil = fDecay->GetFinal(1);
 	
 	// Send to data record class
 	TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
@@ -467,6 +440,147 @@ void TntPGAReaction::GeneratePrimaries(G4Event* anEvent)
 	else                        { ++whichNeutron;		}
 
 
+	// Set particle gun paramters
+	//
+	// Energy and position
+	fParticleGun->SetParticlePosition(beamPos);	
+	fParticleGun->SetParticleEnergy(eNeut);
+
+	// Direction
+  G4ThreeVector v(momentum_x,momentum_y,momentum_z);
+  fParticleGun->SetParticleMomentumDirection(v);
+
+	// Generate event (neutron...)
+  fParticleGun->GeneratePrimaryVertex(anEvent);
+	TntDataRecordTree::TntPointer->senddataPrimary(fParticleGun->GetParticlePosition(), 
+																								 fParticleGun->GetParticleMomentumDirection());
+}
+
+
+
+// ===================================
+// = TntPGAPhaseSpace ================
+// ===================================
+
+TntPGAPhaseSpace::TntPGAPhaseSpace(G4int nneut):
+	TntPrimaryGeneratorAction(),
+	fN(nneut),
+	fReac(nullptr),
+	fRngEbeam(nullptr), 
+	fEmX(nullptr), 
+	fEmY(nullptr)
+{
+	// Parse reaction file
+	//
+	fReacFile = TntGlobalParams::Instance()->GetReacFile();
+
+	reac_file_params rfp;
+	TntInputFileParser<reac_file_params> parser(&rfp);
+	parser.AddInput("beam",        &reac_file_params::set_beam);
+	parser.AddInput("target",      &reac_file_params::set_target);
+	parser.AddInput("ejectile",    &reac_file_params::set_ejectile);
+	parser.AddInput("ebeam",       &reac_file_params::set_ebeam);
+	parser.AddInput("ex",          &reac_file_params::set_ex);
+	parser.AddInput("width",       &reac_file_params::set_width);
+	parser.AddInput("angdist",     &reac_file_params::set_angdist);
+	parser.AddInput("embeamx",     &reac_file_params::set_twist_x);
+	parser.AddInput("embeamy",     &reac_file_params::set_twist_y);
+	parser.AddInput("beamx",       &reac_file_params::set_beam_x0);
+	parser.AddInput("beamy",       &reac_file_params::set_beam_y0);
+
+	try { parser.Parse(fReacFile); }
+	catch (std::string s) {
+		G4cerr << "ERROR:: Invalid reaction file:: " << s << G4endl;
+		exit(1);
+	}
+
+	// Initialize Generators
+	//
+	// Beam & Energy
+	TntNuclearMasses::GetZAFromSymbol(rfp.beam, fZ, fA);
+	TntNuclearMasses::GetZAFromSymbol(rfp.target, fZ+1, fA+1);
+	TntNuclearMasses::GetZAFromSymbol(rfp.ejectile, fZ+2, fA+2);
+	fZ[3] = fZ[0]+fZ[1] - fZ[2]; const G4double FragZ = fZ[3];
+	fA[3] = fA[0]+fA[1] - fA[2]; const G4double FragA = fA[3];
+	
+	fRngEbeam.reset(new TntRngGaus(rfp.ebeam*fA[0], rfp.debeam*fA[0])); // TOTAL beam kinetic energy
+
+	// Reaction
+	fReac.reset(new TntNeutronPhaseSpaceReactionGenerator(nneut));
+	fReac->SetBeamTargetEjectile(rfp.beam, rfp.target, rfp.ejectile);
+	// (+Emittance)
+	fEmX.reset(new TntBeamEmittance(rfp.epsx, rfp.alphax, rfp.sigmax, rfp.x0));
+	fEmY.reset(new TntBeamEmittance(rfp.epsy, rfp.alphay, rfp.sigmay, rfp.y0));						 
+	fReac->SetEmittance(fEmX.get(), fEmY.get());
+	// Reac RNGs
+	fReac->SetRNGs({fRngEbeam.get()});
+}
+
+TntPGAPhaseSpace::~TntPGAPhaseSpace()
+{ }
+
+void TntPGAPhaseSpace::GeneratePrimaries(G4Event* anEvent)
+{
+  //****************************************************
+  // Now select type of beam
+  //****************************************************
+  G4double momentum_x = 0.;   // Default momentum is z-direction for
+  G4double momentum_y = 0.;   // Pencil beams
+  G4double momentum_z = 1.;
+  
+//by Shuya 160510.
+	G4double detector_thickness = TntGlobalParams::Instance()->GetDetectorZ();
+  G4double beam_z = (-1*TntGlobalParams::Instance()->GetSourceZ() - (detector_thickness/2))*cm;
+
+	// Generate event-by-event reaction w/ phase space neutrons
+	// Treat n>1 decays as separate 'events' (saved w/ same frag. data)
+	// but neutron data from the corresponding neutron
+	//
+	int nNeut = fN;
+	static G4int whichNeutron = 0;
+	if(whichNeutron == 0) {
+		// We are on the first neutron, 
+		// so generate a new reaction + decay
+		//
+		G4bool reacSuccess = fReac->Generate();
+		assert(reacSuccess);
+	}
+		
+	// Save beam position
+	G4ThreeVector beamPos(fReac->GetReactant(1).PosX(),
+												fReac->GetReactant(1).PosY(),
+												beam_z);
+
+	// Set neutron energy+momentum (for 'whichNeutron')
+	// Offset in fReac->GetReactant is +5
+	// (beam, fragment, ejectile, recoil, and count from ONE)
+	//
+	G4int offset = 5;
+	G4double eNeut = fReac->GetReactant(whichNeutron+offset).Ekin();
+	momentum_x = fReac->GetReactant(whichNeutron+offset).Px();
+	momentum_y = fReac->GetReactant(whichNeutron+offset).Py();
+	momentum_z = fReac->GetReactant(whichNeutron+offset).Pz();
+
+	// Recoil ('fragment') momentum (4-vector)
+	G4LorentzVector p_recoil = fReac->GetReactant(4).Momentum();
+	
+	// Send to data record class
+	TntDataOutPG->senddataPG(fParticleGun->GetParticleEnergy());
+	TntDataOutPG->senddataSecondary(beamPos, p_recoil);
+	TntDataOutPG->senddataEjectile(beamPos,
+																 fReac->GetReactant(3).Momentum(),
+																 fReac->GetThetaCM());
+	TntDataOutPG->senddataReaction(beamPos,
+																 fReac->GetReactant(1).Momentum(),
+																 fReac->GetReactant(2).M());
+
+	
+	// Iterate through successive neutrons
+	//
+	if(whichNeutron == nNeut-1) { whichNeutron = 0; }
+	else                        { ++whichNeutron;		}
+
+	
 	// Set particle gun paramters
 	//
 	// Energy and position

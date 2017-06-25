@@ -62,8 +62,6 @@ protected:
 	G4String BeamType;
 };
 
-
-
 class TntPGAReaction : public TntPrimaryGeneratorAction {
 public:
 	TntPGAReaction();
@@ -76,6 +74,21 @@ protected:
 	std::unique_ptr<TntReactionGenerator> fReac;
 	std::unique_ptr<TntNeutronDecay> fDecay;
 	std::unique_ptr<TntRng> fRngEbeam, fRngEx3, fRngEx4, fRngTheta, fRngPhi;
+	std::unique_ptr<TntBeamEmittance> fEmX, fEmY;
+};
+
+class TntPGAPhaseSpace : public TntPrimaryGeneratorAction {
+public:
+	TntPGAPhaseSpace(G4int n_neut);
+	virtual ~TntPGAPhaseSpace();
+	virtual void GeneratePrimaries(G4Event* anEvent);
+
+protected:
+	G4int fN;
+	G4String fReacFile;
+	G4int fA[4], fZ[4];
+	std::unique_ptr<TntReactionGenerator> fReac;
+	std::unique_ptr<TntRng> fRngEbeam;
 	std::unique_ptr<TntBeamEmittance> fEmX, fEmY;
 };
 

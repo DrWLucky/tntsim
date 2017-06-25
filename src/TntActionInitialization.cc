@@ -41,6 +41,7 @@
 
 #include "TntRecorderBase.hh"
 #include "TntGlobalParams.hh"
+#include "TntInputFileParser.hh"
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -63,12 +64,36 @@ void TntActionInitialization::BuildForMaster() const
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+namespace { struct phase_space_set {
+	G4int n;
+	void set_n(G4int n_) { n = n_; }
+}; }
+
 void TntActionInitialization::Build() const
 {
 	if(TntGlobalParams::Instance()->GetReacFile() == "0") {
 		SetUserAction(new TntPrimaryGeneratorAction());
+		G4cout << "------ SETTING STANDARD Generator -------" <<G4endl;
 	} else {
-		SetUserAction(new TntPGAReaction());
+		phase_space_set ps;
+		TntInputFileParser<phase_space_set> parser(&ps);
+		parser.AddInput("phasespace", &phase_space_set::set_n);
+		
+		try { parser.Parse(TntGlobalParams::Instance()->GetReacFile()); }
+		catch (std::string s) {
+			G4cerr << "ERROR:: Invalid reaction file:: " << s << G4endl;
+			exit(1);
+		}
+
+		if(ps.n == 0) {
+			// NO phase space - do two-body reaction + neutron decay
+			SetUserAction(new TntPGAReaction());
+			G4cout << "------ SETTING F+" << ps.n << "n Phase Space Generator -------" <<G4endl;
+		} else {
+			// Do (n+2)-body phase space generation
+			SetUserAction(new TntPGAPhaseSpace(ps.n));
+			G4cout << "------ SETTING Two-Body + Decay Generator -------" <<G4endl;
+		}
 	}
 
   SetUserAction(new TntStackingAction());
