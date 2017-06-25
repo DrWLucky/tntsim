@@ -39,6 +39,8 @@ class G4Tubs;
 class TntMainVolume;
 class G4Sphere;
 
+#include <vector>
+
 #include "G4Material.hh"
 #include "TntDetectorMessenger.hh"
 #include "G4VisAttributes.hh"
@@ -54,7 +56,7 @@ class TntDetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
 
-    TntDetectorConstruction(G4String Light);
+   	TntDetectorConstruction(G4String Light, int nx=0, int ny=0);
     virtual ~TntDetectorConstruction();
 
     virtual G4VPhysicalVolume* Construct();
@@ -106,7 +108,10 @@ class TntDetectorConstruction : public G4VUserDetectorConstruction
 
   private:
 
-    void DefineMaterials();
+    void ConstructSDandField1();
+	  void ConstructSDandFieldN();
+
+	  void DefineMaterials();
     G4VPhysicalVolume* ConstructDetector();
 
     TntDetectorMessenger* fDetectorMessenger;
@@ -149,7 +154,9 @@ class TntDetectorConstruction : public G4VUserDetectorConstruction
     G4bool fMainVolumeOn;
     G4double fSlab_z;
 
+	  G4int fNDetX, fNDetY;
     TntMainVolume* fMainVolume;
+	  std::vector<TntMainVolume*> fMainVolumeArray;
 
     G4MaterialPropertiesTable* fTnt_mt;
     G4MaterialPropertiesTable* fMPTPStyrene;

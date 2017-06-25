@@ -82,8 +82,9 @@ G4bool TntDetectorConstruction::fSphereOn = true;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-TntDetectorConstruction::TntDetectorConstruction(G4String Light)
-: fTnt_mt(NULL), fMPTPStyrene(NULL), Light_Conv_Method(Light)
+TntDetectorConstruction::TntDetectorConstruction(G4String Light, int nx, int ny)
+	: fTnt_mt(NULL), fMPTPStyrene(NULL), Light_Conv_Method(Light),
+		fNDetX(nx), fNDetY(ny), fMainVolumeArray(nx*ny, 0)
 {
   fExperimentalHall_box = NULL;
   fExperimentalHall_log = NULL;
@@ -591,9 +592,41 @@ G4cout << fNz << G4endl;
   fExperimentalHall_log->SetVisAttributes(G4VisAttributes::Invisible);
 
   //Place the main volume
+	// TntMainVolume::TntMainVolume(G4RotationMatrix *pRot, // rotation
+  //                            const G4ThreeVector &tlate, // position
+  //                            G4LogicalVolume *pMotherLogical,
+  //                            G4bool pMany,
+  //                            G4int pCopyNo,
+  //                            TntDetectorConstruction* c)
   if(fMainVolumeOn){
-    fMainVolume
-      = new TntMainVolume(0,G4ThreeVector(),fExperimentalHall_log,false,0,this);
+		if(fMainVolumeArray.empty()) 
+		{
+			fMainVolume
+				= new TntMainVolume(0,G4ThreeVector(),fExperimentalHall_log,false,0,this);
+		}
+		else
+		{
+			if(fScint_y > 0) { 
+				assert(false && "NEED TO IMPLEMENT BOX ARRAY!!");
+			} else {
+				G4double fScint_D = fScint_x;
+				G4double housing_D=fScint_D+2.*fD_mtl;
+				G4double housing_z=fScint_z+2.*fD_mtl;
+				G4double xtot = housing_D*fNDetX; // total array x-size
+				G4double ytot = housing_D*fNDetY; // total array y-size
+				for(int i=0; i< fNDetX; ++i) {
+					for(int j=0; j< fNDetY; ++j) {
+						double xoff = -xtot/2. + housing_D/2. + housing_D*i;
+						double yoff = -ytot/2. + housing_D/2. + housing_D*j;
+						TntMainVolume* mv =
+							new TntMainVolume(0,G4ThreeVector(xoff,yoff,0),
+																fExperimentalHall_log,false,0,this);
+						fMainVolumeArray.at( i*fNDetY + j ) = mv;
+					}
+				}
+			}
+			fMainVolume = fMainVolumeArray.at(0);
+		} // --- ARRAY ---
   }
 
   //Place the WLS slab
@@ -635,6 +668,11 @@ G4cout << fNz << G4endl;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void TntDetectorConstruction::ConstructSDandField() {
+	if(fMainVolumeArray.empty()) { ConstructSDandField1(); }
+	else { ConstructSDandFieldN(); }
+}
+
+void TntDetectorConstruction::ConstructSDandField1() {
 
   if (!fMainVolume) return;
 
@@ -671,6 +709,52 @@ void TntDetectorConstruction::ConstructSDandField() {
   }
   SetSensitiveDetector(fMainVolume->GetLogScint(), fScint_SD.Get());
 }
+
+
+void TntDetectorConstruction::ConstructSDandFieldN() {
+	/** For array of detectors
+	 */
+	for(size_t i=0; i< fMainVolumeArray.size(); ++i) {
+		fMainVolume = fMainVolumeArray.at(i);
+		if (!fMainVolume) return;
+
+		// PMT SD
+
+		if (!fPmt_SD.Get()) {
+			//Created here so it exists as pmts are being placed
+			G4cout << "Construction /TntDet/pmtSD" << G4endl;
+			TntPMTSD* pmt_SD = new TntPMTSD("/TntDet/pmtSD");
+			fPmt_SD.Put(pmt_SD);
+
+			pmt_SD->InitPMTs((fNx*fNy+fNx*fNz+fNy*fNz)*2); //let pmtSD know # of pmts
+			pmt_SD->SetPmtPositions(fMainVolume->GetPmtPositions());
+		}
+
+  //sensitive detector is not actually on the photocathode.
+  //processHits gets done manually by the stepping action.
+  //It is used to detect when photons hit and get absorbed&detected at the
+  //boundary to the photocathode (which doesnt get done by attaching it to a
+  //logical volume.
+  //It does however need to be attached to something or else it doesnt get
+  //reset at the begining of events
+
+		SetSensitiveDetector(fMainVolume->GetLogPhotoCath(), fPmt_SD.Get());
+
+  // Scint SD
+
+		if (!fScint_SD.Get()) {
+			G4cout << "Construction /TntDet/scintSD" << G4endl;
+//by Shuya 160407
+    //TntScintSD* scint_SD = new TntScintSD("/TntDet/scintSD");
+			TntScintSD* scint_SD = new TntScintSD("/TntDet/scintSD", Light_Conv_Method);
+			fScint_SD.Put(scint_SD);
+		}
+		
+		SetSensitiveDetector(fMainVolume->GetLogScint(), fScint_SD.Get());
+	}
+}
+
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
