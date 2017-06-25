@@ -54,8 +54,24 @@ TntMainVolume::TntMainVolume(G4RotationMatrix *pRot,
                                      "temp",0,0,0),
                  "housing",pMotherLogical,pMany,pCopyNo),fConstructor(c)
 {
-  CopyValues();
+	fScint_box = fHousing_box = 0;
+	fScint_tubs = fHousing_tubs = 0;
+  this->CopyValues();
 
+	/** Choose box shape or cylinder shape based on value
+	 *  of y dimension in TntDetectorConstructor.
+	 *  Values > 0 give a box with w/l/h = x/y/z.
+	 *  Values <= 0 give a sylinder, with *diameter* = x and length = z
+	 */
+	if (fScint_y > 0) { // GAC - 06/25/17 - standard , create box-shaped detector
+		CreateBox();
+	} else {            // GAC - 06/25/17 - standard , create cylindrical detector (x is diameter)
+		CreateCylinder();
+	}
+}
+
+void TntMainVolume::CreateBox()
+{
   //G4double housing_x=fScint_x+2.*fD_mtl;
   //G4double housing_y=fScint_y+2.*fD_mtl;
   //G4double housing_z=fScint_z+2.*fD_mtl;
@@ -63,7 +79,7 @@ TntMainVolume::TntMainVolume(G4RotationMatrix *pRot,
   G4double housing_x=fScint_x+2.*fD_mtl;
   G4double housing_y=fScint_y+2.*fD_mtl;
   G4double housing_z=fScint_z+2.*fD_mtl;
- 
+	
   //*************************** housing and scintillator
   fScint_box = new G4Box("scint_box",fScint_x/2.,fScint_y/2.,fScint_z/2.);
   fHousing_box = new G4Box("housing_box",housing_x/2.,housing_y/2.,
@@ -177,7 +193,139 @@ G4cout << fNz << G4endl;
   SurfaceProperties();
 
   SetLogicalVolume(fHousing_log);
-}
+} // CREATE BOX
+
+
+
+void TntMainVolume::CreateCylinder()
+{
+	G4double fScint_D = fScint_x;
+  G4double housing_D=fScint_D+2.*fD_mtl;
+  G4double housing_z=fScint_z+2.*fD_mtl;
+	
+  //*************************** housing and scintillator
+	// name, inner Radius, outer Radius, half length, start angle, span angle
+  fScint_tubs   = new G4Tubs("scint_tubs",   0., fScint_D/2,  fScint_z/2,  0.*deg, 360.*deg);
+  fHousing_tubs = new G4Tubs("housing_tubs", 0., housing_D/2, housing_z/2, 0.*deg, 360.*deg);
+ 
+  fScint_log = new G4LogicalVolume(fScint_tubs, G4Material::GetMaterial("Tnt"),
+                                   "scint_log",0,0,0);
+  fHousing_log = new G4LogicalVolume(fHousing_tubs,
+				     //by Shuya 160504.Because PMMA is too fragile to support BC519.
+                                     G4Material::GetMaterial("Al"),
+                                     //by Shuya 160413
+                                     //G4Material::GetMaterial("PMMA"),
+                                     "housing_log",0,0,0);
+ 
+  new G4PVPlacement(0,G4ThreeVector(),fScint_log,"scintillator",
+                                 fHousing_log,false,0);
+ 
+  //*************** Miscellaneous sphere to demonstrate skin surfaces
+  fSphere = new G4Sphere("sphere",0.*mm,2.*cm,0.*deg,360.*deg,0.*deg,360.*deg);
+  fSphere_log = new G4LogicalVolume(fSphere,G4Material::GetMaterial("Al"),
+                                    "sphere_log");
+  if(fSphereOn)
+    new G4PVPlacement(0,G4ThreeVector(5.*cm,5.*cm,5.*cm),
+											fSphere_log,"sphere",fScint_log,false,0);
+ 
+  //****************** Build PMTs
+  G4double innerRadius_pmt = 0.*cm;
+  G4double height_pmt = fD_mtl/2.;
+  G4double startAngle_pmt = 0.*deg;
+  G4double spanningAngle_pmt = 360.*deg;
+ 
+//by Shuya 160509. Change PMT shape from Tube to Box.
+  //fPmt = new G4Tubs("pmt_tube",innerRadius_pmt,fOuterRadius_pmt,
+  //                  height_pmt,startAngle_pmt,spanningAngle_pmt);
+	//
+	// GAC - 06/25/17 - Make PMTs just fit inside the circular surface
+	G4double pmt_len_total = sqrt(fScint_D*fScint_D/2.); // square fit inside circle
+	fPmt_x = pmt_len_total / fNx;
+	fPmt_y = pmt_len_total / fNy;
+  fPmt = new G4Box("pmt_box",fPmt_x/2.,fPmt_y/2.,height_pmt);
+ 
+  //the "photocathode" is a metal slab at the back of the glass that
+  //is only a very rough approximation of the real thing since it only
+  //absorbs or detects the photons based on the efficiency set below
+
+//by Shuya 160509. Change PMT shape from Tube to Box.
+  //fPhotocath = new G4Tubs("photocath_tube",innerRadius_pmt,fOuterRadius_pmt,
+  //                        height_pmt/2,startAngle_pmt,spanningAngle_pmt);
+  fPhotocath = new G4Box("photocath_box",fPmt_x/2.,fPmt_y/2.,height_pmt/2);
+ 
+  fPmt_log = new G4LogicalVolume(fPmt,G4Material::GetMaterial("Glass"),
+                                 "pmt_log");
+  fPhotocath_log = new G4LogicalVolume(fPhotocath,
+                                       G4Material::GetMaterial("Al"),
+                                       "photocath_log");
+ 
+//by Shuya 160607. For testing influence of PMT glass on reflection of scintillation photons.
+  //new G4PVPlacement(0,G4ThreeVector(0,0,-height_pmt/2),
+  new G4PVPlacement(0,G4ThreeVector(0,0,height_pmt/2),
+                                    fPhotocath_log,"photocath",
+                                    fPmt_log,false,0);
+ 
+  //***********Arrange pmts around the outside of housing**********
+  
+//by Shuya 160404
+/*
+G4cout << fScint_x << G4endl;
+G4cout << fScint_y << G4endl;
+G4cout << fScint_z << G4endl;
+G4cout << fNx << G4endl;
+G4cout << fNy << G4endl;
+G4cout << fNz << G4endl;
+*/
+
+  G4double dx = fScint_x/fNx;
+  G4double dy = fScint_y/fNy;
+  G4double dz = fScint_z/fNz;
+ 
+  G4double x,y,z;
+  G4double xmin = -pmt_len_total/2. - dx/2.; // -fScint_x/2. - dx/2.;
+  G4double ymin = -pmt_len_total/2. - dy/2.; // -fScint_y/2. - dy/2.;
+  G4double zmin = -fScint_z/2. - dz/2.;
+  G4int k=0;
+ 
+  z = -fScint_z/2. - height_pmt;      //front
+  PlacePMTs(fPmt_log,0,x,y,dx,dy,xmin,ymin,fNx,fNy,x,y,z,k);
+
+  G4RotationMatrix* rm_z = new G4RotationMatrix();
+  rm_z->rotateY(180*deg);
+  z = fScint_z/2. + height_pmt;       //back
+  PlacePMTs(fPmt_log,rm_z,x,y,dx,dy,xmin,ymin,fNx,fNy,x,y,z,k);
+//by Shuya 160428. You can check PMT position by this.
+  //for(int i=100;i<200;i++)	G4cout << fPmtPositions[i] << G4endl;
+
+#if 0 // GAC - No PMTs except front/back
+  G4RotationMatrix* rm_y1 = new G4RotationMatrix();
+  rm_y1->rotateY(-90*deg);
+  x = -fScint_x/2. - height_pmt;      //left
+  PlacePMTs(fPmt_log,rm_y1,y,z,dy,dz,ymin,zmin,fNy,fNz,x,y,z,k);
+
+  G4RotationMatrix* rm_y2 = new G4RotationMatrix();
+  rm_y2->rotateY(90*deg);
+  x = fScint_x/2. + height_pmt;      //right
+  PlacePMTs(fPmt_log,rm_y2,y,z,dy,dz,ymin,zmin,fNy,fNz,x,y,z,k);
+ 
+  G4RotationMatrix* rm_x1 = new G4RotationMatrix();
+  rm_x1->rotateX(90*deg);
+  y = -fScint_y/2. - height_pmt;     //bottom
+  PlacePMTs(fPmt_log,rm_x1,x,z,dx,dz,xmin,zmin,fNx,fNz,x,y,z,k);
+
+  G4RotationMatrix* rm_x2 = new G4RotationMatrix();
+  rm_x2->rotateX(-90*deg);
+  y = fScint_y/2. + height_pmt;      //top
+  PlacePMTs(fPmt_log,rm_x2,x,z,dx,dz,xmin,zmin,fNx,fNz,x,y,z,k);
+#endif
+	
+  VisAttributes();
+  SurfaceProperties();
+
+  SetLogicalVolume(fHousing_log);
+} // CREATE CYLINDER
+
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
