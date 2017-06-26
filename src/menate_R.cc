@@ -62,6 +62,7 @@
 #include <cmath>
 #include <iomanip>
 
+#include "TntMainVolume.hh"
 
 menate_R::menate_R(const G4String& processName) : G4VDiscreteProcess(processName)
 {
@@ -1009,8 +1010,11 @@ if(ReactionName == "N_P_elastic")
     //if(parentID!=0)	aParticleChange.AddSecondary(theNTrack);
 
     aParticleChange.AddSecondary(thePTrack);
+		const G4TouchableHistory* hist = 
+			static_cast<const G4TouchableHistory*>(aStep.GetPostStepPoint()->GetTouchable());
 
-		ttnt->senddataMenateR(T_P, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+		ttnt->senddataMenateR(T_P, thePosition, hist->GetCopyNumber(),
+													GlobalTime, ttnt->GetReactionCode(ReactionName));
 		
 //by Shuya 160420
 //G4cout << "TESTING!!! " << theNTrack->GetTrackID() << G4endl;
@@ -1133,8 +1137,11 @@ if(ReactionName == "N_P_elastic")
  
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
 		aParticleChange.AddSecondary(theC12Track);
+		const G4TouchableHistory* hist = 
+			static_cast<const G4TouchableHistory*>(aStep.GetPostStepPoint()->GetTouchable());
 
-		ttnt->senddataMenateR(T_C12el, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+		ttnt->senddataMenateR(T_C12el, thePosition, hist->GetCopyNumber(),
+													GlobalTime, ttnt->GetReactionCode(ReactionName));
 		
     // G4cout << "Made it to the end ! " << G4endl;
    }
@@ -1285,9 +1292,12 @@ if(ReactionName == "N_P_elastic")
      //if(parentID!=0)	aParticleChange.AddSecondary(theNTrack);
 
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
-     aParticleChange.AddSecondary(theC12Track);
+		aParticleChange.AddSecondary(theC12Track);
+		const G4TouchableHistory* hist = 
+			static_cast<const G4TouchableHistory*>(aStep.GetPostStepPoint()->GetTouchable());
 
-		 ttnt->senddataMenateR(T_C12, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+		 ttnt->senddataMenateR(T_C12, thePosition, hist->GetCopyNumber(),
+													 GlobalTime, ttnt->GetReactionCode(ReactionName));
 
     // G4cout << "Made it to the end ! " << G4endl;
  
@@ -1380,8 +1390,12 @@ if(ReactionName == "N_P_elastic")
      //aParticleChange.SetNumberOfSecondaries(0);
      aParticleChange.AddSecondary(theAlphaTrack);
      aParticleChange.AddSecondary(theBe9Track);
+		 
+		 const G4TouchableHistory* hist = 
+			 static_cast<const G4TouchableHistory*>(aStep.GetPostStepPoint()->GetTouchable());
 
-		 ttnt->senddataMenateR(T_Be9 + T_Alpha, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+		 ttnt->senddataMenateR(T_Be9 + T_Alpha, thePosition, hist->GetCopyNumber(),
+													 GlobalTime, ttnt->GetReactionCode(ReactionName));
 
 		 
     // G4cout << "Made it to the end ! " << G4endl;
@@ -1472,7 +1486,11 @@ if(ReactionName == "N_P_elastic")
 		 aParticleChange.AddSecondary(thePTrack);
      aParticleChange.AddSecondary(theB12Track);
 
-		 ttnt->senddataMenateR(T_P + T_B12, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+		 const G4TouchableHistory* hist = 
+			 static_cast<const G4TouchableHistory*>(aStep.GetPostStepPoint()->GetTouchable());
+
+		 ttnt->senddataMenateR(T_P + T_B12, thePosition, hist->GetCopyNumber(),
+													 GlobalTime, ttnt->GetReactionCode(ReactionName));
 
   
     // G4cout << "Made it to the end ! " << G4endl;
@@ -1663,7 +1681,11 @@ if(ReactionName == "N_P_elastic")
 		aParticleChange.AddSecondary(thePTrack);
 		aParticleChange.AddSecondary(theB11Track);
 
-		ttnt->senddataMenateR(T_P + T_B11, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+		const G4TouchableHistory* hist = 
+			static_cast<const G4TouchableHistory*>(aStep.GetPostStepPoint()->GetTouchable());
+
+		ttnt->senddataMenateR(T_P + T_B11, thePosition, hist->GetCopyNumber(),
+													GlobalTime, ttnt->GetReactionCode(ReactionName));
 
 		
     // G4cout << "Made it to the end ! " << G4endl;
@@ -1843,7 +1865,11 @@ if(ReactionName == "N_P_elastic")
     //by Shuya 160524. To extract only (n,p) reactions, remove all other particles.
 		aParticleChange.AddSecondary(theC11Track);
 
-		ttnt->senddataMenateR(T_C11, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+		const G4TouchableHistory* hist = 
+			static_cast<const G4TouchableHistory*>(aStep.GetPostStepPoint()->GetTouchable());
+
+		ttnt->senddataMenateR(T_C11, thePosition, hist->GetCopyNumber(),
+													GlobalTime, ttnt->GetReactionCode(ReactionName));
 
 		
      /*
@@ -2116,8 +2142,10 @@ else if(ReactionName == "N_C12_NN3Alpha")
     aParticleChange.AddSecondary(theA2Track);
     aParticleChange.AddSecondary(theA3Track);
 
-		ttnt->senddataMenateR(
-			T_Alpha1 + T_Alpha2 + T_Alpha3, thePosition, GlobalTime, ttnt->GetReactionCode(ReactionName));
+		const G4TouchableHistory* hist = 
+			static_cast<const G4TouchableHistory*>(aStep.GetPostStepPoint()->GetTouchable());
+		ttnt->senddataMenateR( T_Alpha1 + T_Alpha2 + T_Alpha3, thePosition, hist->GetCopyNumber(),
+													 GlobalTime, ttnt->GetReactionCode(ReactionName));
 
 		
      /*

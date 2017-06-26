@@ -315,6 +315,7 @@ TntDataRecordTree::TntDataRecordTree(G4double Threshold) :
 	fMenateHitsPos->BypassStreamer();
 	TntEventTree->Branch("MenateHitsE", &fMenateHitsE);
 	TntEventTree->Branch("MenateHitsType", &fMenateHitsType);
+	TntEventTree->Branch("MenateHitsDetector", &fMenateHitsDetector);
 
 	
 	//
@@ -893,6 +894,7 @@ void TntDataRecordTree::FillTree()
 	fMenateHitsPos->Clear();
 	fMenateHitsE.clear();
 	fMenateHitsType.clear();
+	fMenateHitsDetector.clear();
 
 	//G4cout << "FillTree1!" << G4endl;
 }
@@ -977,7 +979,8 @@ void TntDataRecordTree::CalculateEff(int ch_eng)
 }
  
 void TntDataRecordTree::senddataMenateR(G4double ekin, 
-																				const G4ThreeVector& posn, 
+																				const G4ThreeVector& posn,
+																				G4int copyNo,
 																				G4double t,
 																				G4int type)
 {
@@ -985,6 +988,7 @@ void TntDataRecordTree::senddataMenateR(G4double ekin,
 		fMenateHitsPos->Clear();
 		fMenateHitsE.clear();
 		fMenateHitsType.clear();
+		fMenateHitsDetector.clear();
 	}
 
 	G4double zOffset = 	
@@ -996,6 +1000,7 @@ void TntDataRecordTree::senddataMenateR(G4double ekin,
 
 	fMenateHitsE.push_back(ekin);
 	fMenateHitsType.push_back(type);
+	fMenateHitsDetector.push_back(copyNo);
 
 	++HitCounter_MenateR;
 }
@@ -1034,3 +1039,29 @@ G4String TntDataRecordTree::GetReactionName(G4int  code)
 		G4String(ReactionNames[code-1].c_str()) : G4String("INVALID");
 }
 
+void TntDataRecordTree::SaveDetectorPositions(
+	const std::vector<std::pair<int, int> >& indx,
+	const std::vector<std::pair<double, double> >& pos)
+{
+	assert(DataFile);
+	TDirectory* f = gFile;
+	DataFile->cd();
+	TTree* t = new TTree("detpos", "Detector Central Positions");
+	G4double x,y;
+	G4int ix,iy;
+	t->Branch("xpos",&x,"xpos/D");
+	t->Branch("ypos",&y,"ypos/D");
+	t->Branch("ix",&ix,"ix/I");
+	t->Branch("iy",&iy,"iy/I");
+	for(size_t i=0;i<pos.size();++i) {
+		const auto& p = pos[i];
+		const auto& ip = indx[i];
+		x = p.first;
+		y = p.second;
+		ix = ip.first;
+		iy = ip.second;
+		t->Fill();
+	}
+	t->AutoSave();
+	if(f) f->cd();
+}

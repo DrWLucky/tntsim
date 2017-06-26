@@ -106,8 +106,9 @@ class TntDetectorConstruction : public G4VUserDetectorConstruction
     void SetMainScintYield(G4double );
     void SetWLSScintYield(G4double );
 
+  	void GetDetectorOffset(G4int i, G4double& x, G4double& y);
+	
   private:
-
     void ConstructSDandField1();
 	  void ConstructSDandFieldN();
 
@@ -157,6 +158,7 @@ class TntDetectorConstruction : public G4VUserDetectorConstruction
 	  G4int fNDetX, fNDetY;
     TntMainVolume* fMainVolume;
 	  std::vector<TntMainVolume*> fMainVolumeArray;
+	  std::vector<G4double> fOffsetX, fOffsetY;
 
     G4MaterialPropertiesTable* fTnt_mt;
     G4MaterialPropertiesTable* fMPTPStyrene;

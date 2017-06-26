@@ -49,6 +49,7 @@
 #include "TntMainVolume.hh"
 #include "TntWLSSlab.hh"
 #include "TntGlobalParams.hh"
+#include "TntDataRecordTree.hh"
 
 #include "G4SDManager.hh"
 #include "G4RunManager.hh"
@@ -84,7 +85,8 @@ G4bool TntDetectorConstruction::fSphereOn = true;
 
 TntDetectorConstruction::TntDetectorConstruction(G4String Light, int nx, int ny)
 	: fTnt_mt(NULL), fMPTPStyrene(NULL), Light_Conv_Method(Light),
-		fNDetX(nx), fNDetY(ny), fMainVolumeArray(nx*ny, 0)
+		fNDetX(nx), fNDetY(ny), 
+		fMainVolumeArray(nx*ny, 0), fOffsetX(nx*ny,0), fOffsetY(nx*ny,0)
 {
   fExperimentalHall_box = NULL;
   fExperimentalHall_log = NULL;
@@ -606,6 +608,8 @@ G4cout << fNz << G4endl;
 		}
 		else
 		{
+			std::vector<std::pair<int,int> > vindx;
+			std::vector<std::pair<double,double> > vpos;
 			if(fScint_y > 0) { 
 				assert(false && "NEED TO IMPLEMENT BOX ARRAY!!");
 			} else {
@@ -616,16 +620,23 @@ G4cout << fNz << G4endl;
 				G4double ytot = housing_D*fNDetY; // total array y-size
 				for(int i=0; i< fNDetX; ++i) {
 					for(int j=0; j< fNDetY; ++j) {
+						int indx = i*fNDetY + j;
+						
 						double xoff = -xtot/2. + housing_D/2. + housing_D*i;
 						double yoff = -ytot/2. + housing_D/2. + housing_D*j;
 						TntMainVolume* mv =
 							new TntMainVolume(0,G4ThreeVector(xoff,yoff,0),
-																fExperimentalHall_log,false,0,this);
-						fMainVolumeArray.at( i*fNDetY + j ) = mv;
+																fExperimentalHall_log,false,indx,this);
+						fMainVolumeArray.at( indx ) = mv;
+						fOffsetX.at        ( indx ) = xoff;
+						fOffsetY.at        ( indx ) = yoff;
+						vindx.push_back(std::make_pair(i, j));
+						vpos.push_back(std::make_pair(xoff, yoff));
 					}
 				}
 			}
 			fMainVolume = fMainVolumeArray.at(0);
+			TntDataRecordTree::TntPointer->SaveDetectorPositions(vindx, vpos);
 		} // --- ARRAY ---
   }
 
@@ -720,15 +731,22 @@ void TntDetectorConstruction::ConstructSDandFieldN() {
 
 		// PMT SD
 
-		if (!fPmt_SD.Get()) {
-			//Created here so it exists as pmts are being placed
-			G4cout << "Construction /TntDet/pmtSD" << G4endl;
-			TntPMTSD* pmt_SD = new TntPMTSD("/TntDet/pmtSD");
-			fPmt_SD.Put(pmt_SD);
+		// if (!fPmt_SD.Get()) {
+		// 	//Created here so it exists as pmts are being placed
+		// 	G4cout << "Construction /TntDet/pmtSD" << G4endl;
 
-			pmt_SD->InitPMTs((fNx*fNy+fNx*fNz+fNy*fNz)*2); //let pmtSD know # of pmts
-			pmt_SD->SetPmtPositions(fMainVolume->GetPmtPositions());
+		G4String pmtname = "/TntDet/pmtSD" + std::to_string(i);
+		TntPMTSD* pmt_SD = new TntPMTSD(pmtname.c_str());
+		fPmt_SD.Put(pmt_SD);
+		
+		pmt_SD->InitPMTs((fNx*fNy+fNx*fNz+fNy*fNz)*2); //let pmtSD know # of pmts
+
+		std::vector<G4ThreeVector> pmtPos = fMainVolume->GetPmtPositions();
+		for(auto& p : pmtPos) {
+			p[0] += fOffsetX.at(i);
+			p[1] += fOffsetY.at(i);
 		}
+		pmt_SD->SetPmtPositions(pmtPos);
 
   //sensitive detector is not actually on the photocathode.
   //processHits gets done manually by the stepping action.
@@ -957,3 +975,13 @@ void TntDetectorConstruction::SetWLSScintYield(G4double y) {
   fMPTPStyrene->AddConstProperty("SCINTILLATIONYIELD",y/MeV);
 }
 
+void TntDetectorConstruction::GetDetectorOffset(G4int i, G4double& x, G4double& y)
+{
+	try {
+		x = fOffsetX.at(i);
+		y = fOffsetY.at(i);
+	} catch(std::exception&) {
+		TNTERR << "GetDetectorOffset :: invalid index " << i << G4endl;
+		exit(1);
+	}
+}

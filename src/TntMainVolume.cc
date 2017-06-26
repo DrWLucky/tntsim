@@ -57,7 +57,9 @@ TntMainVolume::TntMainVolume(G4RotationMatrix *pRot,
 	fScint_box = fHousing_box = 0;
 	fScint_tubs = fHousing_tubs = 0;
   this->CopyValues();
-
+	fPos = tlate;
+	fCopyNo = pCopyNo;
+	
 	/** Choose box shape or cylinder shape based on value
 	 *  of y dimension in TntDetectorConstructor.
 	 *  Values > 0 give a box with w/l/h = x/y/z.
@@ -95,7 +97,7 @@ void TntMainVolume::CreateBox()
                                      "housing_log",0,0,0);
  
   new G4PVPlacement(0,G4ThreeVector(),fScint_log,"scintillator",
-                                 fHousing_log,false,0);
+                                 fHousing_log,false,fCopyNo);
  
   //*************** Miscellaneous sphere to demonstrate skin surfaces
   fSphere = new G4Sphere("sphere",0.*mm,2.*cm,0.*deg,360.*deg,0.*deg,360.*deg);
@@ -218,7 +220,7 @@ void TntMainVolume::CreateCylinder()
                                      "housing_log",0,0,0);
  
   new G4PVPlacement(0,G4ThreeVector(),fScint_log,"scintillator",
-                                 fHousing_log,false,0);
+                                 fHousing_log,false,fCopyNo);
  
   //*************** Miscellaneous sphere to demonstrate skin surfaces
   fSphere = new G4Sphere("sphere",0.*mm,2.*cm,0.*deg,360.*deg,0.*deg,360.*deg);
@@ -277,13 +279,13 @@ G4cout << fNy << G4endl;
 G4cout << fNz << G4endl;
 */
 
-  G4double dx = fScint_x/fNx;
-  G4double dy = fScint_y/fNy;
+  G4double dx = pmt_len_total/fNx; //fScint_x/fNx;
+  G4double dy = pmt_len_total/fNy; //fScint_y/fNy;
   G4double dz = fScint_z/fNz;
  
   G4double x,y,z;
-  G4double xmin = -pmt_len_total/2. - dx/2.; // -fScint_x/2. - dx/2.;
-  G4double ymin = -pmt_len_total/2. - dy/2.; // -fScint_y/2. - dy/2.;
+  G4double xmin = -pmt_len_total/2. - dx/2; // -fScint_x/2. - dx/2.;
+  G4double ymin = -pmt_len_total/2. - dy/2; // -fScint_y/2. - dy/2.;
   G4double zmin = -fScint_z/2. - dz/2.;
   G4int k=0;
  
@@ -294,8 +296,6 @@ G4cout << fNz << G4endl;
   rm_z->rotateY(180*deg);
   z = fScint_z/2. + height_pmt;       //back
   PlacePMTs(fPmt_log,rm_z,x,y,dx,dy,xmin,ymin,fNx,fNy,x,y,z,k);
-//by Shuya 160428. You can check PMT position by this.
-  //for(int i=100;i<200;i++)	G4cout << fPmtPositions[i] << G4endl;
 
 #if 0 // GAC - No PMTs except front/back
   G4RotationMatrix* rm_y1 = new G4RotationMatrix();
@@ -376,7 +376,7 @@ void TntMainVolume::PlacePMTs(G4LogicalVolume* pmt_log,
       new G4PVPlacement(rot,G4ThreeVector(x,y,z),pmt_log,"pmt",
                         fHousing_log,false,k);
       fPmtPositions.push_back(G4ThreeVector(x,y,z));
-			G4cout << "PMT POSITIONS:: " << j << " " << k << " " << x << " " << y << " " << z << G4endl;
+			G4cout << "PMT POSITIONS [cm]:: " << j << " " << k << " " << x/cm << " " << y/cm << " " << z/cm << G4endl;
       k++;
     }
   }

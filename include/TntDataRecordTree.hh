@@ -20,6 +20,7 @@
 #include <iomanip>
 #include <fstream>
 #include <vector>
+#include <utility>
 
 // Root Analysis header files for C++
 
@@ -126,7 +127,8 @@ private:
 	/// MENATA_R hits
 	TClonesArray* fMenateHitsPos;
 	std::vector<G4double> fMenateHitsE;	
-	std::vector<G4int> fMenateHitsType;	
+	std::vector<G4int> fMenateHitsType;
+	std::vector<G4int> fMenateHitsDetector;
 	
 	///
 	/// Positions of original fired neutron
@@ -220,7 +222,7 @@ private:
   void senddataPosition(const G4ThreeVector& pos);
 	void senddataHits(const std::vector<Hit_t>& hit, bool sortTime);
   void senddataTOF(G4double time);
-	void senddataMenateR(G4double ekin, const G4ThreeVector& posn, G4double t, G4int type);
+	void senddataMenateR(G4double ekin, const G4ThreeVector& posn, G4int copyNo, G4double t, G4int type);
   void ShowDataFromEvent();
   void FillTree();
 //by Shuya 160422.
@@ -232,6 +234,26 @@ private:
 	G4int GetReactionCode(const G4String& name);
 	G4String GetParticleName(G4int  code);
 	G4String GetReactionName(G4int  code);	
+
+	/// Save central positions of each detector, if an array
+	/** Positions are saved in a separate TTree, 'detpos'. The
+	 *  number of entries is the number of detectors, entry number
+	 *  is the detector copy number. The tree has
+	 *  2 branches: 'xpos' and 'ypos'
+	 * \param [in] indx Vector containng detector indices <ix, iy>
+	 * \param [in] pos Vector containing detector positions as pairs <x,y>
+	 *  the index in the vector corresponds to detector number
+	 *
+	 *  Numbering convention is (e.g. for 4x4 array):
+	 *  \code
+	 *  0  1  2  3
+	 *  4  5  6  7
+	 *  8  9  10 11
+	 *  12 13 14 15
+	 *  \endcode
+	 */
+	void SaveDetectorPositions(const std::vector<std::pair<int, int> >& indx,
+														 const std::vector<std::pair<double, double> >& pos);
 	
 private:
   TntDataRecordTree() {;}   // Hide Default Constructor

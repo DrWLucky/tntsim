@@ -8,6 +8,8 @@
 TntGlobalParams::TntGlobalParams(): fNeutronEnergy(1.*MeV),
 																		fNumPmtX(4),
 																		fNumPmtY(4),
+																		fNdetX(1),
+																		fNdetY(1),
 																		fBeamType("pencil"),
 																		fReacFile("0"),
 																		fInputFile("0"),
@@ -21,7 +23,7 @@ TntGlobalParams::TntGlobalParams(): fNeutronEnergy(1.*MeV),
 																		fSourceZ(100.),
 																		fLightOutput(10400),
 																		fQuantumEfficiency(0.2),
-																		fAngerAnalysis("")
+																		fAngerAnalysis("")																	
 { }
 
 TntGlobalParams* TntGlobalParams::Instance()

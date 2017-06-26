@@ -54,7 +54,8 @@ public:
 
 	G4LogicalVolume* GetLogPhotoCath() {return fPhotocath_log;}
 	G4LogicalVolume* GetLogScint()     {return fScint_log;}
-
+	G4ThreeVector GetPos() const { return fPos; }
+	
 	std::vector<G4ThreeVector> GetPmtPositions() {return fPmtPositions;}
 
 private:
@@ -88,7 +89,9 @@ private:
 	G4double fPmt_y;
 	G4bool fSphereOn;
 	G4double fRefl;
-
+	G4ThreeVector fPos; /// translation
+	G4int fCopyNo;
+	
 	//Basic Volumes
 	//
 	G4Box* fScint_box;
