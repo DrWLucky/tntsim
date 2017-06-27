@@ -39,13 +39,13 @@
 #include "G4SystemOfUnits.hh"
 #include "globals.hh"
 
-#include "G4GenPhaseSpace.hh"
 #include "TntDataRecordTree.hh"
 #include "TntGlobalParams.hh"
-#include "TntNeutronDecay.hh"
-#include "TntNuclearMasses.hh"
 #include "TntInputFileParser.hh"
-#include "TntReactionGenerator.hh"
+
+#include "g4gen/NeutronDecay.hh"
+#include "g4gen/NuclearMasses.hh"
+#include "g4gen/ReactionGenerator.hh"
 
 //by Shuya 160510. Just copied from Tntsim.
 // need the below for random theta angle source (from Demon)
@@ -328,34 +328,34 @@ TntPGAReaction::TntPGAReaction():
 	}
 
 	// (+handle decay separately)
-	TntNeutronDecayFactory decayFactory;
-	TntInputFileParser<TntNeutronDecayFactory> decayParser(&decayFactory);
-	decayParser.AddInput("decaytype", &TntNeutronDecayFactory::SetDecayType);
-	decayParser.AddInput("decayoption", &TntNeutronDecayFactory::SetDecayOption);
+	g4gen::NeutronDecayFactory decayFactory;
+	TntInputFileParser<g4gen::NeutronDecayFactory> decayParser(&decayFactory);
+	decayParser.AddInput("decaytype", &g4gen::NeutronDecayFactory::SetDecayType);
+	decayParser.AddInput("decayoption", &g4gen::NeutronDecayFactory::SetDecayOption);
 	decayParser.Parse(fReacFile);
 
 
 	// Initialize Generators
 	//
 	// Beam & Energy
-	TntNuclearMasses::GetZAFromSymbol(rfp.beam, fZ, fA);
-	TntNuclearMasses::GetZAFromSymbol(rfp.target, fZ+1, fA+1);
-	TntNuclearMasses::GetZAFromSymbol(rfp.ejectile, fZ+2, fA+2);
+	g4gen::NuclearMasses::GetZAFromSymbol(rfp.beam, fZ, fA);
+	g4gen::NuclearMasses::GetZAFromSymbol(rfp.target, fZ+1, fA+1);
+	g4gen::NuclearMasses::GetZAFromSymbol(rfp.ejectile, fZ+2, fA+2);
 	fZ[3] = fZ[0]+fZ[1] - fZ[2]; const G4double FragZ = fZ[3];
 	fA[3] = fA[0]+fA[1] - fA[2]; const G4double FragA = fA[3];
 	
-	fRngEbeam.reset(new TntRngGaus(rfp.ebeam*fA[0], rfp.debeam*fA[0])); // TOTAL beam kinetic energy
+	fRngEbeam.reset(new g4gen::RngGaus(rfp.ebeam*fA[0], rfp.debeam*fA[0])); // TOTAL beam kinetic energy
 
 	// Reaction
-	fReac.reset(new TntTwoBodyReactionGenerator());
+	fReac.reset(new g4gen::TwoBodyReactionGenerator());
 	fReac->SetBeamTargetEjectile(rfp.beam, rfp.target, rfp.ejectile);
 	// (+Emittance)
-	fEmX.reset(new TntBeamEmittance(rfp.epsx, rfp.alphax, rfp.sigmax, rfp.x0));
-	fEmY.reset(new TntBeamEmittance(rfp.epsy, rfp.alphay, rfp.sigmay, rfp.y0));						 
+	fEmX.reset(new g4gen::BeamEmittance(rfp.epsx, rfp.alphax, rfp.sigmax, rfp.x0));
+	fEmY.reset(new g4gen::BeamEmittance(rfp.epsy, rfp.alphay, rfp.sigmay, rfp.y0));						 
 	fReac->SetEmittance(fEmX.get(), fEmY.get());
 	// (+Angle Gen.)
-	fRngTheta.reset(new TntRngCustomAngDist(rfp.angdist));
-	fRngPhi.reset(new TntRngUniform(0, 2*CLHEP::pi));
+	fRngTheta.reset(new g4gen::RngCustomAngDist(rfp.angdist));
+	fRngPhi.reset(new g4gen::RngUniform(0, 2*CLHEP::pi));
 	// Decay
 	fDecay.reset(decayFactory.Create());
 	fDecay->SetVerboseLevel(1); // only print FATAL messages
@@ -403,7 +403,7 @@ void TntPGAReaction::GeneratePrimaries(G4Event* anEvent)
 			// Neutron Decay
 			fDecay->SetInputParticle(&fReac->GetReactant(4));
 			enoughEnergyForDecay = fDecay->Generate();
-			TntCheckMaxTries() (ntries, "TntPgaReaction::GeneratePrimaries");
+			g4gen::CheckMaxTries() (ntries, "TntPgaReaction::GeneratePrimaries");
 		} while(!enoughEnergyForDecay);
 	}
 		
@@ -497,20 +497,20 @@ TntPGAPhaseSpace::TntPGAPhaseSpace(G4int nneut):
 	// Initialize Generators
 	//
 	// Beam & Energy
-	TntNuclearMasses::GetZAFromSymbol(rfp.beam, fZ, fA);
-	TntNuclearMasses::GetZAFromSymbol(rfp.target, fZ+1, fA+1);
-	TntNuclearMasses::GetZAFromSymbol(rfp.ejectile, fZ+2, fA+2);
+	g4gen::NuclearMasses::GetZAFromSymbol(rfp.beam, fZ, fA);
+	g4gen::NuclearMasses::GetZAFromSymbol(rfp.target, fZ+1, fA+1);
+	g4gen::NuclearMasses::GetZAFromSymbol(rfp.ejectile, fZ+2, fA+2);
 	fZ[3] = fZ[0]+fZ[1] - fZ[2]; const G4double FragZ = fZ[3];
 	fA[3] = fA[0]+fA[1] - fA[2]; const G4double FragA = fA[3];
 	
-	fRngEbeam.reset(new TntRngGaus(rfp.ebeam*fA[0], rfp.debeam*fA[0])); // TOTAL beam kinetic energy
+	fRngEbeam.reset(new g4gen::RngGaus(rfp.ebeam*fA[0], rfp.debeam*fA[0])); // TOTAL beam kinetic energy
 
 	// Reaction
-	fReac.reset(new TntNeutronPhaseSpaceReactionGenerator(nneut));
+	fReac.reset(new g4gen::NeutronPhaseSpaceReactionGenerator(nneut));
 	fReac->SetBeamTargetEjectile(rfp.beam, rfp.target, rfp.ejectile);
 	// (+Emittance)
-	fEmX.reset(new TntBeamEmittance(rfp.epsx, rfp.alphax, rfp.sigmax, rfp.x0));
-	fEmY.reset(new TntBeamEmittance(rfp.epsy, rfp.alphay, rfp.sigmay, rfp.y0));						 
+	fEmX.reset(new g4gen::BeamEmittance(rfp.epsx, rfp.alphax, rfp.sigmax, rfp.x0));
+	fEmY.reset(new g4gen::BeamEmittance(rfp.epsy, rfp.alphay, rfp.sigmay, rfp.y0));						 
 	fReac->SetEmittance(fEmX.get(), fEmY.get());
 	// Reac RNGs
 	fReac->SetRNGs({fRngEbeam.get()});

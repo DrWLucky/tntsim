@@ -57,8 +57,6 @@
 #include "G4UIExecutive.hh"
 #endif
 
-#include "TntReactionGenerator.hh"
-#include "TntNeutronDecay.hh"
 
 //by Shuya 160406
 #include "TntDataRecordTree.hh"
@@ -69,6 +67,7 @@
 
 #include "TntInputFileParser.hh"
 #include "TntError.hh"
+#include "g4gen/Rng.hh"
 
 using namespace std;
 
@@ -102,7 +101,7 @@ int main(int argc, char** argv)
 		}
 		else if(arg == "-seed") {
 			G4int theSeed = atoi(argv[++i]);
-			TntSetRngSeed( theSeed );
+			g4gen::SetRngSeed( theSeed );
 		}
 		else if(arg == "-fout") {
 			FILEOUT_ = argv[++i];
@@ -136,7 +135,7 @@ int main(int argc, char** argv)
 	TntGlobalParams::Instance()->SetInputFile(inputfile);
 
 	if(FILEOUT_ != "") TntGlobalParams::Instance()->SetRootFileName(FILEOUT_);
-	G4cerr << "Running with RNG seed:: " << TntGetRngSeed() << G4endl;
+	G4cerr << "Running with RNG seed:: " << g4gen::GetRngSeed() << G4endl;
 
 	
 //by Shuya 160421. All copied from tntsim.cc

@@ -20,14 +20,18 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
-#include "TntGlobalParams.hh"
-#include "TntDataRecordTree.hh"
 
 #include <TH2I.h>
 #include <TVector3.h>
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TObjString.h>
+
+#include "TntGlobalParams.hh"
+#include "TntDataRecordTree.hh"
+
+#include "g4gen/Rng.hh"
+
 using namespace std;
 
 //by Shuya 160426.
@@ -377,8 +381,6 @@ void write_file_to_root(const char* fname, const char* name) {
 } }	
 	
 
-extern G4int TntGetRngSeed();
-
 TntDataRecordTree::~TntDataRecordTree()
 {/* Destructor, Close root file */
 
@@ -414,7 +416,7 @@ TntDataRecordTree::~TntDataRecordTree()
 	write_file_to_root(TntGlobalParams::Instance()->GetReacFile(), "reacfile");
 
 	// seed
-	TObjString strSeed(std::to_string(TntGetRngSeed()).c_str());
+	TObjString strSeed(std::to_string(g4gen::GetRngSeed()).c_str());
 	strSeed.Write("seed");
 
 	

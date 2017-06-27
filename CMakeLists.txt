@@ -32,7 +32,9 @@ include_directories(${GSL_INCLUDE_DIRS} ${GSLCBLAS_INCLUDE_DIRS})
 #----------------------------------------------------------------------------
 # Load some basic macros which are needed later on
 EXECUTE_PROCESS(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CXX_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS}")
+set(G4GEN_CXX_FLAGS "-I$ENV{HOME}/install/include")
+set(G4GEN_LIBRARIES "-L$ENV{HOME}/install/lib -lg4gen")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS} ${G4GEN_CXX_FLAGS}")
 
 #---------------------------------------------------------------------------
 # Create the directory for the ROOT files
@@ -161,16 +163,16 @@ SET(TNTSIM_LIBRARY_PROPERTIES ${TNTSIM_LIBRARY_PROPERTIES}
 
 EXECUTE_PROCESS(COMMAND root-config --libs OUTPUT_VARIABLE ROOT_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(CMAKE_EXE_LINKER_FLAGS ${ROOT_LD_FLAGS})
-add_library(TNTSIM_lib SHARED tntsim.cc ${TNTSIM_DICTIONARY} ${sources} ${headers})
-target_link_libraries(TNTSIM_lib ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${GSL_LIBRARIES})
-set_target_properties(TNTSIM_lib PROPERTIES ${TNTSIM_LIBRARY_PROPERTIES})
+# add_library(TNTSIM_lib SHARED tntsim.cc ${TNTSIM_DICTIONARY} ${sources} ${headers})
+# target_link_libraries(TNTSIM_lib ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${GSL_LIBRARIES} ${G4GEN_LIBRARIES})
+# set_target_properties(TNTSIM_lib PROPERTIES ${TNTSIM_LIBRARY_PROPERTIES})
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(tntsim.exe tntsim.cc ${TNTSIM_DICTIONARY} ${sources} ${headers})
-target_link_libraries(tntsim.exe ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${GSL_LIBRARIES})
-add_dependencies(tntsim.exe TNTSIM_lib)
+add_executable(tntsim.exe tntsim.cc ${TNTSIM_DICTIONARY} ${sources} ${headers} )
+target_link_libraries(tntsim.exe ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${GSL_LIBRARIES} ${G4GEN_LIBRARIES})
+# add_dependencies(tntsim.exe TNTSIM_lib)
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we

@@ -4,6 +4,6 @@
 mkdir -p build
 cd build/
 echo $PWD/..
-cmake $PWD/.. -GNinja
+cmake $PWD/.. # -GNinja
 ln -s /media/gchristian/HD1/TNT/tntsim-data
 cp -p ../build-backup/* .

@@ -37,9 +37,9 @@
 //by Shuya 160407
 #include "TntDataRecordTree.hh"
 
-#include "TntReactionGenerator.hh"
-#include "TntBeamEmittance.hh"
-#include "TntNeutronDecay.hh"
+#include "g4gen/ReactionGenerator.hh"
+#include "g4gen/BeamEmittance.hh"
+#include "g4gen/NeutronDecay.hh"
 
 class G4ParticleGun;
 class G4Event;
@@ -71,10 +71,10 @@ public:
 protected:
 	G4String fReacFile;
 	G4int fA[4], fZ[4];
-	std::unique_ptr<TntReactionGenerator> fReac;
-	std::unique_ptr<TntNeutronDecay> fDecay;
-	std::unique_ptr<TntRng> fRngEbeam, fRngEx3, fRngEx4, fRngTheta, fRngPhi;
-	std::unique_ptr<TntBeamEmittance> fEmX, fEmY;
+	std::unique_ptr<g4gen::ReactionGenerator> fReac;
+	std::unique_ptr<g4gen::NeutronDecay> fDecay;
+	std::unique_ptr<g4gen::Rng> fRngEbeam, fRngEx3, fRngEx4, fRngTheta, fRngPhi;
+	std::unique_ptr<g4gen::BeamEmittance> fEmX, fEmY;
 };
 
 class TntPGAPhaseSpace : public TntPrimaryGeneratorAction {
@@ -87,9 +87,9 @@ protected:
 	G4int fN;
 	G4String fReacFile;
 	G4int fA[4], fZ[4];
-	std::unique_ptr<TntReactionGenerator> fReac;
-	std::unique_ptr<TntRng> fRngEbeam;
-	std::unique_ptr<TntBeamEmittance> fEmX, fEmY;
+	std::unique_ptr<g4gen::ReactionGenerator> fReac;
+	std::unique_ptr<g4gen::Rng> fRngEbeam;
+	std::unique_ptr<g4gen::BeamEmittance> fEmX, fEmY;
 };
 
 #endif
